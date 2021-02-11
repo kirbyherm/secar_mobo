@@ -24,8 +24,8 @@ def main():
     startTime = timeit.default_timer()
 
 #    alg = pg.algorithm(pg.nsga2())
-    alg = pg.algorithm(pg.sga(gen=10))
-    alg.set_verbosity(1)
+    alg = pg.algorithm(pg.sga(gen=500))
+    alg.set_verbosity(100)
     p_optimizeRes = pg.problem(optimizeRes(7))
 #    print(p_optimizeRes)
 #    pop = pg.population(p_optimizeRes, size=5)

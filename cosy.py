@@ -595,7 +595,7 @@ def cosyrun(qs):
 #    except (OSError, IOError) as e:
 #        print('q1 = %.6f q2 = %.6f q3 = %.6f q4 = %.6f q5 = %.6f q6 = %.6f q7 = %.6f'  %(q1s, q2s, q3s, q4s, q5s, q6s, q7s) )   
 #        resol = 0
-    print(resol)            
+#    print(resol)            
 #    f = open('results.txt','a')  # Writing results file: magnet field, resolution
 #    f.write( '{0:d} {1:.6f} {2:.6f} {3:.6f} {4:.6f} {5:.6f} {6:.6f} {7:.6f} {8:.1f}\n' .format(b, q1s, q2s, q3s, q4s, q5s, q6s, q7s, float(resol)) )
 #    f.close()
