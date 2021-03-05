@@ -18,12 +18,12 @@ from problem import optimizeRes
 import pandas as pd
 
 # SGA hyperparameters
-generations = 100
-cr_p = 0.9 # probability of crossover, 0.9 by default
-mu_p = 0.9 # probability of mutation, 0.02 by default
+generations = 30
+cr_p = 0.5 # probability of crossover, 0.9 by default
+mu_p = 0.3 # probability of mutation, 0.02 by default
 mu_str = "gaussian" # mutation strategy, polynomial by default
-mu_param_m = 0.3
-magnet_dim = 7
+mu_param_m = 0.1
+magnet_dim = 2
 
 def main(pop_init=None):
     # Removing old files
@@ -39,10 +39,10 @@ def main(pop_init=None):
 #    pop = alg.evolve(pop)
 #    print(pop.champion_f)
 #    print(pop)
-    n_islands = 10
+    n_islands = 1
     pop_new = None
     if (pop_init==None):    
-        archi = pg.archipelago(n=n_islands,algo=alg,prob=p_optimizeRes,pop_size=10)
+        archi = pg.archipelago(n=n_islands,algo=alg,prob=p_optimizeRes,pop_size=5)
         print("initialize pop")
     else:
         archi = pg.archipelago(n=n_islands,algo=alg,pop=pop_init)
@@ -129,9 +129,9 @@ def read_pop():
     return pop    
 if __name__=='__main__':
 
-    popi = init_pop(magnet_dim,10)
+#    popi = init_pop(magnet_dim,10)
     pop1 = popi
-    pop2 = main(pop1)
+    pop2 = main()
 #    print("here's pop2: ")
 #    print(pop2)
 #    pop3 = main(pop2)

@@ -8,12 +8,18 @@ class optimizeRes:
         self.dim = dim
 
     def fitness(self, x):
-        return [-cosyrun(x)]
+        resol = -cosyrun(x)
+        f = open("output1.csv","a")
+        for i in range(len(x)):
+            f.write("{0},".format(x[i]))
+        f.write("{0}\n".format(resol))
+        f.close()
+        return [resol]
 
     def get_bounds(self):
-        qLower =zeros(7)
-        qUpper =zeros(7)
-        for i in range(len(qNom)):
+        qLower =zeros(self.dim)
+        qUpper =zeros(self.dim)
+        for i in range(self.dim):
             if qNom[i] > 0:
                 qLower[i] = qNom[i]*0.5
                 qUpper[i] = qNom[i]*1.5
