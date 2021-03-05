@@ -130,7 +130,6 @@ def read_pop():
 if __name__=='__main__':
 
 #    popi = init_pop(magnet_dim,10)
-    pop1 = popi
     pop2 = main()
 #    print("here's pop2: ")
 #    print(pop2)
