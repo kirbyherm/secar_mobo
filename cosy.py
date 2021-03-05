@@ -6,10 +6,13 @@ import os, shutil
 import subprocess as commands
 import re
 from numpy.random import random as rng
+from numpy import array
+
+qNom = array([-0.39773, 0.217880+0.001472, 0.242643-0.0005+0.000729, -0.24501-0.002549, 0.1112810+0.00111, 0.181721-0.000093+0.00010-0.000096, -0.0301435+0.0001215] )
 
 # Function that runs cosy given field gradients and outputs resolution at FP3. 
 # Output is written in file temp-results
-def cosyrun(qs):
+def cosyrun(qs=qNom):
     [q1s, q2s, q3s, q4s, q5s, q6s, q7s] = qs
     rand = rng()
     cosyFilename = 'pygmoCosy'+str(rand)+'.fox'
