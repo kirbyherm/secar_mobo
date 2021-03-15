@@ -19,10 +19,10 @@ import pandas as pd
 
 # SGA hyperparameters
 generations = 30
-cr_p = 0.5 # probability of crossover, 0.9 by default
-mu_p = 0.3 # probability of mutation, 0.02 by default
+cr_p = 0.9 # probability of crossover, 0.9 by default
+mu_p = 0.9 # probability of mutation, 0.02 by default
 mu_str = "gaussian" # mutation strategy, polynomial by default
-mu_param_m = 0.1
+mu_param_m = 0.05
 magnet_dim = 2
 
 def main(pop_init=None):
@@ -31,7 +31,7 @@ def main(pop_init=None):
     startTime = timeit.default_timer()
 
 #    alg = pg.algorithm(pg.nsga2())
-    alg = pg.algorithm(pg.sga(gen=generations,cr=cr_p,m=mu_p,mutation=mu_str))
+    alg = pg.algorithm(pg.sga(gen=generations,cr=cr_p,m=mu_p,mutation=mu_str,m_param_m=mu_param_m))
     alg.set_verbosity(1)
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
 #    print(p_optimizeRes)
@@ -66,9 +66,9 @@ def main(pop_init=None):
                 data = {"id": [j+i*len(popi.get_f())],"island_#": [i], "f": popi.get_f()[j]}
                 for k in range(len(popi.get_x()[j])):
                     data["x"+str(k)] = popi.get_x()[j][k]
-            df = pd.DataFrame(data)
-            tot_df = tot_df.append(df)
-            tot_df.to_csv("test{0}_{1}_{2}_{3}.csv".format(generations,cr_p,mu_p,mu_str),index=False)
+                df = pd.DataFrame(data)
+                tot_df = tot_df.append(df)
+                tot_df.to_csv("test{0}_{1}_{2}_{3}_{4}.csv".format(generations,cr_p,mu_p,mu_str,mu_param_m),index=False)
             continue
         print("here's the result population: ")
         print(popi)
