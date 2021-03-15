@@ -31,7 +31,7 @@ def main(pop_init=None):
     startTime = timeit.default_timer()
 
 #    alg = pg.algorithm(pg.nsga2())
-    alg = pg.algorithm(pg.sga(gen=generations,cr=cr_p,m=mu_p,mutation=mu_str,m_param_m=mu_param_m))
+    alg = pg.algorithm(pg.sga(gen=generations,cr=cr_p,m=mu_p,mutation=mu_str,param_m=mu_param_m))
     alg.set_verbosity(1)
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
 #    print(p_optimizeRes)
