@@ -577,6 +577,9 @@ def cosyrun(qs=qNom):
     #f.write('OPENF 99 \'temp-results\' \'NEW\';\n')
 #    f.write('OPENF 99 \'{0}\' \'NEW\';\n'.format(tempresFilename))
     f.write('WRITE 6 ABS(ME(1,7))/(2*WV);  \n')
+#    f.write('WRITE 6 ABS(ME(1,6));  \n') # min
+#    f.write('WRITE 6 ABS(ME(2,6));  \n') # min
+#    f.write('WRITE 6 ABS(ME(1,2));  \n') # min
     f.write('\n')
     f.write('ENDPROCEDURE ;\n')
     f.write('RUN ;\n')

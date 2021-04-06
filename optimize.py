@@ -19,8 +19,8 @@ import pandas as pd
 
 # SGA hyperparameters
 generations = 30
-cr_p = 0.3 # probability of crossover, 0.9 by default
-mu_p = 0.7 # probability of mutation, 0.02 by default
+cr_p = 0.9 # probability of crossover, 0.9 by default
+mu_p = 0.3 # probability of mutation, 0.02 by default
 mu_str = "gaussian" # mutation strategy, polynomial by default
 mu_param_m = 0.05
 magnet_dim = 7

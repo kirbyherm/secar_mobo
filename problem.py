@@ -9,7 +9,7 @@ class optimizeRes:
 
     def fitness(self, x):
         resol = -cosyrun(x)
-        f = open("output34.csv","a")
+        f = open("output37.csv","a")
         for i in range(len(x)):
             f.write("{0},".format(x[i]))
         f.write("{0}\n".format(resol))
