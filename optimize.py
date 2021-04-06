@@ -19,11 +19,11 @@ import pandas as pd
 
 # SGA hyperparameters
 generations = 30
-cr_p = 0.9 # probability of crossover, 0.9 by default
-mu_p = 0.9 # probability of mutation, 0.02 by default
+cr_p = 0.3 # probability of crossover, 0.9 by default
+mu_p = 0.7 # probability of mutation, 0.02 by default
 mu_str = "gaussian" # mutation strategy, polynomial by default
 mu_param_m = 0.05
-magnet_dim = 2
+magnet_dim = 7
 
 def main(pop_init=None):
     # Removing old files
@@ -32,6 +32,8 @@ def main(pop_init=None):
 
 #    alg = pg.algorithm(pg.nsga2())
     alg = pg.algorithm(pg.sga(gen=generations,cr=cr_p,m=mu_p,mutation=mu_str,param_m=mu_param_m))
+#    b = pg.bfe()
+#    alg.set_bfe(
     alg.set_verbosity(1)
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
 #    print(p_optimizeRes)
@@ -39,10 +41,10 @@ def main(pop_init=None):
 #    pop = alg.evolve(pop)
 #    print(pop.champion_f)
 #    print(pop)
-    n_islands = 1
+    n_islands = 1 
     pop_new = None
     if (pop_init==None):    
-        archi = pg.archipelago(n=n_islands,algo=alg,prob=p_optimizeRes,pop_size=5)
+        archi = pg.archipelago(n=n_islands,algo=alg,prob=p_optimizeRes,pop_size=100)
         print("initialize pop")
     else:
         archi = pg.archipelago(n=n_islands,algo=alg,pop=pop_init)
@@ -79,7 +81,7 @@ def main(pop_init=None):
                 data["x"+str(k)] = popi.get_x()[j][k]
             df = pd.DataFrame(data)
             tot_df = tot_df.append(df)
-        tot_df.to_csv("test{0}_{1}_{2}_{3}.csv".format(generations,cr_p,mu_p,mu_str),index=False)
+        tot_df.to_csv("test{0}_{1}_{2}_{3}.csv".format(generations,cr_p,mu_p,mu_param_m),index=False)
             
 #        np.concatenate((arr,popi.get_f()),axis=0)
 #        print(arr)
@@ -112,8 +114,8 @@ def init_pop(dim,pop_size):
         pop.push_back(pop.random_decision_vector())  
     return pop
 
-def read_pop():
-    df = pd.read_csv("first_out.csv")
+def read_pop(filename):
+    df = pd.read_csv(filename)
     p_optimizeRes = pg.problem(optimizeRes(7))
     pop = pg.population(p_optimizeRes)
     nrow, ncol = df.shape
@@ -130,6 +132,7 @@ def read_pop():
 if __name__=='__main__':
 
 #    popi = init_pop(magnet_dim,10)
+#    popi = read_pop("init_pop.csv")
     pop2 = main()
 #    print("here's pop2: ")
 #    print(pop2)
