@@ -296,7 +296,11 @@ DL 1.75+0.000011;                                                {DL21 true FP l
 {DL 1.75+0.000011+0.23623; }                                       {DL21 viewer location}
 
 MRESOL_P3 := ABS(ME(1,7))/(2*XX*ME(1,1)); 
-WRITE 6 'Mass Res.Power in FP2=' MRESOL_P3;
+
+WRITE 6 -ABS(ME(1,7))/(2*XX*ME(1,1));
+WRITE 6 ABS(ME(1,6));
+WRITE 6 ABS(ME(2,6));
+WRITE 6 ABS(ME(1,2));
 
 PS 0.01;
    
@@ -557,29 +561,26 @@ SC := 0.32783/0.79974; {Scaling for magnets based on the Brho above}
 UM;
 CR {Clears all rays}; UM;
 
-
 Q1:= 1.000;
 Q2:= 1.000;
-HEX1:= 1.000;
 Q3:= 1.000;
 Q4:= 1.000;
 Q5:= 1.000;
-
-HEX2:= 1.0000;
 Q6:=   1.0000;
 Q7:=   1.0000;
-HEX3:= 1.0000;
-OCT1:= 1.0000;
-
 Q8  := 1.000 ;
 Q9  := 1.000 ;
 Q10 := 1.000 ;
 Q11 := 1.000 ;
-
 Q12 := 1.000 ;
 Q13 := 1.000 ;
 Q14 := 1.000 ;
 Q15 := 1.000 ;
+
+HEX1:= 1.000;
+HEX2:= 1.0000;
+HEX3:= 1.0000;
+OCT1:= 1.0000;
 
 
 {Plot the new optics}
@@ -610,8 +611,6 @@ ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;
 BP;
 SECTION_ONE Q1 Q2 HEX1 Q3 Q4 Q5;
 SECTION_TWO HEX2 Q6 Q7 HEX3 OCT1;
-SECTION_THREE Q8 Q9 Q10 Q11;
-SECTION_FOUR Q12 Q13 Q14 Q15;
 EP;
 
 READ_RAY;
@@ -620,19 +619,10 @@ WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
 CENTER := (WW(1)+WW(2))/2;
 
-WRITE 14 'Image Size X dir' WV;
-WRITE 14 'Image Center X dir' CENTER;
-
 WW(1):= VMAX(RAY(3));
 WW(2):= VMIN(RAY(3));
 WV:=(WW(1)-WW(2));
 CENTER := (WW(1)+WW(2))/2;
-
-WRITE 14 'Image Size Y dir' WV;
-WRITE 14 'Image Center Y dir' CENTER;
-
-WRITE 14 'FP' 4.0;
-CLOSEF 14;
 
 PG -1 -2;
 
