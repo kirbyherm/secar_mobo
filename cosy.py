@@ -9,6 +9,7 @@ from numpy.random import random as rng
 from numpy import array, append
 
 qNom = array([-0.39773, 0.217880+0.001472, 0.242643-0.0005+0.000729, -0.24501-0.002549, 0.1112810+0.00111, 0.181721-0.000093+0.00010-0.000096, -0.0301435+0.0001215] )
+qNew = array([-0.319612, 0.198440, 0.221305,-0.179820, 0.090087, 0.194583,-0.040515])
 
 # Function that runs cosy given field gradients and outputs resolution at FP3. 
 # Output is written in file temp-results
@@ -576,10 +577,10 @@ def cosyrun(qs=qNom):
     #f.write('WRITE 6 \'M11*M22=\' ME(1,1)*ME(2,2);\n')
     #f.write('OPENF 99 \'temp-results\' \'NEW\';\n')
 #    f.write('OPENF 99 \'{0}\' \'NEW\';\n'.format(tempresFilename))
-    f.write('WRITE 6 ABS(ME(1,7))/(2*WV);  \n')
-#    f.write('WRITE 6 ABS(ME(1,6));  \n') # min
-#    f.write('WRITE 6 ABS(ME(2,6));  \n') # min
-#    f.write('WRITE 6 ABS(ME(1,2));  \n') # min
+    f.write('WRITE 6 -ABS(ME(1,7))/(2*WV);  \n')
+    f.write('WRITE 6 ABS(ME(1,6));  \n') # min
+    f.write('WRITE 6 ABS(ME(2,6));  \n') # min
+    f.write('WRITE 6 ABS(ME(1,2));  \n') # min
     f.write('\n')
     f.write('ENDPROCEDURE ;\n')
     f.write('RUN ;\n')
@@ -593,10 +594,14 @@ def cosyrun(qs=qNom):
     cmd = 'cosy ' + cosyFilename
 #    failure, output = commands.getstatusoutput(cmd)
     output = commands.run(['cosy',cosyFilename], capture_output=True)
-    resol = float(output.stdout.strip())
+    stripped = output.stdout.strip()
+#    print(stripped.split())
+    resol = (stripped.split())
+    for i in range(len(resol)):
+        resol[i] = float(resol[i])
+    print(resol)            
     commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
-#    print(failure, output)
 
 #    try:
 #        f = open(tempresFilename,'r')  # Opening temp file with results
@@ -605,15 +610,16 @@ def cosyrun(qs=qNom):
 #    except (OSError, IOError) as e:
 #        print('q1 = %.6f q2 = %.6f q3 = %.6f q4 = %.6f q5 = %.6f q6 = %.6f q7 = %.6f'  %(q1s, q2s, q3s, q4s, q5s, q6s, q7s) )   
 #        resol = 0
-#    print(resol)            
 #    f = open('results.txt','a')  # Writing results file: magnet field, resolution
 #    f.write( '{0:d} {1:.6f} {2:.6f} {3:.6f} {4:.6f} {5:.6f} {6:.6f} {7:.6f} {8:.1f}\n' .format(b, q1s, q2s, q3s, q4s, q5s, q6s, q7s, float(resol)) )
 #    f.close()
 
 #    print('Finished bee %d'%b)
-    return float(resol)
+    return (resol)
     
 
+if __name__ == "__main__":
+    print(cosyrun(qNew))
 
 
 
