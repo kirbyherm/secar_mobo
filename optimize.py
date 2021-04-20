@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python3.9
 
 import sys, math
 import os, shutil, signal
@@ -19,7 +19,7 @@ import pandas as pd
 
 seed = 56448189
 # SGA hyperparameters
-generations = 10 
+generations = 100
 cr_p = 0.9 # probability of crossover, 0.9 by default
 mu_p = 0.7 # probability of mutation, 0.02 by default
 mu_str = "gaussian" # mutation strategy, polynomial by default
@@ -44,9 +44,9 @@ def main(pop_init=None):
 #    pop = alg.evolve(pop)
 #    print(pop.champion_f)
 #    print(pop)
-    n_islands = 2 
+    n_islands = 1 
 #    top = pg.topology(pg.fully_connected(n_islands,1.0))
-    pop_n = 84
+    pop_n = 84 
     pop_new = None
     if (pop_init==None):    
         archi = pg.archipelago(n=n_islands,algo=alg,prob=p_optimizeRes,pop_size=pop_n)#,t=top

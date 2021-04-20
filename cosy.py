@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python3.9
 
 import sys, math
 import os, shutil
@@ -9,8 +9,10 @@ from numpy.random import random as rng
 from numpy import array, append
 
 qNom = array([-0.39773, 0.217880+0.001472, 0.242643-0.0005+0.000729, -0.24501-0.002549, 0.1112810+0.00111, 0.181721-0.000093+0.00010-0.000096, -0.0301435+0.0001215] )
+fNom = array([-870.9084099103394, 0.01625617474106655, 0.02579740767554017, 0.0020116413429212])
 qNom = array([1,1,1,1,1,1,1] )
-qNew = qNom
+qNew = array([1.00311026,1.02485471,0.86210439,0.71888156,1.06544479,0.98006624,0.70365153])
+#qNew = array([0.77403563,0.90112332,1.24112697,1.95036434,1.80219943,0.67776703,0.84913223])
 #qNew = array([-0.319612, 0.198440, 0.221305,-0.179820, 0.090087, 0.194583,-0.040515])
 
 # Function that runs cosy given field gradients and outputs resolution at FP3. 
@@ -50,10 +52,18 @@ def cosyrun(qs=qNom):
     stripped = output.stdout.strip()
 #    print(stripped.split())
     resol = (stripped.split())
+    print(resol)
     for i in range(len(resol)):
         resol[i] = float(resol[i])
+        if i == 0:
+            if resol[i] < 0:
+                resol[i] = fNom[i]/resol[i]
+            else:
+                resol[i] = max(resol[i],100000)
+        else:
+            resol[i] = resol[i]/fNom[i]
     print(resol)            
-#    commands.run(['rm','-f',cosyFilename])
+    commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
 
 #    try:

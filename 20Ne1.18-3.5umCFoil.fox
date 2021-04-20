@@ -297,7 +297,7 @@ DL 1.75+0.000011;                                                {DL21 true FP l
 
 MRESOL_P3 := ABS(ME(1,7))/(2*XX*ME(1,1)); 
 
-WRITE 6 -ABS(ME(1,7))/(2*XX*ME(1,1));
+WRITE 6 (-ABS(ME(1,7))/(2*XX*ME(1,1)));
 WRITE 6 ABS(ME(1,6));
 WRITE 6 ABS(ME(2,6));
 WRITE 6 ABS(ME(1,2));
@@ -612,24 +612,6 @@ BP;
 SECTION_ONE Q1 Q2 HEX1 Q3 Q4 Q5;
 SECTION_TWO HEX2 Q6 Q7 HEX3 OCT1;
 EP;
-
-READ_RAY;
-WW(1):= VMAX(RAY(1));
-WW(2):= VMIN(RAY(1));
-WV:=(WW(1)-WW(2));
-CENTER := (WW(1)+WW(2))/2;
-
-WW(1):= VMAX(RAY(3));
-WW(2):= VMIN(RAY(3));
-WV:=(WW(1)-WW(2));
-CENTER := (WW(1)+WW(2))/2;
-
-PG -1 -2;
-
-{PP -12 0. 0.;
-PP -12 0. 90.;}
-
-PS -12;
 
 ENDPROCEDURE ;
 RUN ;

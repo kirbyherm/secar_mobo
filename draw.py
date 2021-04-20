@@ -1,3 +1,4 @@
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python3.9
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -19,7 +20,7 @@ print(df)
 df["x"] = 0
 df["avg_y0"] = 0
 df["avg_y1"] = 0
-df["resol_max"] = 0
+df["resol_max"] = 1000000
 df["xwidth_e_min"] = 1000000
 df["xangle_e_min"] = 1000000
 df["xangle_xwidth_min"] = 1000000
@@ -48,6 +49,7 @@ fig, axs = plt.subplots(4,3)
 plot_x, plot_y = 0,0
 axs[plot_y,plot_x].plot(df["x"],df["resol_max"],color="red",linestyle="dashed")
 axs[plot_y,plot_x].set_title('best resolution')
+axs[plot_y,plot_x].axes.set_yscale("log")
 plot_x += 1
 axs[plot_y,plot_x].plot(df["x"],df["xwidth_e_min"],color="blue",linestyle="dashed")
 axs[plot_y,plot_x].set_title('best xwidth_e')
@@ -78,9 +80,10 @@ for i in range(7):
     plot_x += 1
 
 #df2 = pd.read_csv('test40_0.5_0.5_gaussian_0.15.csv')
-axs[plot_y,plot_x] = df['resol'].plot.hist(ax=axs[plot_y,plot_x],bins=20)
+axs[plot_y,plot_x] = df.loc[df["resol"]<1e5]['resol'].plot.hist(ax=axs[plot_y,plot_x],bins=20)
 #axs[plot_y,plot_x].axes.yaxis.set_label("resol")
 axs[plot_y,plot_x].axes.set_yscale("log")
+axs[plot_y,plot_x].axes.set_xscale("log")
 axs[plot_y,plot_x].set_title("hist of resol")
 print(np.average(df['resol']))
 fig.tight_layout()
