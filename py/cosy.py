@@ -6,41 +6,52 @@ import os, shutil
 import subprocess as commands
 import re
 from numpy.random import random as rng
-from numpy import array, append
+from numpy import array, append, zeros, isnan
 
-qNom = array([-0.39773, 0.217880+0.001472, 0.242643-0.0005+0.000729, -0.24501-0.002549, 0.1112810+0.00111, 0.181721-0.000093+0.00010-0.000096, -0.0301435+0.0001215] )
-fNom = array([-870.9084099103394, 0.01625617474106655, 0.02579740767554017, 0.0020116413429212])
-qNom = array([1,1,1,1,1,1,1] )
-qNew = array([1.00311026,1.02485471,0.86210439,0.71888156,1.06544479,0.98006624,0.70365153])
-#qNew = array([0.77403563,0.90112332,1.24112697,1.95036434,1.80219943,0.67776703,0.84913223])
-#qNew = array([-0.319612, 0.198440, 0.221305,-0.179820, 0.090087, 0.194583,-0.040515])
+fNom = array([256.5588046909630, 0.2579740767554017E-001])
+fNom = array([255.8823693915960, 0.2579740767554017E-001,374.8469454403801, 0.2258636266940250])
+#fNom = array([255.8823693915960,0.2579740767554017E-001,373.3145173506128,0.2258636266940250,386.4836031051735,0.3032627082174342])
+qNom = zeros(15)+1
 
-# Function that runs cosy given field gradients and outputs resolution at FP3. 
-# Output is written in file temp-results
-def cosyrun(qs=qNom):
+PYGMO_DIR = '/mnt/home/herman67/cosy/pygmo/'
+FOX_DIR = PYGMO_DIR + 'fox/'
+
+def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     input_len = len(qs)
     if (len(qNom)-input_len>0):
         for i in range(len(qNom)-input_len):
             qs = append(qs,qNom[i+input_len])
-    [q1s, q2s, q3s, q4s, q5s, q6s, q7s] = qs
-    rand = rng()
-    cosy_input = '20Ne1.18-3.5umCFoil.fox'
+    [q1s, q2s, q3s, q4s, q5s, q6s, q7s, q8s, q9s, q10s, q11s, q12s, q13s, q14s, q15s] = qs
+    if name==None:
+        rand = rng()
+    else:
+        rand = name
+    cosy_input = FOX_DIR + '20Ne1.18-3.5umCFoil_4f_10WC.fox'
     text = None
     with open(cosy_input, 'r') as f:
         text = f.readlines()
 
-    start_line = 563
+    start_line = 561
     for i in range(len(qs)):
         text[i+start_line] = "Q{0}:= {1};\n".format(i+1,qs[i])
 
-    cosyFilename = 'pygmoCosy'+str(rand)+'.fox'
+    cosyFilename = directory + 'pygmoCosy'+str(rand)+'.fox'
+#    print(cosyFilename)
     while os.path.exists(cosyFilename):
         rand = rng()
-        cosyFilename = 'pygmoCosy'+str(rand)+'.fox'
-    lisFilename = 'pygmoCosy'+str(rand)+'.lis'
+        cosyFilename = directory + 'pygmoCosy'+str(rand)+'.fox'
+    lisFilename = directory + 'pygmoCosy'+str(rand)+'.lis'
     # creating input file
     with open(cosyFilename, 'w') as f:
         f.writelines(text)
+    return cosyFilename, lisFilename
+
+
+# Function that runs cosy given field gradients and outputs resolution at FP3. 
+# Output is written in file temp-results
+def cosyrun(qs=qNom):
+
+    cosyFilename, lisFilename = write_fox(qs)
     
     #Removing files from older runs
 #    failure, output = commands.getstatusoutput(cmd)
@@ -51,17 +62,30 @@ def cosyrun(qs=qNom):
     output = commands.run(['cosy',cosyFilename], capture_output=True)
     stripped = output.stdout.strip()
 #    print(stripped.split())
-    resol = (stripped.split())
+    resol1 = (stripped.split())[:2]
+#    resol2 = (stripped.split())[-4:-2]
+    resol3 = (stripped.split())[-2:]
+    resol = [resol1[0],resol1[1],resol3[0],resol3[1]]
+    print(stripped)
     print(resol)
     for i in range(len(resol)):
-        resol[i] = float(resol[i])
-        if i == 0:
-            if resol[i] < 0:
-                resol[i] = fNom[i]/resol[i]
+        try: 
+            resol[i] = float(resol[i])
+        except:
+            if i in [0,2,4]:
+                resol[i] = float(1e-9)
             else:
-                resol[i] = max(resol[i],100000)
-        else:
+                resol[i] = float(1e9)
+        if i in [0,2,4]:
+            resol[i] = fNom[i]/resol[i]
+            if isnan(resol[i]):
+                resol[i] = float(1e-9)
+                resol[i] = fNom[i]/resol[i]
+        else:    
             resol[i] = resol[i]/fNom[i]
+            if isnan(resol[i]):
+                resol[i] = float(1e9)
+                resol[i] = resol[i]/fNom[i]
     print(resol)            
     commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
@@ -82,7 +106,7 @@ def cosyrun(qs=qNom):
     
 
 if __name__ == "__main__":
-    print(cosyrun(qNew))
+    print(cosyrun(qNom))
 
 
 

@@ -1,0 +1,666 @@
+INCLUDE 'COSY' ;
+PROCEDURE RUN ;
+{SEC_2WD_fields_clean, final optimized SECAR, 9/16/2014, GB}
+{Incorporating DF design results, latest update 6/14/2016 GB}
+{Incorporated DF design results for B7 B8, 6/18/2016 GB}
+{Dipole pole face curvature}
+{Included E_field of WF, 6/20/2016 GB}
+{Includes B5 exit design of DF, 4/26/2017 GB}
+{Includes corrected alignments, 11/1/2018 GB}
+{Incl. modif.of feed through of WF2 calc. by DF, 11/07/2019 GB}
+{File mofified for 87Kr(alpha,n)90Sr, 2.74 MeV/u, 31+,dE=3%, 20 mrad}
+{Introduced scaling factor SC to allow different Brho, 11/25/2019 GB}
+{Trying to split up portions of optics, 12/29/2020 CAM}
+
+VARIABLE B1N 1 7;
+VARIABLE B1S1 1 7; VARIABLE B1S2 1 7;
+VARIABLE B2S1 1 7; VARIABLE B2S2 1 7;
+VARIABLE B3S1 1 7; VARIABLE B3S2 1 7;
+VARIABLE B4S1 1 7; VARIABLE B4S2 1 7;
+VARIABLE B5S1 1 7; VARIABLE B5S2 1 7;
+VARIABLE B6S1 1 7; VARIABLE B6S2 1 7;
+VARIABLE B7S1 1 7; VARIABLE B7S2 1 7;
+VARIABLE B8S1 1 7; VARIABLE B8S2 1 7;
+
+{Wien filter higher order components}
+VARIABLE NE1 1 4;
+VARIABLE NM1 1 4;
+
+VARIABLE NE2 1 4; {to accommodate E-field, WF2 feed through modif. by DF}
+
+VARIABLE WV 1;
+VARIABLE WW 1 2;
+VARIABLE CENTER 1;
+VARIABLE NMAX 1;
+
+VARIABLE XX 1;{x_SIZE}
+VARIABLE AX 1;
+VARIABLE YY 1;{Y-SIZE}
+VARIABLE AY 1;
+VARIABLE DE 1;
+
+{Ray definitions}
+VARIABLE SRXX 1; 
+VARIABLE SRAX 1;
+VARIABLE SRYY 1;
+VARIABLE SRAY 1;
+VARIABLE SRDE 1;
+
+VARIABLE MRESOL_P1 1;
+VARIABLE MRESOL_P3 1;
+
+VARIABLE NX 1;
+VARIABLE NA 1;
+VARIABLE NY 1;
+VARIABLE NB 1;
+VARIABLE NE 1;
+
+VARIABLE N1 1;
+VARIABLE N2 1;
+VARIABLE N3 1;
+VARIABLE N4 1;
+VARIABLE N5 1;
+VARIABLE READPARA 1;
+
+{Scaling variable}
+VARIABLE SC 1;
+
+{Section 1 elements}
+VARIABLE Q1 1 ;
+VARIABLE Q2 1 ;
+VARIABLE HEX1 1 ;
+VARIABLE Q3 1 ;
+VARIABLE Q4 1 ;
+VARIABLE Q5 1 ;
+
+{Section 2 elements}
+VARIABLE HEX2 1 ;
+VARIABLE Q6   1 ;
+VARIABLE Q7   1 ;
+VARIABLE OCT1 1 ; 
+VARIABLE HEX3 1 ;
+
+{Section 3 elements}
+VARIABLE Q8  1;
+VARIABLE Q9  1;
+VARIABLE Q10 1;
+VARIABLE Q11 1; 
+
+{Section 4 elements}
+VARIABLE Q12 1;
+VARIABLE Q13 1;
+VARIABLE Q14 1;
+VARIABLE Q15 1; 
+
+
+{**************** READ_RAY ****************}
+
+PROCEDURE READ_RAY;
+
+VARIABLE SAVEMAP 10000 8;
+SM SAVEMAP;
+UM; CR;
+
+{N1=1 {# of rays: 3} -> -1 0 +1}                    
+{N1=2 {# of rays: 5} -> -2 -1 0 +1 +2}              
+{N1=3 {# of rays: 7} -> -3 -2 -1 0 +1 +2 +3}        
+{N1=4 {# of rays: 9} -> -4 -3 -2 -1 0 +1 +2 +3 +4}  
+
+N1:=1; N2:=3; N3:=1; N4:=1; N5:=2;
+
+LOOP NX 1 2*N1+1;LOOP NA 1 2*N2+1;LOOP NY 1 2*N3+1;LOOP NB 1 2*N4+1;
+LOOP NE 1 2*N5+1;
+
+SRXX:= XX*(NX-(N1+1))/N1;
+SRAX:= AX*(NA-(N2+1))/N2;
+SRYY:= YY*(NY-(N3+1))/N3;
+SRAY:= AY*(NB-(N4+1))/N4;
+SRDE:= DE*(NE-(N5+1))/N5;
+
+IF (((NA-(N2+1))/N2)^2+((NB-(N4+1))/N4)^2+((NE-(N5+1))/N5)^2)<1.01;
+SR SRXX SRAX SRYY SRAY 0 SRDE 0 0 1;
+ENDIF;
+ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;
+
+AM SAVEMAP;
+ENDPROCEDURE;
+
+PROCEDURE SECTION_ONE Q1 Q2 HEX1 Q3 Q4 Q5; 
+
+{Section 1}
+
+FR 3; {Fringe field flag}
+
+
+DL 0.80-0.000094; {z}                                        {DL1}
+
+TA -0.0212 0.0070; {Pitch Yaw}
+RA 0.0019; {Roll}
+SA 0.000028 0.000074; {x, y}
+M5 0.250 (-0.40033)*Q1*SC (0.004682124)*Q1*SC 0 (-0.00325713)*Q1*SC 0 0.055; {Q1+Hex}
+SA -0.000028 -0.000074;
+RA -0.0019;
+TA 0.0212 -0.0070;
+
+DL 0.19+0.00105+0.000094-0.00004; {z}                         {DL2}
+
+TA 0.0119 0.0072;       {Pitch, Yaw}
+RA 0.0038; 		        {Roll}
+SA 0.00002 0.000005; 	{x, y}
+MQ 0.2979 (0.219852)*Q2*SC 0.068;      						  {Q2} 
+SA -0.00002 -0.000005; 	{-x, -y}
+RA -0.0038; 			{-Roll}
+TA -0.0119 -0.0072;     {-Pitch, -Yaw}
+
+DL 0.58-0.000125+0.00105+0.00004 ;                             {DL3}  
+
+MC 1.25 22.51145 0.030 B1N B1S1 B1S2 7;                    		{B1}   
+
+DL 1.00-0.000125-0.00006-0.000073 ;                            {DL4}
+
+MC 1.25 22.5121 0.030 B1N B2S1 B2S2 7;              			{B2}
+
+DL 0.77-0.00006-0.000073;                                      {DL5}
+
+DL 0.40-0.000027;                                              {DL6}
+
+TA -0.0165 0.0048; {Pitch, Yaw}
+RA -0.0055; {Roll}
+SA 0.000011 0.00002; {x, y}
+MH 0.26 (0.010178531)*SC*HEX1 0.11;                 			  {HEX1}
+TA 0.0165 -0.0048; {Pitch, Yaw}
+RA 0.0055; {Roll}
+SA -0.000011 -0.00002; {x, y}
+
+DL 0.27+0.00005+0.000027+0.000037;                             {DL7}
+
+TA -0.0147 -0.0009; {Pitch, Yaw}
+RA 0.0037; {Roll}
+SA 0.000003 -0.000002; {x, y}
+MQ 0.3499 (0.2428)*SC*Q3 0.11;									{Q3}
+TA 0.0147 0.0009; {Pitch, Yaw}
+RA -0.0037; {Roll}
+SA -0.000003 0.000002; {x, y}
+
+DL 0.35+0.00005+0.00165-0.000037-0.00002;                       {DL8}
+
+TA 0.0168 0.0040; {Pitch, Yaw}
+RA 0.0054; {Roll}
+SA -0.000047 -0.000002; {x, y}
+M5 0.3467 (-0.2476)*SC*Q4 0 0 0 0 0.08;							{Q4}
+TA -0.0168 -0.0040; {Pitch, Yaw}
+RA -0.0054; {Roll}
+SA 0.000047 0.000002; {x, y}
+
+DL 0.21+0.00165+0.0017+0.00002-0.000031;                         {DL9}
+
+TA -0.0367 -0.0012; {Pitch, Yaw}
+RA 0.0223; {Roll}
+SA -0.000012 -0.000005; {x, y}
+MQ 0.3466 (0.1119)*SC*Q5 0.06;									{Q5}
+TA 0.0367 0.0012; {Pitch, Yaw}
+RA -0.0223; {Roll}
+SA 0.000012 0.000005; {x, y}
+
+DL 0.145+0.0017+0.000031 ;                                       {DL10}  
+
+PS 0.01;
+
+ENDPROCEDURE;
+
+PROCEDURE SECTION_TWO HEX2 Q6 Q7 HEX3 OCT1;
+
+{Section 2}
+
+DL 0.185 ;                                                        {DL11}
+
+DL 0.17-0.00035 ;                                                 {DL12} 
+
+MC 1.25 22.5+0.0321 0.05 B1N B3S1 B3S2 7;                          {B3}
+
+DL 0.51-0.00035-0.00192-0.00088;                                  {DL13}
+
+MC 1.25 22.5+0.0807{-0.012} 0.05 B1N B4S1 B4S2 7;                  {B4}
+
+DL 0.30-0.00088-0.000097 ;                                        {DL14}
+
+TA -0.0198 -0.0103; {Pitch, Yaw}
+RA -0.0121; {Roll}
+SA -0.000028 -0.000023; {x, y}
+M5 0.26 0 (0.010382102)*SC*HEX2 0 0 0 0.12;						 {HEX2}
+TA 0.0198 0.0103; {Pitch, Yaw}
+RA 0.0121; {Roll}
+SA 0.000028 0.000023; {x, y}
+
+DL 0.27+0.000097;                                                  {DL15}
+
+
+DL 0.27+0.0001+0.000007;                                           {DL16}
+
+TA 0.0068 -0.0021; {Pitch, Yaw}
+RA 0.0016; {Roll}
+SA -0.000035 0.000012; {x, y}
+MQ 0.3398 (0.181602)*SC*Q6 0.14; 									{Q6}
+TA -0.0068 0.0021; {Pitch, Yaw}
+RA -0.0016; {Roll}
+SA 0.000035 -0.000012; {x, y}
+
+DL 0.20+0.0001-0.00005-0.000007+0.000066 ;                          {DL17}
+
+TA 0.0013 0.0096; {Pitch, Yaw}
+RA 0.0039; {Roll}
+SA -0.000028 0.00005; {x, y}
+MQ 0.3401 (-0.030042)*SC*Q7 0.13 ;         						    {Q7}
+TA -0.0013 -0.0096; {Pitch, Yaw}
+RA -0.0039; {Roll}
+SA 0.000028 -0.00005; {x, y}
+
+DL 0.50-0.00005-0.000066 ;                                           {DL18}
+
+{FC 1=dipole, 1/2=entrance/exit, 1/2=magn/elect, a1...a6}
+
+FC 1 1 1 -0.16 1.603 -0.0105 0.015 -0.0226 0.0038; {entr,magnet dipole}
+FC 1 2 1 -0.16 1.603 -0.0105 0.015 -0.0226 0.0038; {exit,magnet dipole}
+
+FC 1 1 2 -0.167 1.874 0.246 -0.052 0.0142 0.066;{entr, elect dipole}
+FC 1 2 2 -0.167 1.874 0.246 -0.052 0.0142 0.066;{exit, elect dipole}
+
+CB;
+WC 7.0 7.0 2.365 0.11 NE1 NM1 4 ;                           		 {WF1}
+CB;
+
+FD;
+FR 3;
+
+DL 0.50+0.000088; {THIS IS PART OF WF1!}                               {DL19}
+
+TA 0.0118 0.0081; {Pitch, Yaw}
+RA 0.0001; {Roll}
+SA 0.000028 0.000003; {x, y}
+M5 0.26 0 (-0.0087745)*SC*HEX3 0 0 0 0.09;        					   {HEX3}
+TA -0.0118 -0.0081; {Pitch, Yaw}
+RA -0.0001; {Roll}
+SA -0.000028 -0.000003; {x, y}
+
+DL 0.28-0.000088-0.000011;                                             {DL20}
+
+TA -0.0076 -0.0143; {Pitch, Yaw}
+RA 0.0057; {Roll}
+SA 0.000045 -0.000034; {x, y}
+M5 0.26 0 0 (0.031283)*SC*OCT1 0 0 0.09;       						   {OCT1}
+TA 0.0076 0.0143; {Pitch, Yaw}
+RA -0.0057; {Roll}
+SA -0.000045 0.000034; {x, y}
+
+DL 1.75+0.000011;                                                {DL21 true FP location}
+{DL 1.75+0.000011+0.23623; }                                       {DL21 viewer location}
+
+MRESOL_P3 := ABS(ME(1,7))/(2*XX*ME(1,1)); 
+{WRITE 6 'Mass Res.Power in FP2=' MRESOL_P3;}
+
+PS 0.01;
+   
+ENDPROCEDURE;
+
+PROCEDURE SECTION_THREE Q8 Q9 Q10 Q11;
+
+{Section 3}
+
+DL 0.872+0.00012;                                                       {DL22}
+
+TA 0.0181 0.0197; {Pitch, Yaw}
+RA 0.0014; {Roll}
+SA -0.000046 0.000022; {x, y}
+M5 0.25 (-0.14859)*SC*Q8 0 -0.0001*SC*Q8 0 0 0.05; 						{Q8_oct}
+TA -0.0181 -0.0197; {Pitch, Yaw}
+RA -0.0014; {Roll}
+SA 0.000046 -0.000022; {x, y}
+
+DL 0.395-0.00012-0.000023;                                               {DL23}
+
+TA -0.0014 -0.0090; {Pitch, Yaw}
+RA 0.0102; {Roll}
+SA 0.000037 0.00005; {x, y}
+M5 0.30 (0.23463)*SC*Q9 0 0.00015*SC*Q9 0 0 0.07;               	    {Q9_oct}
+TA 0.014 0.0090; {Pitch, Yaw}
+RA -0.0102; {Roll}
+SA -0.000037 -0.00005; {x, y}
+
+DL 0.36+0.000023;                                                         {DL24}
+
+MC 1.25 42.5 0.03+0.006 B1N B5S1 B5S2 7;                                  {B5} 
+
+DL 0.35;                                                                  {DL25}
+
+MC 1.25 42.5 0.03+0.006 B1N B6S1 B6S2 7;                                  {B6}
+
+DL 0.83-0.000016 ;                                                        {DL26}
+
+TA -0.0099 -0.0006; {Pitch, Yaw}
+RA 0.0023; {Roll}
+SA -0.000026 0.000011; {x, y}
+M5 0.26 (-0.0335)*SC*Q10 0 0.00005*SC*Q10 0 0 0.09; 					{Q10_oct}
+TA 0.0099 0.0006; {Pitch, Yaw}
+RA -0.0023; {Roll}
+SA 0.000026 -0.000011; {x, y}
+
+DL 0.65+0.000016+0.000208;                                                 {DL27}
+
+TA 0.0184 0.0197; {Pitch, Yaw}
+RA -0.0023; {Roll}
+SA -0.000023 0.000011; {x, y}
+M5 0.34 (0.161549)*SC*Q11 0 0.000125*SC*Q11 0 0 0.12;      				 {Q11_oct}
+TA -0.0184 -0.0197; {Pitch, Yaw}
+RA 0.0023; {Roll}
+SA 0.000023 -0.000011; {x, y}
+
+DL 1.0-0.00028 ;                                                            {DL28}
+
+FC 1 1 1 -0.16 1.603 -0.0105 0.015 -0.0226 0.0038; {entr,magnet dipole}
+FC 1 2 1 -0.16 1.603 -0.0105 0.015 -0.0226 0.0038; {exit,magnet dipole}
+
+{after WF modif.}
+FC 1 1 2  -0.124 1.98 0.186 -0.069 0.01 0.053; {entr, elect dipole}
+FC 1 1 2  -0.124 1.98 0.186 -0.069 0.01 0.053; {entr, elect dipole}
+
+CB;
+
+WC 7.0 7.0 2.365 0.11 NE2 NM1 4 ;                                   		{WF2}
+CB;
+FD;
+FR 3;
+
+DL 4.60;                                                                     {DL29}
+PS 0.01;									   {FP3}
+
+{MRESOL_P3 := ABS(ME(1,7))/(2*XX*ME(1,1)); }
+{WRITE 6 'Mass Res.Power in FP3=' MRESOL_P3;}
+
+ENDPROCEDURE;
+
+
+PROCEDURE SECTION_FOUR Q12 Q13 Q14 Q15;
+
+{SECTION 4}
+
+DL 0.25+0.00115;                                                              {DL30}
+
+MQ 0.2977 -0.1820*SC*Q12 0.07;                                            	  {Q12}
+
+DL 0.30+0.05+0.00115-0.0004;                                                  {DL31}
+
+MQ 0.2992 0.1910*SC*Q13 0.05;                                                 {Q13}
+
+DL 0.66-0.0004;                                                               {DL32}
+
+MC 1.25 55. 0.03 B1N B7S1 B7S2 4;                                             {B7}   
+
+DL 0.68;                                                                      {DL33} 
+
+MC 1.25 55. 0.03 B1N B8S1 B8S2 4;                                             {B8} 
+
+DL 0.86+0.00025;                                                              {DL34}
+
+MQ 0.2995 0.1290*SC*Q14 0.05;                                            	  {Q14}
+
+DL 0.45+0.00025-0.0006;                                                       {DL35}
+
+MQ 0.2988 -0.138*SC*Q15 0.05;                                           	  {Q15}
+
+
+DL 1.21-0.0006;                                                               {DL36}
+ 
+PS 0.01;
+DL 1.1;                                                                       {DL37}
+
+PS 0.01;                         {Detector} 
+
+DL 0.4;            {DL38}  
+PS 0.01;           {FP4}
+
+DL 0.50;           {DL39}
+
+ENDPROCEDURE;
+
+{##############################################################}
+{############### DEFINITION AND COMMAND #######################}
+{##############################################################} 
+OV 4 3 2 ;
+
+WSET 1.5E-3;
+{Optimized Ey- and By-fields, including higher orders}
+{in parentheses are the limits for MRES2 = 750}
+
+NE1(1) := 0;
+NE1(2) := -0.01;
+NE1(3) := 0;
+NE1(4) := 11.0;
+
+NE2(1) := 0.0019;
+NE2(2) := -0.04;
+NE2(3) := 0;
+NE2(4) := 11 ;
+
+NM1(1) := 0;
+NM1(2) := 0.033;
+NM1(3) := 0;
+NM1(4) := -3.8;
+
+{------------------------------------------------------------------}
+XX:=0.00065;
+YY:=0.0018;
+AX:=0.012;
+AY:=0.012;
+DE:=0.0162;
+{------------------------------------------------------------------}
+
+NMAX:=190;
+
+B1S1(1):= {0.19}{0.189}{map}{0.189}0.189;
+B1S1(2):= {0.0025}{0.0036}{map}{0.0025}0.0115;
+B1S1(3):= {0.154}{0.198}{map}{0.252}0.2438;
+B1S1(4):= {0.78}{0.69}{map}{1.1}0.9504;
+
+B1S2(1):= {0.15}{0.150}{map}{0.149}0.1504;
+B1S2(2):= {-0.019}{-0.0022}{map}{-0.0332}-0.0278;
+B1S2(3):= {0.147}{0.209}{map}{0.240}0.1095;
+B1S2(4):= {0.10}{-1.29}{map}{1.65}0.8070;
+
+B2S1(1):= {0.115}{0.115}{map}{0.115}{0.115}0.115;
+B2S1(2):= {0.0125}{0.0244}{map}{0.0154}{0.0017}0.0083;
+B2S1(3):= {0.198}{0.23}{map}{0.28}{0.186}0.180;
+B2S1(4):= {-40.77}{-42.52}{map}{-40.74}{-40.04}-40.15;
+
+B2S2(1):= {0.115}{0.115}{map}{0.114}0.115;
+B2S2(2):= {-0.2448}{-0.2449}{map}{-0.2539}-0.2499;
+B2S2(3):= {1.411}{1.40}{map}{1.526}1.430;
+B2S2(4):= {37.47}{37.57}{map}{38.96}38.34;
+
+{Below enter B3 measured results of final magnet}
+B3S1(1):={map}0.190;
+B3S1(2):={map}1.0541;
+B3S1(3):={map}-9.475;
+B3S1(4):={map}5.54;
+
+B3S2(1):={map}0.115;
+B3S2(2):={map}-0.0499;
+B3S2(3):={map}34.09;
+B3S2(4):={map}52.87;
+
+
+{Start: Report email 8/26/2016, with presence of B3 iron}
+
+B4S1(1):= {spec}{0.19}{0.191}{0.193}{map}0.191;
+B4S1(2):= {spec}{-0.339}{-0.3394}{-0.2990}{map}-0.3390;
+B4S1(3):= {spec}{-5.51}{-5.536}{-5.623}{map}-5.464;
+B4S1(4):= {spec}{-0.84}{-0.48}{-3.19}{map}0.70;
+
+B4S2(1):= {0.19}{0.190}{0.190}{map}0.190;
+B4S2(2):= {-0.030}{-0.0265}{-0.0279}{map}-0.0287;
+B4S2(3):= {-0.364}{-0.347}{-0.376}{map}-0.332;
+B4S2(4):= {-0.15}{0.28}{0.24}{map}0.08;
+
+
+{DF Design settings}
+B5S1(1):= {0.189}{0.190}0.189;
+B5S1(2):= {0.696}{0.6994}0.712;
+B5S1(3):= {-0.953}{-1.220}-0.825;
+B5S1(4):= {-53.}{-50.499}-53.36;
+
+B5S2(1):= {-0.172}{-0.172}{-0.179}{-0.181}-0.180;
+B5S2(2):= {-5.928}{-5.6}{-5.6722}{-5.5503}-5.549;
+B5S2(3):= {-26.5}{0}{4.978}{3.632}3.288;
+B5S2(4):= {-940.}{0}{76.733}{25.066}28.82;
+
+B6S1(1):= {0.197}{0.198}0.198;
+B6S1(2):= {-1.66}{0.0324}0.023;
+B6S1(3):= {-50.0}{0}{-0.238}-0.227;
+B6S1(4):= {0.0}{-3.543}1.02;
+
+B6S2(1):= {0.200}{0.211}0.203;
+B6S2(2):= {-4.00}{-4.5041}-4.13;
+B6S2(3):= {69.}{67.528}67.40;
+B6S2(4):= {0.0}{103.325}52.95;
+
+B7S1(1):= {0}{map}0; 
+B7S1(2):= {0.0036}{map}0.0115;
+B7S1(3):= {0.032}{map}0.066;
+B7S1(4):= {1.98}{map}3.44;
+
+B7S2(1):= {0}{map}0;
+B7S2(2):= {0.003}{map}0.0228;
+B7S2(3):= {0.032}{map}0.036;
+B7S2(4):= {1.98}{map}-1.02;
+
+B8S1(1):= {0}{map}0;
+B8S1(2):= {0}{map}0.0115;
+B8S1(3):= {0}{map}0.066;
+B8S1(4):= {0}{map}3.44;
+
+B8S2(1):= {0}{map}0;
+B8S2(2):= {0}{map}0.0228;
+B8S2(3):= {0}{map}0.036;
+B8S2(4):= {0}{map}-1.02;
+
+
+{This is the reaction that the entire system is scaled to.}
+{RP 206 66*PARA(1) 21*PARA(2) ;} {Brho=0.79974}
+
+RP 12.7208 20*PARA(1) 7*PARA(2);
+
+{{{
+{0.28693} {12.7208=0.63604MeV/u} {0.35878} {thin foil C (0.384um)}
+}}}
+
+SC := 0.32783/0.79974; {Scaling for magnets based on the Brho above}
+
+UM;
+CR {Clears all rays}; UM;
+
+
+Q1:= 1.000;
+Q2:= 1.000;
+Q3:= 1.000;
+Q4:= 1.000;
+Q5:= 1.000;
+Q6:=   1.0000;
+Q7:=   1.0000;
+Q8  := 1.000 ;
+Q9  := 1.000 ;
+Q10 := 1.000 ;
+Q11 := 1.000 ;
+Q12 := 1.000 ;
+Q13 := 1.000 ;
+Q14 := 1.000 ;
+Q15 := 1.000 ;
+
+HEX1:= 1.000;
+HEX2:= 1.0000;
+HEX3:= 1.0000;
+OCT1:= 1.0000;
+
+{Plot the new optics}
+
+UM ; CR ; {clears the rays}
+
+{N1=1 {# of rays: 3} -> -1 0 +1}                    
+{N1=2 {# of rays: 5} -> -2 -1 0 +1 +2}              
+{N1=3 {# of rays: 7} -> -3 -2 -1 0 +1 +2 +3}        
+{N1=4 {# of rays: 9} -> -4 -3 -2 -1 0 +1 +2 +3 +4}  
+
+N1:=1;N2:=3;N3:=1;N4:=1;N5:=2;
+
+LOOP NX 1 2*N1+1;LOOP NA 1 2*N2+1;LOOP NY 1 2*N3+1;LOOP NB 1 2*N4+1;
+LOOP NE 1 2*N5+1;
+
+SRXX:= XX*(NX-(N1+1))/N1;
+SRAX:= AX*(NA-(N2+1))/N2;
+SRYY:= YY*(NY-(N3+1))/N3;
+SRAY:= AY*(NB-(N4+1))/N4;
+SRDE:= DE*(NE-(N5+1))/N5;
+
+IF (((NA-(N2+1))/N2)^2+((NB-(N4+1))/N4)^2+((NE-(N5+1))/N5)^2)<1.01;
+SR SRXX SRAX SRYY SRAY 0 SRDE 0 0 1;
+ENDIF;
+ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;
+
+BP;
+SECTION_ONE Q1 Q2 HEX1 Q3 Q4 Q5;
+SECTION_TWO HEX2 Q6 Q7 HEX3 OCT1;
+
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WV:=(WW(1)-WW(2));
+CENTER := (WW(1)+WW(2))/2;
+
+WRITE 6 (ABS(ME(1,7))/(2*WV));
+WRITE 6 ABS(ME(2,6));
+
+SECTION_THREE Q8 Q9 Q10 Q11;
+
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WV:=(WW(1)-WW(2));
+CENTER := (WW(1)+WW(2))/2;
+
+WRITE 6 (ABS(ME(1,7))/(2*WV));
+WRITE 6 ABS(ME(2,6));
+
+SECTION_FOUR Q12 Q13 Q14 Q15;
+EP;
+
+READ_RAY;
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WV:=(WW(1)-WW(2));
+CENTER := (WW(1)+WW(2))/2;
+
+{WRITE 14 'Image Size X dir' WV;
+WRITE 14 'Image Center X dir' CENTER;}
+
+{WW(1):= VMAX(RAY(3));
+WW(2):= VMIN(RAY(3));
+WV:=(WW(1)-WW(2));
+CENTER := (WW(1)+WW(2))/2;}
+
+{WRITE 14 'Image Size Y dir' WV;
+WRITE 14 'Image Center Y dir' CENTER;
+
+WRITE 14 'FP' 4.0;
+CLOSEF 14;}
+
+{PG -1 -2;
+
+{PP -12 0. 0.;
+PP -12 0. 90.;}
+
+PS -12;}
+
+WRITE 6 (ABS(ME(1,7))/(2*WV));
+{WRITE 6 ABS(ME(1,6));}
+WRITE 6 ABS(ME(2,6));
+{WRITE 6 ABS(ME(1,2));}
+
+ENDPROCEDURE ;
+RUN ;
+END ;
