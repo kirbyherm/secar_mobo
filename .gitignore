@@ -1,1 +1,7 @@
+*__pycache__*
 slurmfiles/
+fox/pygmoCosy*
+output/
+*.png
+*COSY.bin
+*RKLOG.DAT
