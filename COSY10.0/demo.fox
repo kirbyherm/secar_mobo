@@ -1,0 +1,720 @@
+{******************************************************************************
+*                                                                             *
+*                                  demo.fox                                   *
+*                                                                             *
+*                        COSY BEAM PHYSICS DEMO PACKAGE                       *
+*                                                                             *
+*                           PART OF THE COSY SYSTEM                           *
+*                                                                             *
+*                                 VERSION 10.0                                *
+*                                                                             *
+*                           UPDATED IN MARCH, 2017                            *
+*                                                                             *
+*     COPYRIGHT (C) MICHIGAN STATE UNIVERSITY BOARD OF TRUSTEES 1995 - 2017   *
+*     SUBJECT TO LICENSING AGREEMENT - NOT TO BE DISTRIBUTED                  *
+*                                                                             *
+*     DISTRIBUTED BY M. BERZ AND K. MAKINO                                    *
+*     DEPARTMENT OF PHYSICS AND ASTRONOMY                                     *
+*     MICHIGAN STATE UNIVERSITY                                               *
+*     EAST LANSING, MI 48824, USA                                             *
+*     BERZ@MSU.EDU                                                            *
+*     517-884-5583 (PHONE)                                                    *
+*                                                                             *
+******************************************************************************}
+INCLUDE 'COSY' ;
+
+PROCEDURE RUN ; VARIABLE IGR 1 ; VARIABLE IPIC1 1 ; VARIABLE IPIC2 1 ;
+   VARIABLE IDEMO 1 ; VARIABLE IWAIT 1 ; VARIABLE ONESEC 1 ;
+
+   PROCEDURE WAIT TIME ; VARIABLE J 1 ; VARIABLE K 1 ;
+      VARIABLE S 1 ; VARIABLE T 1 ; VARIABLE TIMER 1 ;
+      PROCEDURE WASTE CYCLES ;
+         LOOP J 1 CYCLES ; K := SQRT(1/EXP(K)) ; ENDLOOP ; ENDPROCEDURE ;
+      IF ONESEC=0 ; CPUSEC S ; ONESEC := 100000 ; WASTE ONESEC ; CPUSEC T ;
+         IF (T-S)=0 ; WRITE 6 ' *** Your machine is too fast' ;
+         ELSEIF (T-S)#0 ; ONESEC := ONESEC/(T-S) ; ENDIF ;
+         WASTE ONESEC*(TIME-(T-S)) ;
+      ELSEIF ONESEC#0 ; WASTE ONESEC*TIME ; ENDIF ; ENDPROCEDURE ;
+
+   PROCEDURE HIS X0 X1 Y0 Y1 X Y N YI YA NY F LXY SXYT LXYT P ;
+      VARIABLE HX 1 ; VARIABLE HY 1 ; VARIABLE XN 1 ; VARIABLE YN 1 ;
+      VARIABLE FY 1 ; VARIABLE DX 1 ; VARIABLE I 1 ;
+      GRCOLR 1 P ;
+      FY := (Y1-Y0)/(YA-YI) ; DX := (X1-X0)/N ;
+      HX := (X1-X0)/50 ; HY := (Y1-Y0)/50 ; GRCOLR 1 P ;
+      GRMOVE X1+LXYT(1) Y0              0 P ; GRCHAR SXYT(1) P ;
+      GRMOVE X0-LXYT(2) Y1+(Y1-Y0)*0.15 0 P ; GRCHAR SXYT(2) P ;
+      GRMOVE X0+LXYT(3) Y1+(Y1-Y0)*0.3  0 P ; GRCHAR SXYT(3) P ;
+      LOOP YN Y0 Y1 (Y1-Y0)/NY ; GRMOVE X0-LXY(2) YN 0 P ;
+         GRCHAR SF((YN-Y0)/FY+YI,F(2)) P ; ENDLOOP ; I := 0 ;
+      LOOP XN X0+DX/2 X1 DX ; GRMOVE XN-LXY(1) Y0-(Y1-Y0)*.1 0 P ;
+         I := I+1 ; GRCHAR SF(X(I),F(1)) P ; ENDLOOP ; GRCOLR 3 P ;
+         XN := X0 ; GRMOVE X0 Y0 0 P ; LOOP I 1 N ; YN := Y0+(Y(I)-YI)*FY ;
+         GRDRAW XN YN 0 P ; XN := XN+DX ; GRDRAW XN YN 0 P ;
+         GRDRAW XN Y0 0 P ; ENDLOOP ; GRCOLR 5 P ; GRMOVE X0 Y1 0 P ;
+      GRDRAW X0 Y0 0 P ; GRDRAW X1 Y0 0 P ; LOOP YN Y0 Y1 (Y1-Y0)/NY ;
+         GRMOVE X0 YN 0 P ; GRDRAW X0+HX YN 0 P ; ENDLOOP ;
+      LOOP XN X0+DX/2 X1 DX ; GRMOVE XN Y0 0 P ; GRDRAW XN Y0+HY 0 P ;
+         ENDLOOP ; GRCOLR 1 P ; ENDPROCEDURE ;
+
+   PROCEDURE PIE X0 Y0 R X Y N LX LY0 LY1 S SAB LAB P ; VARIABLE FY 1 ;
+      VARIABLE I 1 ; VARIABLE Y1 1 ; VARIABLE Y2 1 ; VARIABLE RI 1 ;
+      PROCEDURE PART X Y R P1 P2 ; GRMOVE X Y 0 P ; LOOP I P1 P2 2*PI/200 ;
+         GRDRAW X+R*COS(I) Y+R*SIN(I) 0 P ; ENDLOOP ; GRDRAW X Y 0 P ;
+         ENDPROCEDURE ;
+      DEF ; Y1 := 0 ; LOOP I 1 N ; Y1 := Y1+Y(I) ; ENDLOOP ; FY := 2*PI/Y1 ;
+      RI := R/20 ; Y2 := 0 ;
+      LOOP I 1 N ; Y1 := Y2 ; Y2 := Y1+Y(I)*FY ; GRCOLR X(I) P ;
+      PART X0+RI*COS(Y1+(Y2-Y1)/2) Y0+RI*SIN(Y1+(Y2-Y1)/2) R Y1 Y2 ; ENDLOOP ;
+      I := 0 ; LOOP Y1 LY0 LY1-LAB(2) (LY1-LY0-LAB(2))/(N-1) ; I := I+1 ;
+      GRMOVE LX Y1 0 P ; GRCOLR X(I) P ; GRCHAR S(I) P ; ENDLOOP ;
+      GRCOLR 1 P ; GRMOVE X0-R+LAB(1) Y0+R*1.4 0 P ; GRCHAR SAB(1) P ;
+      GRMOVE LX LY1 0 P ; GRCHAR SAB(2) P ; ENDPROCEDURE ;
+
+   PROCEDURE USER ; VARIABLE S 20 10 ; VARIABLE F 10 2 ;
+      VARIABLE X 1 10 ; VARIABLE Y 1 10 ; VARIABLE PLOT 1500 ;
+      VARIABLE LXY 1 2 ; VARIABLE SXYT 60 3 ; VARIABLE LXYT 1 3 ;
+      CLEAR PLOT ; GRCOLR 1 PLOT ; GRMOVE -30 -20 0 PLOT ; GRMOVE 30 20 0 PLOT ;
+      {Procedures in COSY INFINITY}
+      X(1) := 1990 ; Y(1) := 90  ;      X(2) := 1995 ; Y(2) := 193 ;
+      X(3) := 2000 ; Y(3) := 338 ;      X(4) := 2005 ; Y(4) := 452 ;
+      F(1) := '(I4)' ; F(2) := '(I3)' ;
+      LXY(1) := 1.5 ;          LXY(2) := 3 ;
+      SXYT(1) := 'Year' ;      SXYT(2) := ' ' ;
+      SXYT(3) := 'Number of COSY Procedures' ;
+      LXYT(1) := 1 ;      LXYT(2) := 4 ;       LXYT(3) := 0 ;
+      HIS -25 -5 5 15 X Y 4 0 500 5 F LXY SXYT LXYT PLOT ;
+      {Number of Registered Users of COSY INFINITY}
+      X(1) := 1990 ; Y(1) := 33 ;  X(2) := 1995 ; Y(2) := 140 ;
+      X(3) := 2000 ; Y(3) := 550 ; X(4) := 2005 ; Y(4) := 1000 ;
+      F(1) := '(I4)' ; F(2) := '(I4)' ;
+      LXY(1) := 1.5 ; LXY(2) := 3.8 ;
+      SXYT(1) := 'Year' ;  SXYT(2) := ' ' ;
+      SXYT(3) := ' Number of Registered Users' ;
+      LXYT(1) := 1 ;      LXYT(2) := 4 ;       LXYT(3) := -1 ;
+      HIS 5 25 5 15 X Y 4 0 1000 5 F LXY SXYT LXYT PLOT ;
+      {Nationalities of Institutions}
+      X(1) := 7 ; Y(1) := 17 ; S(1) := 'others' ;
+      X(2) := 5 ; Y(2) :=  4 ; S(2) := 'Japan' ;
+      X(3) := 8 ; Y(3) :=  4 ; S(3) := 'Canada' ;
+      X(4) := 6 ; Y(4) :=  6 ; S(4) := 'Russia' ;
+      X(5) := 3 ; Y(5) := 16 ; S(5) := 'Germany' ;
+      X(6) := 2 ; Y(6) := 29 ; S(6) := 'USA' ;
+      SXYT(1) := 'Nationality of Institutions' {using COSY INFINITY'} ;
+      SXYT(2) := 'Legend :' ;      LXY(1) := 3 ;       LXY(2) := 3 ;
+      PIE -7 -12 7 X Y 6 4 -18 -6 S SXYT LXY PLOT ;
+      GRMOVE 13 -20 0 PLOT ; GRCHAR 'current as of 2005' PLOT ;
+      WRITE IPIC1 PLOT ; ENDPROCEDURE ;
+
+   PROCEDURE RESDRAW N IU ; VARIABLE PIC 20000 ; VARIABLE XL 1 ; VARIABLE XR 1 ;
+      VARIABLE YB 1 ; VARIABLE YT 1 ; VARIABLE I 1 ; VARIABLE J 1 ;
+      VARIABLE NX 1 ; VARIABLE NY 1 ; VARIABLE X1 1 ; VARIABLE X2 1 ;
+      VARIABLE Y1 1 ; VARIABLE Y2 1 ; VARIABLE XM 1 ; VARIABLE K 1 ;
+      XL := 0 ; XR := 1 ; YB := 0 ; YT := 1 ; CLEAR PIC ;
+      GRMOVE XL*1.5 YB 0 PIC ; GRMOVE XR*1.5 YT 0 PIC ;
+      LOOP I 1 N ; LOOP J -I I ; NX := J ;
+         IF ((NX>0)+(NX=0))*((NY>0)+(NY=0)) ; NY :=  I-NX ;
+         ELSEIF ((NX>0)+(NX=0))*(NY<0) ;      NY := -I+NX ;
+         ELSEIF (NX<0)*((NY>0)+(NY=0)) ;      NY :=  I+NX ;
+         ELSEIF (NX<0)*(NY<0) ;               NY := -I-NX ; ENDIF ;
+         LOOP K -I+1 I-1 ; X1 := -1 ; X2 := -1 ; Y1 := -1 ; Y2 := -1 ;
+            IF NX#0 ; IF (K/NX>0)*((K/NX<1)+(K/NX=1)) ; X1 := K/NX ; ENDIF ;
+               IF (((K-NY)/NX>0)+((K-NY)/NX=0))*((K-NY)/NX<1) ;
+                  X2 := (K-NY)/NX ; ENDIF ; ENDIF ;
+            IF NY#0 ; IF ((K/NY>0)+(K/NY=0))*(K/NY<1) ; Y1 := K/NY ; ENDIF ;
+               IF ((K-NX)/NY>0)*(((K-NX)/NY<1)+((K-NX)/NY=1)) ;
+                  Y2 := (K-NX)/NY ; ENDIF ; ENDIF ; XM := 0.25 ;
+            IF X1#-1 ; IF Y2#-1 ;
+               GRMOVE X1+XM 0 0 PIC ; GRDRAW 1+XM Y2 0 PIC ;
+               ELSEIF Y1#-1 ; GRMOVE X1+XM 0 0 PIC ; GRDRAW 0+XM Y1 0 PIC ;
+               ELSEIF X2#-1 ; GRMOVE X1+XM 0 0 PIC ; GRDRAW X2+XM 1 0 PIC ;
+               ENDIF ; ENDIF ;
+            IF Y1#-1 ; IF Y2#-1 ;
+               GRMOVE 0+XM Y1 0 PIC ; GRDRAW 1+XM Y2 0 PIC ;
+               ELSEIF X2#-1 ; GRMOVE 0+XM Y1 0 PIC ; GRDRAW X2+XM 1 0 PIC ;
+               ENDIF ; ENDIF ;
+            IF X2#-1 ; IF Y2#-1 ;
+               GRMOVE X2+XM 1 0 PIC ; GRDRAW 1+XM Y2 0 PIC ; ENDIF ; ENDIF ;
+         ENDLOOP ; ENDLOOP ; ENDLOOP ;
+      GRMOVE XL+XM YB 0 PIC ; GRDRAW XL+XM YT 0 PIC ; GRDRAW XR+XM YT 0 PIC ;
+      GRDRAW XR+XM YB 0 PIC ; GRDRAW XL+XM YB 0 PIC ; WRITE IU PIC ;
+      ENDPROCEDURE ;
+
+   PROCEDURE RESONANCE ;
+      WRITE 6 ' Resonance Lines' ' ***************' ' '
+      ' Drawing two-dimensional resonance lines for various frequencies' ;
+      WRITE 6 '    Orders  3 and  5' ;
+      RESDRAW  3 IPIC1 ; RESDRAW  5 IPIC2 ; WAIT 3 ;
+      WRITE 6 '    Orders  7 and  9' ;
+      RESDRAW  7 IPIC1 ; RESDRAW  9 IPIC2 ; WAIT 3 ;
+      WRITE 6 '    Orders 11 and  13' ;
+      RESDRAW 11 IPIC1 ; RESDRAW 13 IPIC2 ; ENDPROCEDURE ;
+
+   PROCEDURE MAGIC_SYSTEM D L SO1 SO2 SO3 ;
+      DL 3.*D ;      MQ L  .08 .05 ;
+      DL D ;         MQ L -.08 .05 ;
+      DL D ;         MO D SO1 .05 ;
+      DL D/2 ;       MO D SO2 .05 ;
+      DL D/2 ;       MO D SO3 .05 ;
+      DL D ;         MQ L  .08 .05 ;
+      DL D ;         MQ L -.08 .05 ;
+      DL 3.*D ;      ENDPROCEDURE ;
+
+   PROCEDURE M1X L ; VARIABLE I 1 ; OV 1 2 0 ; RP .1 4 1 ;
+      SB 0 .05 0 0 .05 0 0 0 0 0 0 ;
+      UM ; CR ; ER 1 4 1 4  1 1 1 1 ; LOOP I 2 17 ; VELSET RCOL I 3 ; ENDLOOP ;
+      BP ; MAGIC_SYSTEM .05 L 0 0 0 ; EP ; PM 6 ; PG IPIC1 IPIC2 ;
+      ENDPROCEDURE ;
+
+   PROCEDURE MAGICTEXT ;
+      WRITE 6 ' ' ' The Magic System' ' ****************' ' '
+      ' is a symmetric beamline in which horizontal and vertical images'
+      ' always occur simultaneously.' ' ' ; ENDPROCEDURE ;
+
+   PROCEDURE MAGIC1 ; VARIABLE L 1 ; MAGICTEXT ; L := .2 ;
+      WRITE 6 ' '
+      ' By changing the length L of the quadrupoles, try to tune the image.'
+      ' Initially, L = .2. Choose values between .1 and .5.' ' ' ;
+      WHILE L#0 ; M1X L ; WRITE 6 ' Please give length L or 0 to exit' ;
+      READ 5 L ; ENDWHILE ; ENDPROCEDURE ;
+
+   PROCEDURE MAGIC3 ; VARIABLE L 1 ; VARIABLE O1 1 ; VARIABLE O2 1 ;
+      VARIABLE O3 1 ; VARIABLE OX 1 ; VARIABLE OY 1 ; VARIABLE I 1 ;
+      WRITE 6 ' ' ' The Magic System' ' '
+      (' Correction of third order aberrations with three octupoles using'&
+       ' the Simplex')
+      ' algorithm. Pictures show image in magnified size of +-1E5 Angstrom.'
+      ' ' ;
+      OV 3 2 0 ; RP .1 4 1 ; L := .2585417203257 ;
+      SB 0 .01 0 0 .01 0 0 0 0 0 0 ;
+      O1 := -1E-2 ; O2 := 2E-2 ; O3 := -1E-2 ;
+      FIT O1 O2 O3 ;
+         UM ; CR ; ER 1 4 1 4  1 1 1 1 ;
+         LOOP I 2 17 ; VELSET RCOL I 3 ; ENDLOOP ;
+         MAGIC_SYSTEM .05 L O1 O2 O3 ; DL -.5E-3 ; BP ; DL .5E-3 ;
+         PS 10E-6 ; DL .5E-3 ; EP ;
+         OX := ABS(MA(1,222))+ABS(MA(1,244)) ;
+         OY := ABS(MA(3,444))+ABS(MA(3,422)) ; PG IPIC1 IPIC2 ;
+         ENDFIT 1E-8 1000 1 OX+OY ;
+      WRITE 6 ' Octupole Strengths O1, O2, O3:' S(O1)&S(O2)&S(O3) ;
+      WRITE 6 ' Sum of third-order Aberrations (Angstrom):'&S((OX+OY)*1E10) ;
+      PM 7 ; ENDPROCEDURE ;
+
+   PROCEDURE MAGIC5 ; VARIABLE L 1 ; VARIABLE O1 1 ; VARIABLE O2 1 ;
+      VARIABLE O3 1 ; VARIABLE OX 1 ; VARIABLE OY 1 ; VARIABLE I 1 ;
+      WRITE 6 ' ' ' The Magic System' ' '
+      (' Evaluating remaining fifth order aberrations after third order'&
+       ' correction.')
+      ' Picture shows image in magnified size of +-1000 Angstrom.' ' ' ;
+      OV 5 2 0 ; RP .1 4 1 ; L := .2585417203257 ;
+      SB 0 .01 0 0 .01 0 0 0 0 0 0 ;
+      O1 := -1.3122814E-2 ; O2 := 2.5323330E-2 ; O3 := -1.3126343E-2 ;
+      UM ; CR ; ER 1 4 1 4  1 1 1 1 ;
+      LOOP I 2 17 ; VELSET RCOL I 3 ; ENDLOOP ;
+      MAGIC_SYSTEM .05 L O1 O2 O3 ; DL -.5E-5 ; BP ; DL .5E-5 ;
+      PS 10E-8 ; DL .5E-5 ; EP ;
+      OX := ABS(MA(1,22222))+ABS(MA(1,22244))+MA(1,24444) ;
+      OY := ABS(MA(3,44444))+ABS(MA(3,44422))+MA(1,42222) ;
+      WRITE 6 ' Sum of fifth-order Aberrations (Angstrom):'&S((OX+OY)*1E10) ;
+      PG IPIC1 IPIC2 ; ENDPROCEDURE ;
+
+   PROCEDURE CONTMAGIC ; MAGICTEXT ;
+      WRITE 6 ' By changing the length L of the quadrupoles,'
+              ' the amount of focusing can be adjusted' ' ' ;
+      WRITE 6 '      L = 0.1   ' ; M1X    .1 ; WAIT 2 ;
+      WRITE 6 '      L = 0.2   ' ; M1X    .2 ; WAIT 2 ;
+      WRITE 6 '      L = 0.3   ' ; M1X    .3 ; WAIT 2 ;
+      WRITE 6 '      L = 0.25  ' ; M1X   .25 ; WAIT 2 ;
+      WRITE 6 '      L = 0.275 ' ; M1X  .275 ; WAIT 2 ;
+      WRITE 6 '      L = 0.26  ' ; M1X   .26 ; WAIT 2 ;
+      WRITE 6 '      L = 0.2585' ; M1X .2585 ; WAIT 10 ;
+      MAGIC3 ; WAIT 10 ; MAGIC5 ; ENDPROCEDURE ;
+
+   PROCEDURE SOLE ; VARIABLE I 1 ; VARIABLE J 1 ;
+      WRITE 6 ' ' ' Two Counter-Rotating Solenoids'
+                  ' ******************************' ' '
+      ' Beams passing through two solenoids, viewed from side and in direction'
+      ' of reference trajectory. Try to understand the second picture!' ' ' ;
+      OV 1 2 0 ; RP 1 1 1 ; CR ;
+      LOOP I -1 1 2 ; LOOP J -1 1 2 ; SR -.03 I*.008  .03 J*.008 0 0 0 0 6 ;
+         ENDLOOP ; ENDLOOP ;
+      LOOP I -1 1 2 ; LOOP J -1 1 2 ; SR  .03 I*.008  .03 J*.008 0 0 0 0 2 ;
+         ENDLOOP ; ENDLOOP ;
+      LOOP I -1 1 2 ; LOOP J -1 1 2 ; SR -.03 I*.008 -.03 J*.008 0 0 0 0 7 ;
+         ENDLOOP ; ENDLOOP ;
+      LOOP I -1 1 2 ; LOOP J -1 1 2 ; SR  .03 I*.008 -.03 J*.008 0 0 0 0 3 ;
+         ENDLOOP ; ENDLOOP ;
+      UM ; BP ; DL 5 ; CMS .1 .1 .8 ; DL 1 ; CMS -.1 .1 .8 ; DL 5.1 ; EP ;
+      PP IPIC1 0 90 ; PP IPIC2 90 90 ; PM 6 ; ENDPROCEDURE ;
+
+   PROCEDURE TRIFIT ;
+      VARIABLE Q1 1 ; VARIABLE Q2 1 ; VARIABLE OBJ 1 ; VARIABLE I 1 ;
+      PROCEDURE TRIPLET A B ;
+         MQ .1 -A .025 ; DL .06 ; MQ .1 B .035 ; DL .06 ; MQ .1 -A .025 ;
+         ENDPROCEDURE ;
+      WRITE 6 ' '
+      ' Fitting a Triplet' ' *****************'
+      ' Symmetric setup to perform stigmatic imaging by adjusting'
+      ' the strengths of quadrupoles using the Simplex algorithm' ' ' ;
+      OV 1 2 0 ; RP 1 1 1 ;
+      SB .05 .05 0 .05 .05 0 0 0 0 0 0 ; Q1 := .2 ; Q2 := .4 ;
+      FIT Q1 Q2 ;
+         UM ; CR ; ER 1 4 1 4  1 1 1 1 ;
+         LOOP I 2 17 ; VELSET RCOL I 3 ; ENDLOOP ;
+         BP ; DL .2 ; TRIPLET Q1 Q2 ; DL .2 ; OBJ := ABS(MA(1,2))+ABS(MA(3,4)) ;
+         PS .035 ; DL .2 ; EP ; WAIT .1 ; PG IPIC1 IPIC2 ;
+         ENDFIT 1E-5 1000 1 OBJ ;
+      WRITE 6 ' Resulting Quadrupole Strengths Q1, Q2,     Objective Function:'
+         S(Q1)&','&S(Q2)&',       '&S(OBJ) ' ' ' Linear Transfer Matrix:' ;
+      DL -.2 ; PM 6 ; ENDPROCEDURE ;
+
+   PROCEDURE TRACK ; VARIABLE IPIC 1 ; VARIABLE J 1 ; VARIABLE NU 1 ;
+      PROCEDURE RING NU K ; VARIABLE M 100 4 ;
+         M(1) :=  COS(NU*2*PI)*MAP(1) + SIN(NU*2*PI)*MAP(2) ;
+         M(2) := -SIN(NU*2*PI)*MAP(1) + COS(NU*2*PI)*MAP(2) ;
+         MAP(1) := M(1) ; MAP(2) := M(2) + K*M(1)*M(1) ; ENDPROCEDURE ;
+      OV 2 1 0 ; RP 1 1 1 ; IPIC := IPIC1 ;
+       WRITE 6 ' ' ' Repetitive Tracking' ' *******************'
+      ' Symplectic Henon map for various tunes from .2 to .4'
+      ' Observe the crossing the 1/4 and 1/3 resonances.' ' ' ;
+      LOOP NU .25 .37 .005 ; UM ; CR ; RING NU 1.1 ;
+         LOOP J 1 9 ; SR  0.1*J 0 0 0 0 0 0 0 1 ; ENDLOOP ;
+         WRITE 6 ' TUNE = '&SF(NU,'(F5.3)') ;
+         TRT 'TRACK, the Henon map with tune '&SF(NU,'(F5.3)') ;
+         TR 500 1 1 2  1.2 1.2 -21 0 IPIC ;
+         IF IPIC=IPIC1 ; IPIC := IPIC2 ; ELSEIF TRUE ; IPIC := IPIC1 ; WAIT 2 ;
+         ENDIF ; ENDLOOP ; ENDPROCEDURE ;
+
+   PROCEDURE SYTRACK ; VARIABLE IPIC 1 ; VARIABLE J 1 ;
+      PROCEDURE SY K ; CR ; LOOP J 1 10 ; SR  0.07*J 0 0 0 0 0 0 0 1 ; ENDLOOP ;
+         TR 600 1  1 2  1 1  K 0  IPIC ; ENDPROCEDURE ;
+      WRITE 6 ' ' ' Repetitive Symplectic Tracking'
+                  ' ******************************'
+      (' Comparing the non-symplectic tracking mode  in 19th order'&
+       ' (first picture)')
+      (' with a variety of symplectic tracking modes in  5th order'&
+       ' (next pictures)') ' '
+      ' Example: 15 deg wedge dipole which has tune of 1/24 and no tune shifts'
+      ' ' ;
+      WRITE 6 ' Without symplectification in 19th order (nearly exact), and:' ;
+         IPIC := IPIC1 ; OV 19 1 0 ; RP 1 1 1 ; UM ; DI 1 15 1 0 0 0 0 ;
+         TRT 'SYTRACK, without symplectification in 19th order' ; SY -21 ;
+      WRITE 6 ' - Without symplectification in  5th order' ;
+         OV  5 1 0 ; RP 1 1 1 ; UM ; DI 1 15 1 0 0 0 0 ;
+         TRT 'SYTRACK, without symplectification in  5th order' ;
+         IPIC := IPIC2 ; SY -21 ; WAIT 5 ;
+      WRITE 6 ' - With Type 3 generating function for nonlinear part of map' ;
+         TRT 'SYTRACK, with type 3 generating function for nonlinear part' ;
+         IPIC := IPIC2 ; SY -13 ; WAIT 5 ;
+      WRITE 6 ' - With Type 3 generating function for whole map' ;
+         TRT 'SYTRACK, with type 3 generating function for whole map' ;
+         IPIC := IPIC2 ; SY  -3 ; WAIT 5 ;
+      WRITE 6 ' - With Type 4 generating function for whole map' ;
+         TRT 'SYTRACK, with type 4 generating function for whole map' ;
+         IPIC := IPIC2 ; SY  -4 ; WAIT 5 ;
+      WRITE 6 ' - With EXPO   generating function for whole map' ;
+         TRT 'SYTRACK, with EXPO generating function for whole map' ;
+         IPIC := IPIC2 ; SY   0 ; WAIT 5 ;
+      ENDPROCEDURE ;
+
+   PROCEDURE SYNFTRACK ; VARIABLE IPIC 1 ; VARIABLE J 1 ;
+      PROCEDURE SY K ; CR ; LOOP J 1 10 ; SR  0.07*J 0 0 0 0 0 0 0 1 ; ENDLOOP ;
+         TR 600 1  1 2  1 1  K 1  IPIC ; ENDPROCEDURE ;
+      WRITE 6 ' ' ' Repetitive Normal Form Tracking'
+                  ' *******************************' ' '
+      (' Comparing the non-symplectic normal form tracking mode in 5th order'&
+       ' (first)')
+      (' with the symplectic normal form tracking mode in 5th order '&
+       ' (next pictures)') ' '
+      ' Example: 15 deg wedge dipole which has tune of 1/24 and no tune shifts'
+      ' ' ;
+      IPIC := IPIC1 ; OV 5 1 0 ; RP 1 1 1 ; UM ; DI 1 15 1 0 0 0 0 ;
+      WRITE 6 ' Without symplectification in 5th order, and' ;
+      TRT 'SYNFTRACK, without symplectification in 5th order' ;
+      SY -21 ;
+      IPIC := IPIC2 ;
+      WRITE 6 ' - With type 3 generating function for nonlinear part of map' ;
+      TRT 'SYNFTRACK, with type 3 generating function for nonlinear part' ;
+      SY -13 ; WAIT 5 ;
+      WRITE 6 ' - With type 4 generating function for whole map' ;
+      TRT 'SYNFTRACK, with type 4 generating function for whole map' ;
+      SY  -4 ; WAIT 5 ;
+      WRITE 6 ' - With EXPO generating function for whole map' ;
+      TRT 'SYNFTRACK, with EXPO   generating function for whole map' ;
+      SY   0 ;
+      ENDPROCEDURE ;
+
+   PROCEDURE NFTWISS ;
+      VARIABLE A 100 2 ; VARIABLE B 100 2 ; VARIABLE G 100 2 ;
+      VARIABLE R 100 2 ; VARIABLE F 100 6 ; VARIABLE MU 100 2 ;
+      WRITE 6 ' ' ' Normal Form and Tune Shifts - Text Only'
+                  ' ***************************************' ' '
+      ' This demo computes the parameter and amplitude tune'
+      ' shifts of a FODO cell using DA Normal Form Theory.' ' '
+      ' Parameters are the energy and a quadrupole strength.'
+      ' The parameter dependent fixed point as well as the'
+      ' parameter dependent twiss parameters are also computed.' ' '
+      ' The results are written to DEMO.OUT:' ;
+      OV 5 2 2 ; RP 1*PARA(1) 1 1 ; UM ;
+      DL .1 ; DI 1 45 .1 0 0 0 0 ; DL .1 ; MQ .1 -.1*PARA(2) .1 ; DL .2 ;
+      WRITE 6 ' - Tune Shifts depending on Parameters' ;
+      TP MU ; WRITE 7 ' Delta Dependent Tunes'         MU(1) MU(2) ;
+      WRITE 6 ' - Tune Shifts Dependent on Emittance' ;
+      TS MU ; WRITE 7 ' Delta and Eps Dependent Tunes' MU(1) MU(2) ;
+      WRITE 6 ' - Courant Snyder Functions Dependent on Parameters' ;
+      GT MAP F MU A B G R ; WRITE 7
+      ' DELTA DEPENDENT FIXED POINT' F(1) F(2) F(3) F(4)
+      ' DELTA DEPENDENT ALPHAS'      A(1) A(2)
+      ' DELTA DEPENDENT BETAS'       B(1) B(2)
+      ' DELTA DEPENDENT GAMMAS'      G(1) G(2)
+      ' DELTA DEPENDENT DAMPINGS'    R(1) R(2) ;
+      ENDPROCEDURE ;
+
+   PROCEDURE PRING ;
+      VARIABLE Q1 1 ; VARIABLE Q2 1 ; VARIABLE Q3 1 ; VARIABLE Q4 1 ;
+      VARIABLE Q5 1 ; VARIABLE Q6 1 ; VARIABLE Q7 1 ; VARIABLE OBJ 1 ;
+      VARIABLE I 1 ; VARIABLE K1 2 ; VARIABLE K2 2 ; VARIABLE K3 2 ;
+      VARIABLE K11 2 ; VARIABLE K21 2 ; VARIABLE X 1 ;
+      VARIABLE R 100 3 ; VARIABLE NU 100 3 ; VARIABLE GAMMA 100 3 ;
+      VARIABLE BETA 100 3 ;  VARIABLE ALPHA 100 3 ;  VARIABLE FIX 100 6 ;
+      VARIABLE RES 200 ; VARIABLE ICOUNT 1 ; VARIABLE EP 1 2 ;
+      PROCEDURE FODO A B C D E F G ;
+         MQ 1 A*X .5*X ; DL 1 ; MH 1 C*X*X .5*X ; DL E ;
+         DI 10 60 .5*X 0 0 0 0 ; DL 1 ; MH 1 D*X*X .5*X ; DL 13 ;
+         MQ 2 B*X .5*X ; DL 1 ; MH 1 F*X*X .5*X ; DL 13 ;
+         DI 10 60 .5*X 0 0 0 0 ; DL 1 ; MH 1 G*X*X .5*X ; DL E ;
+         MQ 1 A*X .5*X ; ENDPROCEDURE ;
+      PROCEDURE FODO3 A B C D E F G ;
+         FODO A B C D E F G ; FODO A B C D E F G ; FODO A B C D E F G ;
+         ENDPROCEDURE ;
+      PROCEDURE PRINGTR LF ;
+         OV 5 2 0 ; FR LF ; RPP 1000 ; UM ; FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ;
+         WRITE 6 '    x-a phase space without y-b coupling' ;
+         CR ; LOOP I 2 9 ; SR .01*I 0 0 0 0 0 0 0 1 ; ENDLOOP ;
+         IF LF=0 ; TRT
+         'PRING, after resonance suppression, x-a without y-b coupling' ;
+         ELSEIF LF=2 ; TRT
+         'PRING, after resonance suppression, x-a without y-b coupling - FR 2' ;
+         ENDIF ;
+         TR 500 5 1 2 .11 .022 -21 0 IPIC1 ;
+         WRITE 6 '    x-a phase space with    y-b coupling' ;
+         CR ; LOOP I 2 9 ; SR .01*I 0 .01*I 0 0 0 0 0 1 ; ENDLOOP ;
+         IF LF=0 ; TRT
+         'PRING, after resonance suppression, x-a with y-b coupling' ;
+         ELSEIF LF=2 ; TRT
+         'PRING, after resonance suppression, x-a with y-b coupling - FR 2' ;
+         ENDIF ;
+         TR 500 5 1 2 .11 .022 -21 0 IPIC2 ;
+         WRITE 7 ' FIXED POINT' ; LOOP I 1 TWOND ; WRITE 7 FIX(I) ;   ENDLOOP ;
+         WRITE 7 ' TUNE' ;        LOOP I 1 ND ;    WRITE 7 NU(I) ;    ENDLOOP ;
+         WRITE 7 ' ALPHA' ;       LOOP I 1 ND ;    WRITE 7 ALPHA(I) ; ENDLOOP ;
+         WRITE 7 ' BETA' ;        LOOP I 1 ND ;    WRITE 7 BETA(I) ;  ENDLOOP ;
+         WRITE 7 ' GAMMA' ;       LOOP I 1 ND ;    WRITE 7 GAMMA(I) ; ENDLOOP ;
+         WRITE 7 ' DETERMINANT' ; LOOP I 1 ND ;    WRITE 7 R(I) ;     ENDLOOP ;
+         WRITE 7 'Q1 := '&SF(Q1,'(E24.17)')&' ;'
+         'Q2 := '&SF(Q2,'(E24.17)')&' ;' 'Q3 := '&SF(Q3,'(E24.17)')&' ;'
+         'Q4 := '&SF(Q4,'(E24.17)')&' ;' 'Q5 := '&SF(Q5,'(E24.17)')&' ;'
+         'Q6 := '&SF(Q6,'(E24.17)')&' ;' 'Q7 := '&SF(Q7,'(E24.17)')&' ;' ;
+         ENDPROCEDURE ;
+      WRITE 6 ' ' ' Design of a Storage Ring'
+                  ' ************************' ' '
+      ' Design your personal 1 GeV proton storage ring'
+      ' In three easy steps ...' ' ' ;
+      WAIT 2 ; WRITE 6 ' 1) Fitting linear achromatic layout' ;
+      WAIT 2 ; WRITE 6 ' 2) Fitting linear tunes' ;
+      WAIT 2 ; WRITE 6 ' 3) Correcting chromaticities' ' ' ;
+      WAIT 2 ; WRITE 6 '    and, as a free bonus item, only for COSY users:';
+      WAIT 2 ; WRITE 6 ' '
+      ' 4) Suppressing third order resonances using DA Normal Form Theory' ;
+      WAIT 5 ; WRITE 6 ' ' ' Let''s go ...' ; WAIT 5 ;
+      Q1 := 0 ; Q2 := 0 ; Q3 := 0 ; Q4 := 0 ; Q5 := 13 ; Q6 := 0 ; Q7 := 0 ;
+      X := .15 ; OV 1 2 1 ; RPP 1000*PARA(1) ; ICOUNT := -1 ;
+      WRITE 6 ' ' ' 1) Fitting linear achromatic layout' ;
+      WRITE 6 ' ' '    Step number '&'  Value of Objective Function' ;
+      FIT Q2 ; UM ; FODO Q1 Q2 Q3 Q4 Q5 Q6 Q7 ;
+         OBJ := ABS(ME(1,5))+ABS(ME(2,5)) ;
+         ICOUNT := ICOUNT + 1 ; IF 1=1 ;
+         WRITE 6 SF(ICOUNT,'(I10)')&'          '&SF(OBJ,'(E20.12)') ; ENDIF ;
+         ENDFIT 1E-7 1000 4 ME(1,5) ME(2,5) ;
+      WAIT 3 ; WRITE 6 ' ' ' 2) Fitting linear tunes' ; ICOUNT := -1 ;
+      WRITE 6 ' ' '    Step number '&'  Value of Objective Function' ;
+      FIT Q1 Q5 ; UM ; FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ;
+         GT MAP FIX NU ALPHA BETA GAMMA R ;
+         K1 := CONS(NU(1)) ; K2 := CONS(NU(2)) ;  OBJ := ABS(REAL(K1)-.65)+
+         ABS(REAL(K2)-.34)+ABS(IMAG(K1))+ABS(IMAG(K2)) ;
+         ICOUNT := ICOUNT + 1 ; IF 1=1 ;
+         WRITE 6 SF(ICOUNT,'(I10)')&'          '&SF(OBJ,'(E20.12)') ; ENDIF ;
+         ENDFIT 1E-7 1000 4 REAL(K1)-.65 REAL(K2)-.34 IMAG(K1) IMAG(K2) ;
+      OV 2 2 1 ; RPP 1000*PARA(1) ; ICOUNT := -1 ;
+      WAIT 3 ; WRITE 6 ' ' ' 3) Correcting chromaticities' ;
+      WRITE 6 ' ' '    Step number '&'  Value of Objective Function' ;
+      FIT Q4 Q6 ; UM ; FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ;
+         GT MAP FIX NU ALPHA BETA GAMMA R ;
+         DAPEE NU(1) 5 K11 ; DAPEE NU(2) 5 K21 ; OBJ := ABS(K11)+ABS(K21) ;
+         ICOUNT := ICOUNT + 1 ; IF 1=1 ;
+         WRITE 6 SF(ICOUNT,'(I10)')&'          '&SF(OBJ,'(E20.12)') ; ENDIF ;
+         ENDFIT 1E-7 1000 4 ABS(K11) ABS(K21) ;
+      WAIT 3 ; OV 1 3 0 ; RPP 1000 ;
+      WRITE 6 ' ' '    Congratulations, great job! Let''s see what you got:' ;
+      WAIT 2 ; WRITE 6 ' ' '    Drawing your personal ring in lab coordinates' ;
+      PTY 50 ; SB 0 .0015 0 0 .00015 0 0 0.005 0 0 0 ;
+      UM ; CR ; ER 1 3 1 2 1 3 1 1 ; BP ;
+      FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ; FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ;
+      EP ; PG IPIC1 IPIC2 ;
+      { WAIT 5 ; WRITE 6 ' ' '    Drawing the envelope in lab coordinates' ;
+      UM ; FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ; SBE 150E-6 40E-6 0 ; WRITE 6
+      ' (NOTE: This warning message is reported'
+      '        because the linear time-energy map is identity.'
+      '  The trace of x-a phase space: '&S(ME(1,1)+ME(2,2))
+      '               y-b phase space: '&S(ME(3,3)+ME(4,4))
+      '               l-d phase space: '&S(ME(5,5)+ME(6,6))&' )' ;
+      UM ; CR ; ENVEL ; BP ; FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ; EP ; PG IPIC1 IPIC2 ;}
+      WAIT 5 ;
+      WRITE 6 ' ' '    Tracking 500 turns before resonance suppression' ' ' ;
+      WAIT 3 ; OV 5 2 0 ; RPP 1000 ; UM ; FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ;
+      WRITE 6 '    x-a phase space without y-b coupling' ;
+      CR ; LOOP I 2 9 ; SR .01*I 0 0 0 0 0 0 0 1 ; ENDLOOP ;
+      TRT 'PRING, before resonance suppression, x-a without y-b coupling' ;
+      TR 500 5 1 2 .11 .022 -21 0 IPIC1 ;
+      WAIT 1 ; WRITE 6 '    x-a phase space with    y-b coupling' ;
+      CR ; LOOP I 2 9 ; SR .01*I 0 .01*I 0 0 0 0 0 1 ; ENDLOOP ;
+      TRT 'PRING, before resonance suppression, x-a with y-b coupling' ;
+      TR 500 5 1 2 .11 .022 -21 0 IPIC2 ;
+      WAIT 5 ; OV 3 2 1 ; RPP 1000*PARA(1) ;  WRITE 6 ' '
+      ' And now for your free bonus item, available exclusively with COSY:' ;
+      WRITE 6 ' '
+      ' 4) Suppressing third order resonances using DA normal form theory' ' '
+      '    Step number '&'  Value of Objective Function' ;
+      ICOUNT := -1 ;
+      FIT Q3 Q7 ; UM ; FODO3 Q1 Q2 Q3 Q4 Q5 Q6 Q7 ; RS RES ;
+         DAPEE RES 133 K1 ; DAPEE RES 134 K2 ; DAPEE RES 234 K3 ;
+         OBJ := ABS(REAL(K1))+ABS(REAL(K2))+ABS(REAL(K3))+ABS(IMAG(K1))
+              +ABS(IMAG(K2))+ABS(IMAG(K3)) ;
+         ICOUNT := ICOUNT + 1 ; IF 1=1 ;
+         WRITE 6 SF(ICOUNT,'(I10)')&'          '&SF(OBJ,'(E20.12)') ; ENDIF ;
+         ENDFIT 1E-7 1000 4 REAL(K1) REAL(K2) REAL(K3) IMAG(K1) IMAG(K2)
+              IMAG(K3) ;
+      WRITE 7 ' RES' RES ;
+      WAIT 3 ;
+      WRITE 6 ' ' '    Tracking 500 turns after resonance suppression' ' ' ;
+      PRINGTR 0 ; WAIT 5 ;
+      WRITE 6 ' ' '    Tracking 500 turns after resonance suppression'
+      '    --- with consideration of fringe fields' ' ' ;
+      PRINGTR 2 ; WAIT 3 ; WRITE 6 ' '
+      '    See, always mind your fringe fields :-)' ; WAIT 2 ; ENDPROCEDURE ;
+
+   PROCEDURE HOBEND ;         {NINTH ORDER COMBINED FUNCTION MAGNET WITH AXIS}
+      VARIABLE T1 1 ; VARIABLE T2 1 ;
+      WRITE 6 ' ' ' High Order Aberrations' ' **********************' ' '
+      ' The aberrations up to ninth order of an inhomogeneous magnet that is'
+      ' mispositioned, tilted, and rotated is computed. The full transfer map'
+      ' is written to DEMO.OUT' ' ' ;
+      OV 9 2 0 ; RP .1 4 1 ;  {OFFSET, AXIS TILT AND AXIS ROTATION}
+      UM ; CPUSEC T1 ; RA .1 ; SA 1E-6 0 ; TA .02 0 ;
+      MS 2 45 .05 .1 .2 .3 .4 .5 ; CPUSEC T2 ; PM 7 ;
+      WRITE 6 ' Done. CPU Time '&SF(T2-T1,'(F8.3)')&' sec'
+      ' Ninth order opening aberration '&S(ME(1,222222222)) ; ENDPROCEDURE ;
+
+   PROCEDURE RECON ;
+      VARIABLE MREC 1000 4 ; VARIABLE RES 1 4 ; VARIABLE RS 1 ; VARIABLE IO 1 ;
+      VARIABLE X 1 7 ; VARIABLE Y 1 7 ; VARIABLE PLOT 1000 ; VARIABLE LXY 1 2 ;
+      VARIABLE SXYT 60 3 ; VARIABLE LXYT 1 3 ; VARIABLE F 10 2 ;
+      PROCEDURE SPEC ; UM ; DL 10 ; DI 10 90 1.5 0 0 0 0 ; DL 10 ;
+         ENDPROCEDURE ;
+      WRITE 6 ' '
+      ' Spectrograph Aberrations and Trajectory Reconstruction'
+      ' ******************************************************' ' '
+      ' The picture shows a 90 degree dipole operated as a simple spectrograph.'
+      ' The effects of the horrendous aberrations can be eliminated almost'
+      ' completely with DA trajectory reconstruction.' ' ' ;
+      OV 7 3 0 ; RP 1 1 1 ; PTY 3 ; SB 2E-3 .1 0 1E-2 .1 0 .1 .03 0 0 0 ;
+      CR ; ER 1 7 1 1 1 3 1 1 ;
+      UM ; BP ; SPEC ; PS 1.5 ; DL 5 ; EP ; DL -5 ; PG IPIC1 IPIC2 ;
+      WRITE 6 (' Linear        Energy Resolution '
+         &SF(ABS(ME(1,6)/(ME(1,1)*4E-4)),'(I7)')) ;
+      AR MAP .2E-3 .1 1E-2 .1 .1 .1E-3 500 RS ; X(1) := 1 ; Y(1) := RS ;
+      WRITE 6 ' Uncorrected   Energy Resolution '&SF(RS,'(I7)') ' ' ;
+      LOOP IO 2 7 ; CO 7 ; SPEC ;
+         RR MAP .2E-3 .1 1E-2 .1 .1 .1E-3 .1E-3 500 IO MREC RES ; RS := RES(4) ;
+         WRITE 6 (' Reconstructed Energy Resolution '
+            &SF(RS,'(I7)')&'  at order'&SF(IO,'(I2)')) ;
+         X(IO) := IO ; Y(IO) := RES(4) ; ENDLOOP ;
+      F(1) := '(I1)' ; F(2) := '(G8.2)' ; LXY(1) := 0 ; LXY(2) := 3 ;
+      SXYT(1) := 'Order' ; SXYT(2) := ' ' ; SXYT(3) := 'Energy Resolution' ;
+      LXYT(1) := 2 ; LXYT(2) := 4 ; LXYT(3) := 5 ;
+      CLEAR PLOT ; HIS 0 15 0 15 X Y 7 0 25013 3 F LXY SXYT LXYT PLOT ;
+      GRMOVE -5 -5 0 PLOT ; GRMOVE 20 25 0 PLOT ; WRITE IPIC2 PLOT ;
+      ENDPROCEDURE ;
+
+   PROCEDURE ACHROM ; VARIABLE Q1 1 ; VARIABLE Q2 1 ; VARIABLE Q3 1 ;
+      VARIABLE Q4 1 ; VARIABLE Q5 1 ; VARIABLE Q6 1 ; VARIABLE Q7 1 ;
+      VARIABLE Q8 1 ; VARIABLE Q9 1 ; VARIABLE Q10 1 ; VARIABLE Q11 1 ;
+      VARIABLE Q12 1 ; VARIABLE Q13 1 ; VARIABLE Q14 1 ; VARIABLE Q15 1 ;
+      VARIABLE K1 1 ; VARIABLE K2 1 ; VARIABLE K3 1 ; VARIABLE K4 1 ;
+      VARIABLE K5 1 ; VARIABLE K6 1 ; VARIABLE K7 1 ; VARIABLE K8 1 ;
+      VARIABLE K9 1 ; VARIABLE K10 1 ; VARIABLE K11 1 ; VARIABLE K12 1 ;
+      VARIABLE K13 1 ; VARIABLE K14 1 ; VARIABLE K15 1 ; VARIABLE ICOUNT 1 ;
+      VARIABLE OBJ 1 ; VARIABLE CP 1 6 ; VARIABLE MP 20 6 ; VARIABLE F 100 ;
+      VARIABLE A 1 ; VARIABLE B 1 ; VARIABLE C 1 ; VARIABLE D 1 ; VARIABLE E 1 ;
+      VARIABLE H 1 ; VARIABLE I 1 ; VARIABLE J 1 ; VARIABLE K 1 ; VARIABLE L 1 ;
+      VARIABLE M 1 ; VARIABLE N 1 ; VARIABLE O 1 ; VARIABLE P 1 ; VARIABLE Q 1 ;
+      PROCEDURE ELEM H1 I1 B2 J1 D2 K1 L1 E2 M1 N1 D3 O1 B3 P1 Q1 ;
+         DL A ;     M5 .2 0 H H1 0 0 .05 ;
+         DL .15 ;   M5 .2 0 I I1 0 0 .05 ;
+         DL .15 ;   M5 .3 B 0 B2 0 0 .05 ;
+         DL C ;     M5 .2 0 J J1 0 0 .05 ;
+         DL .2 ;    M5 .3 D 0 D2 0 0 .05 ;
+         DL 1.3 ;   M5 .2 0 K K1 0 0 .05 ;
+         DL .15 ;   M5 .2 0 L L1 0 0 .05 ;
+         DL .15 ;   MS 2.5 120 .05 E 0 E2 0 0 ;
+         DL .15 ;   M5 .2 0 M M1 0 0 .05 ;
+         DL .15 ;   M5 .2 0 N N1 0 0 .05 ;
+         DL 1.3 ;   M5 .3 D 0 D3 0 0 .05 ;
+         DL .2 ;    M5 .2 0 O O1 0 0 .05 ;
+         DL C ;     M5 .3 B 0 B3 0 0 .05 ;
+         DL .15 ;   M5 .2 0 P P1 0 0 .05 ;
+         DL .15 ;   M5 .2 0 Q Q1 0 0 .05 ;
+         DL A ;     ENDPROCEDURE ;
+      PROCEDURE ELEMENT H1 I1 B2 J1 D2 K1 L1 E2 M1 N1 D3 O1 B3 P1 Q1 ;
+         H := -0.63442999399410914E-03 ; I :=  0.35849778883085884E-02 ;
+         J := -0.62172237919820468E-02 ; K := -0.12111775089531677E-02 ;
+         L :=  0.76126955855597718E-02 ; M :=  0.38184829772440064E-02 ;
+         N :=  0.36821780485959266E-02 ; O := -0.67592688599692077E-02 ;
+         P := -0.16113483485781342E-02 ; Q :=  0.46860772500223482E-02 ;
+         ELEM H1 I1 B2 J1 D2 K1 L1 E2 M1 N1 D3 O1 B3 P1 Q1 ; ENDPROCEDURE ;
+      PROCEDURE ELEMENTR H1 I1 B2 J1 D2 K1 L1 E2 M1 N1 D3 O1 B3 P1 Q1 ;
+         Q := -0.63442999399410914E-03 ; P :=  0.35849778883085884E-02 ;
+         O := -0.62172237919820468E-02 ; N := -0.12111775089531677E-02 ;
+         M :=  0.76126955855597718E-02 ; L :=  0.38184829772440064E-02 ;
+         K :=  0.36821780485959266E-02 ; J := -0.67592688599692077E-02 ;
+         I := -0.16113483485781342E-02 ; H :=  0.46860772500223482E-02 ;
+         ELEM H1 I1 B2 J1 D2 K1 L1 E2 M1 N1 D3 O1 B3 P1 Q1 ; ENDPROCEDURE ;
+      WRITE 6 ' ' ' Fitting a Four Cell Third Order Achromat'
+                  ' ****************************************' ' '
+      ' In a four cell system, fifteen parameters are adjusted to minimize the'
+      ' sum of absolute values of fifteen Lie coefficients.' ; WAIT 5 ;
+      A :=  0.17135375134425488E+00 ; B :=  0.18649849349898465E+00 ;
+      C :=  0.22461177847527484E+00 ; D := -0.26717665950055660E+00 ;
+      E :=  0.39845531733645401E+00 ;
+      Q1 := .01 ; Q2 := .01 ; Q3 := .01 ; Q4 := .01 ; Q5 := .01 ; Q6 := .01 ;
+      Q7 := .01 ; Q8 := .01 ; Q9 := .01 ; Q10 := .01 ; Q11 := .01 ; Q12 := .01 ;
+      Q13 := .01 ; Q14 := .01 ; Q15 := .01 ;
+      OV 3 3 0 ; RPP 200 ;  ICOUNT := -1 ;
+      WRITE 6 ' ' '    Step number '&'  Value of Objective Function' ;
+      FIT Q1 Q2 Q3 Q4 Q5 Q6 Q7 Q8 Q9 Q10 Q11 Q12 Q13 Q14 Q15 ;
+         UM ; ELEMENT Q1 Q2 Q3 Q4 Q5 Q6 Q7 Q8 Q9 Q10 Q11 Q12 Q13 Q14 Q15 ;
+         MLF MAP CP MP F -1 ;
+         DAPEE F 1122 K1  ; DAPEE F 1144 K2  ; DAPEE F 1234 K3  ;
+         DAPEE F 2222 K4  ; DAPEE F 2233 K5  ; DAPEE F 2244 K6  ;
+         DAPEE F 3344 K7  ; DAPEE F 4444 K8  ; DAPEE F 2266 K9  ;
+         DAPEE F 4466 K10 ; DAPEE F 1111 K11 ; DAPEE F 1133 K12 ;
+         DAPEE F 3333 K13 ; DAPEE F 1166 K14 ; DAPEE F 3366 K15 ;
+         OBJ := ABS(K1)+ABS(K2)+ABS(K3)+ABS(K4)+ABS(K5)+ABS(K6)+ABS(K7)+ABS(K8)
+         +ABS(K9)+ABS(K10)+ABS(K11)+ABS(K12)+ABS(K13)+ABS(K14)+ABS(K15) ;
+         ICOUNT := ICOUNT + 1 ; IF MOD(ICOUNT,5)=0 ;
+         WRITE 6 SF(ICOUNT,'(I10)')&'          '&SF(OBJ,'(E20.12)') ; ENDIF ;
+         ENDFIT 1E-10 1000 4 K1 K2 K3 K4 K5 K6 K7 K8 K9
+                             K10 K11 K12 K13 K14 K15 ;
+      WRITE 6 ' Final value of objective function: '&S(OBJ) ;
+      WRITE 7 ' Optimized Values of Multipole Components:'
+      ' Q1 := '&SF(Q1,'(E24.17)')&' ;' ' Q2 := '&SF(Q2,'(E24.17)')&' ;'
+      ' Q3 := '&SF(Q3,'(E24.17)')&' ;' ' Q4 := '&SF(Q4,'(E24.17)')&' ;'
+      ' Q5 := '&SF(Q5,'(E24.17)')&' ;' ' Q6 := '&SF(Q6,'(E24.17)')&' ;'
+      ' Q7 := '&SF(Q7,'(E24.17)')&' ;' ' Q8 := '&SF(Q8,'(E24.17)')&' ;'
+      ' Q9 := '&SF(Q9,'(E24.17)')&' ;' ' Q10 := '&SF(Q10,'(E24.17)')&' ;'
+      ' Q11 := '&SF(Q11,'(E24.17)')&' ;' ' Q12 := '&SF(Q12,'(E24.17)')&' ;'
+      ' Q13 := '&SF(Q13,'(E24.17)')&' ;' ' Q14 := '&SF(Q14,'(E24.17)')&' ;'
+      ' Q15 := '&SF(Q15,'(E24.17)')&' ;' ;
+      SB .01 .005 0 .01 .005 0 0 0.004 0 0 0 ;
+      UM ; CR ; ER 2 2 2 2 1 3 1 1 ; BP ;
+      ELEMENT Q1 Q2 Q3 Q4 Q5 Q6 Q7 Q8 Q9 Q10 Q11 Q12 Q13 Q14 Q15 ;
+      ELEMENTR Q15 Q14 Q13 Q12 Q11 Q10 Q9 Q8 Q7 Q6 Q5 Q4 Q3 Q2 Q1 ; CB ;
+      ELEMENT Q1 Q2 Q3 Q4 Q5 Q6 Q7 Q8 Q9 Q10 Q11 Q12 Q13 Q14 Q15 ;
+      ELEMENTR Q15 Q14 Q13 Q12 Q11 Q10 Q9 Q8 Q7 Q6 Q5 Q4 Q3 Q2 Q1 ; CB ;
+      WAIT 5 ; WRITE 6 ' ' ' Drawing characteristic rays' ;
+      EP ; PG IPIC1 IPIC2 ; WRITE 6 ' ' ' Third Order Map of the System:' ;
+      DSET 1E-10 ; PM 6 ;  ENDPROCEDURE ;
+
+   PROCEDURE CONTIN ;
+      WHILE 1=1 ;
+         USER      ; WAIT 10 ;
+         RESONANCE ; WAIT 10 ;
+         CONTMAGIC ; WAIT 10 ;
+         SOLE      ; WAIT 10 ;
+         TRIFIT    ; WAIT 10 ;
+         TRACK     ; WAIT 10 ;
+         SYTRACK   ; WAIT 10 ;
+         SYNFTRACK ; WAIT 10 ;
+         NFTWISS   ; WAIT 10 ;
+         PRING     ; WAIT 10 ;
+         HOBEND    ; WAIT 10 ;
+         RECON     ; WAIT 10 ;
+         ACHROM    ; WAIT 10 ;
+         ENDWHILE ; ENDPROCEDURE ;
+
+   OPENF 7 'DEMO.OUT' 'UNKNOWN' ;
+   IGR := 1 ; WHILE IGR#99 ;
+   WRITE 6 ' ' ' '
+   '     COSY INFINITY Beam Physics Demos'
+   '  ======================================' ' '
+   '     Analyzing your System to calibrate COSY''s timers';
+      WAIT 1 ; IWAIT := NINT(100*ONESEC/4.98E6) ;
+      WRITE 6 ' ' ('     Speed relative to MSU''s Pentium IV 2GHz Systems: '&
+                SI(IWAIT)&' %') ;
+      IF     IWAIT>150 ; WRITE 6 '     ---> Wow, congratulations :-)' ;
+      ELSEIF IWAIT<25 ;  WRITE 6 '     ---> Boy, get a new machine :-(' ;
+      ENDIF ; WRITE 6 ' ' ' '
+   '     Please Specify Graphics:'
+   '      1:  Default Windows/Mac/Linux Screen'
+   '      2:  Direct PostScript to File'
+   '      3:  ASCII to Screen (as a last resort)' ' '
+   '     99:  Quit' ;
+   READ 5 IGR ;
+   IF     IGR=99 ; QUIT 0 ;
+   ELSEIF IGR=1  ; IPIC1 :=  -1 ; IPIC2 :=  -2 ;
+   ELSEIF IGR=2  ; IPIC1 := -10 ; IPIC2 := -10 ;
+   ELSEIF IGR=3  ; IPIC1 :=   6 ; IPIC2 :=   6 ; ENDIF ;
+
+   IDEMO := 1 ; WHILE IDEMO#20 ;
+   WRITE 6 '     Please choose demo number' ' '
+   '      1:  Statistics about COSY INFINITY'
+   '      2:  Graphics Test with Resonance Lines' ' '
+   '      3:  Tuning     the Magic System - First Order'
+   '      4:  Optimizing the Magic System - Third Order'
+   '      5:  Evaluating the Magic System - Fifth Order'
+   '      6:  Two Counter-Rotating Solenoids'
+   '      7:  Fitting a Triplet' ' '
+   '      8:  Repetitive Tracking'
+   '      9:  Repetitive Symplectic Tracking'
+   '     10:  Repetitive Normal Form Tracking'
+   '     11:  Normal Form and Tune Shifts - Text Only' ' '
+   '     12:  Design of a Storage Ring'
+   '     13:  Ninth Order Combined Function Magnet with Errors'
+   '     14:  Spectrograph Aberrations and Trajectory Reconstruction'
+   '     15:  Fitting a Four Cell Third Order Achromat' ' '
+   '     16:  Continuous Run of All Demos' ' '
+   '     20:  Return to the Graphics Menu' ;
+
+   READ  5 IDEMO ; IF IDEMO#20 ;
+      IF     IDEMO=1  ; USER ;
+      ELSEIF IDEMO=2  ; RESONANCE ;
+      ELSEIF IDEMO=3  ; MAGIC1 ;
+      ELSEIF IDEMO=4  ; MAGIC3 ;
+      ELSEIF IDEMO=5  ; MAGIC5 ;
+      ELSEIF IDEMO=6  ; SOLE ;
+      ELSEIF IDEMO=7  ; TRIFIT ;
+      ELSEIF IDEMO=8  ; TRACK ;
+      ELSEIF IDEMO=9  ; SYTRACK ;
+      ELSEIF IDEMO=10 ; SYNFTRACK ;
+      ELSEIF IDEMO=11 ; NFTWISS ;
+      ELSEIF IDEMO=12 ; PRING ;
+      ELSEIF IDEMO=13 ; HOBEND ;
+      ELSEIF IDEMO=14 ; RECON ;
+      ELSEIF IDEMO=15 ; ACHROM ;
+      ELSEIF IDEMO=16 ; CONTIN ; ENDIF ;
+      WRITE 6 ' ' ' Please enter 99 to quit, or 0 or <CR> to continue' ;
+      READ 5 IWAIT ; IF IWAIT=99 ; QUIT 0 ; ENDIF ;
+      ENDIF ;
+   ENDWHILE ;
+
+   ENDWHILE ; CLOSEF 7 ;  ENDPROCEDURE ; RUN ; END ;

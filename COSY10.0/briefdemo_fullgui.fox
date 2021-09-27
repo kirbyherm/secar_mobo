@@ -1,0 +1,109 @@
+{******************************************************************************
+*                                                                             *
+*                            briefdemo_fullgui.fox                            *
+*                                                                             *
+*                          COSY DATA TYPE BRIEF DEMO                          *
+*            with advanced COSY GUI with full, manual adjustments             *
+*                                                                             *
+*                                COSY INFINITY                                *
+*                                 VERSION 10.0                                *
+*                                                                             *
+*                           UPDATED IN MARCH, 2017                            *
+*                                                                             *
+*     COPYRIGHT (C) MICHIGAN STATE UNIVERSITY BOARD OF TRUSTEES 1995 - 2017   *
+*     SUBJECT TO LICENSING AGREEMENT - NOT TO BE DISTRIBUTED                  *
+*                                                                             *
+*     DISTRIBUTED BY M. BERZ AND K. MAKINO                                    *
+*     DEPARTMENT OF PHYSICS AND ASTRONOMY                                     *
+*     MICHIGAN STATE UNIVERSITY                                               *
+*     EAST LANSING, MI 48824, USA                                             *
+*     BERZ@MSU.EDU                                                            *
+*     517-884-5583 (PHONE)                                                    *
+*                                                                             *
+******************************************************************************}
+BEGIN ;
+VARIABLE NO 1 ; VARIABLE NV 1 ; VARIABLE LX 1 ; VARIABLE IU 1 ;
+
+PROCEDURE MAKETITLE STRING ;
+   WRITE IU '\Title' STRING ;
+   WRITE IU '\Center' '\Text' STRING '16' '\NewLine' '\Just' '\Line' ;
+   ENDPROCEDURE ;
+
+PROCEDURE PAUSE ; VARIABLE I 1 ;
+   WRITE IU '\Just' '\Button' 'Click here to continue.' ;
+   WRITE IU '\Show' ; GUIIO IU I ; ENDPROCEDURE ;
+
+PROCEDURE RUN ;
+   VARIABLE X1 LX ; VARIABLE X2 LX ; VARIABLE X3 LX ; VARIABLE NM 1 ;
+   VARIABLE IM LCM(1) ; VARIABLE A 1 ; VARIABLE B 1 ;
+
+   PROCEDURE COSYST ; MAKETITLE '** COSY STrings **' ;
+      X1 := 'Hello World!' ;
+      {Extraction and concatenation}
+      X2 := X1|(7&8) ; X2 := X2&(X1|7)&(X1|LENGTH(X1)) ;
+      WRITE IU '\Console' X2&' '&X1 ;
+      WRITE IU '\Console' ' ' ;
+      WRITE IU '\Console'
+               'The above string was crafted by manipulating ''Hello World!''.';
+      PAUSE ; ENDPROCEDURE ;
+
+   PROCEDURE COSYLO ; MAKETITLE '** COSY LOgicals **' ;
+      X1 := LO(1) ;
+      X2 := LO(0) ;
+      WRITE IU '\Console' '('&ST(X1)&')*('&ST(X2)&') is '&ST(X1*X2) ;
+      WRITE IU '\Console' '('&ST(X1)&')+('&ST(X2)&') is '&ST(X1+X2) ;
+      PAUSE ; ENDPROCEDURE ;
+
+   PROCEDURE COSYCM ; MAKETITLE '** COSY CoMplex numbers **' ;
+      IM := CM(0&1) ;
+      X1 := CM(A&B) ;
+      WRITE IU '\Console' 'IM := CM(0&1) is '&ST(IM)&'  : imaginary unit' ;
+      WRITE IU '\Console' 'X1 := CM(A&B) is '&ST(X1) ;
+      WRITE IU '\Console' ' ' ;
+      WRITE IU '\Console' 'Extracting the real      part of X1: '&ST(X1|1) ;
+      WRITE IU '\Console' 'Extracting the imaginary part of X1: '&ST(X1|2) ;
+      PAUSE ; ENDPROCEDURE ;
+
+   PROCEDURE COSYVE ; MAKETITLE '** COSY VEctors **' ;
+      X1 := A&B ;
+      X2 := X1&X1 ;
+      WRITE IU '\Console' 'X1 := A&B is' X1 ;
+      WRITE IU '\Console' 'X2 := X1&X1 is' X2 ;
+      WRITE IU '\Console' ' ' ;
+      WRITE IU '\Console' 'Extracting the component  3      from X2:' X2|3 ;
+      WRITE IU '\Console' 'Extracting the components 2 to 4 from X2:' X2|(2&4) ;
+      PAUSE ; ENDPROCEDURE ;
+
+   PROCEDURE COSYDA ; MAKETITLE '** COSY DA''s **' ;
+      WRITE IU '\Console' 'DA(1), the 1-st identity, is' DA(1) ;
+      X1 := A+DA(1) ; X2 := B+DA(2) ; X3 := X1-2*SQR(X2) ;
+      WRITE IU '\Console' 'X3 := X1-2*SQR(X2) where X1=A+DA(1), X2=B+DA(2)' X3 ;
+      WRITE IU '\Console' ' ' ;
+      WRITE IU '\Console'
+               'Extracting the (0,1) coefficient from X3: '&ST(X3|(0&1)) ;
+      WRITE IU '\Console' ' ' ;
+      X1 := X3%(-1) ;
+      WRITE IU '\Console' 'Integral   of X3 w.r.t. the 1st variable' X1 ;
+      X2 := X1%1 ;
+      WRITE IU '\Console' 'Derivative of it w.r.t. the 1st variable' X2 ;
+      PAUSE ; ENDPROCEDURE ;
+
+   PROCEDURE COSYCD ; MAKETITLE '** COSY Complex DA''s **' ;
+      WRITE IU '\Console' 'CD(1), the 1-st identity, is' CD(1) ;
+      PAUSE ; ENDPROCEDURE ;
+
+   A := 2 ; B := 3 ; WRITE IU '\Console' 'A='&ST(A)&'  B='&ST(B) ;
+   PAUSE ;
+
+   COSYST ; COSYLO ; COSYCM ; COSYVE ;
+   DAINI NO NV 0 NM ; COSYDA ; COSYCD ;
+
+   ENDPROCEDURE ;
+
+IU := -201 ; {-201: a GUI window output/input instead of the terminal}
+
+NO := 3 ; NV := 2 ;                             {order and dimension of DA etc.}
+LX := VMAX( LST(80) & LCD(NO&NV) ) ;
+WRITE IU '\Console' 'The estimated variable size LX is '&(ST(LX)|(1&8)) ;
+
+RUN ; END ;

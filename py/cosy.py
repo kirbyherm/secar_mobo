@@ -1,4 +1,4 @@
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
+#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
 # nscl servers
@@ -18,7 +18,8 @@ import timeit
 
 # Q1, Q2, B1, B2, HEX1, Q3, Q4, Q5, B3, B4, HEX2, Q6, Q7, HEX3, OCT1, Q8, Q9, B5, B6, Q10, Q11, Q12, Q13, B7, B8, Q14, Q15
 # define the dimensions of the magnet chambers
-magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[146,126],[102,102],[156,104],[156,104],[240,102],[280,110],[280,110],[165,115],[102,102],[100,100],[120,90],[148,66],[148,66],[180,96],[240,91],[140,140],[100,100],[130,60],[130,60],[100,100],[100,100]])
+magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[146,126],[102,102],[156,104],[156,104],[240,102],[280,110],[280,110],[165,115],[102,102],[100,100],[120,90],[148,66],[148,66],[180,96],[240,91],[140,140],[100,100],[130,60],[130,60],[100,100],[100,100]])/2
+print(magnet_dims)
 
 # define the nominal values for the objective function
 fNom = array([215.7997411346150, 237.3677022535934, 0.5090584934220124, 0.05151361676274798])
@@ -33,9 +34,9 @@ qNew = array([1.029116370504024,1.027586221796089,0.948009341322751,0.8465173099
 PYGMO_DIR = '../'
 FOX_DIR = PYGMO_DIR + 'fox/'
 #hpcc servers
-COSY_DIR = '/mnt/home/herman67/cosy/COSY10.0/'
+#COSY_DIR = '/mnt/home/herman67/cosy/COSY10.0/'
 #nscl servers
-#COSY_DIR = '/mnt/simulations/secarml/COSY/'
+COSY_DIR = PYGMO_DIR + 'COSY10.0/'
 
 # write the qvalue array to a fox file for cosy to run
 def write_fox(qs=qNom, name=None, directory=FOX_DIR):
@@ -182,7 +183,7 @@ def cosyrun(qs=qNom):
         if xbound > magnet_dims[i][0] or ybound > magnet_dims[i][1]:
             print(xbound, magnet_dims[i][0], ybound, magnet_dims[i][1])
             resol = array([1e9,1e9,1e9,1e9])         
-            break
+#            break
         resol = [fp2res,fp3res,max_width,beamspotsize]
     print(resol)
     if max(resol) < 1e9:
