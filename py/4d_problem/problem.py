@@ -1,7 +1,7 @@
 from cosy import cosyrun
 from numpy import array, zeros, multiply, power
 
-PYGMO_DIR = '/mnt/home/herman67/cosy/pygmo/'
+PYGMO_DIR = '../../'
 FOX_DIR = PYGMO_DIR + 'fox/'
 OUTPUT_DIR = PYGMO_DIR + 'output/'
 

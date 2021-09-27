@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 import sys, math
 import os, shutil, signal
@@ -17,7 +17,7 @@ import pygmo as pg
 from problem import optimizeRes
 import pandas as pd
 
-os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/latex'
+os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -34,9 +34,65 @@ fNames = [r"{FP2-res}${}^{-1}$",r"FP2-e-xangle",r"FP3-res",r"FP3-e-xangle"]
 script, filename = sys.argv
 optimized_params = 4
 
-def read_pop(filename):
-#    df = pd.read_csv(filename,names=["x0","x1","x2","x3","x4","x5","x6","f0","f1","f2","f3"])
-    magnet_dim = len(pd.read_csv(filename).columns)-optimized_params
+def is_pareto_efficient_simple(costs):
+    """
+    Find the pareto-efficient points
+    :param costs: An (n_points, n_costs) array
+    :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
+    """
+    is_efficient = np.ones(costs.shape[0], dtype = bool)
+    for i, c in enumerate(costs):
+#        print(i,c,is_efficient[i])
+        if is_efficient[i]:
+            is_efficient[is_efficient] = np.any(costs[is_efficient]<c, axis=1)  # Keep any point with a lower cost
+            is_efficient[i] = True  # And keep self
+    return is_efficient
+
+def read_pop_df(filename, pop=None):
+    df = pd.read_hdf(filename)
+    magnet_dim = len(df.columns)-optimized_params
+#    df = df.loc[(df['FP2_res'] < 1.0) & (df['FP2_e_xangle'] < 1.0) & (df['FP3_res'] < 1.0) & (df['FP3_e_xangle'] <1.0)]
+#    costs = df[['FP2_res','FP2_e_xangle','FP3_res','FP3_e_xangle']]
+#    costs = np.array(costs)
+#    pareto = is_pareto_efficient_simple(costs)
+#    df['pareto'] = pareto
+#    print(np.count_nonzero(pareto) )
+#    df = (df.loc[(df['pareto']==True)])
+#    df = df.sort_values(by='FP2_res',ignore_index=True)
+#    df["f0"] = df['f0'] * 1.0 / 4.419411469795324
+#    df['f1'] = df['f1'] * 1.0 / 2.7701491204695756
+#    print(magnet_dim)
+    p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
+    if pop == None:
+        pop = pg.population(p_optimizeRes)
+#    df_2 = df.loc[(df["f0"] < 10) & (df["f1"] < 10) & (df["f2"] < 10) & (df["f3"] < 10)]
+#    df = df_2
+    nrow, ncol = df.shape
+#    print(df)
+    for i in df.index:
+        append=True
+        xs = []
+        for j in range(1,magnet_dim+1):
+            xs.append(df["q"+str(j)][i]) 
+        xs = np.asarray(xs)
+        fs = []
+        for j in range(magnet_dim,ncol+0):
+#            if j > 0:
+#                fs.append(df["f"+str(j)][i]/fNom[j])
+#            else:
+#            if df["f"+str(j)][i] >= 1.0:
+#                append=False 
+#            if df["f"+str(j)][i] < 0 or np.isnan(df["f"+str(j)][i]):
+#                print(df["f"+str(j)][i], i)
+            fs.append(df.iloc[i,j])
+        if append:
+            pop.push_back(xs,f=fs)
+#    print(pop)
+    return pop    
+
+def read_pop(filename, pop=None):
+    df = pd.read_csv(filename,names=["x0","x1","x2","x3","x4","x5","x6","f0","f1","f2","f3"])
+    magnet_dim = len(df.columns)-optimized_params
     quads = []
     for i in range(magnet_dim):
         quads.append("x{}".format(i))
@@ -45,20 +101,19 @@ def read_pop(filename):
     columns.append("f1")
     columns.append("f2")
     columns.append("f3")
-    df = pd.read_csv(filename,names=columns)
+    
 #    df["f0"] = df['f0'] * 1.0 / 4.419411469795324
 #    df['f1'] = df['f1'] * 1.0 / 2.7701491204695756
 #    print(magnet_dim)
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
-    pop = pg.population(p_optimizeRes)
+    if pop == None:
+        pop = pg.population(p_optimizeRes)
 #    df_2 = df.loc[(df["f0"] < 10) & (df["f1"] < 10) & (df["f2"] < 10) & (df["f3"] < 10)]
 #    df = df_2
     nrow, ncol = df.shape
 #    print(df)
     for i in df.index:
-        if i in [0,102,76]:
-            continue
-#    for i in range(nrow):
+        append=True
         xs = []
         for j in range(magnet_dim):
             xs.append(df["x"+str(j)][i]) 
@@ -68,10 +123,13 @@ def read_pop(filename):
 #            if j > 0:
 #                fs.append(df["f"+str(j)][i]/fNom[j])
 #            else:
+            if df["f"+str(j)][i] >= 1.0:
+                append=False 
             if df["f"+str(j)][i] < 0 or np.isnan(df["f"+str(j)][i]):
                 print(df["f"+str(j)][i], i)
             fs.append(df["f"+str(j)][i])
-        pop.push_back(xs,f=fs)
+        if append:
+            pop.push_back(xs,f=fs)
 #    print(pop)
     return pop    
 
@@ -137,38 +195,65 @@ def output_4d_cosy(popi,filename):
 
     hv = pg.hypervolume(popi)
     ref_point = hv.refpoint()
+    ref_point = (1e10,1e10,1e10,1e10) 
     best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
     magnet_dim = len(popi.get_x()[0])
     ndf_champ = []
     sorted_ndf = []
+    sorted_pop = []
+    sorted_xs = []
     for i in ndf[0]:
-        if np.all(np.array(popi.get_f()[i]) < 1) == True:
-            print(popi.get_f()[i])
+        if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
+#            print(popi.get_f()[i])
             ndf_champ.append(i)
     ndf = [ndf_champ]
     for i in ndf[0]:
+        go_next = False
+        if len(sorted_ndf) > 1:
+            for j in range(len(sorted_ndf)):
+                if np.array_equal(popi.get_f()[i],sorted_pop[j]) and np.array_equal(popi.get_x()[i],sorted_xs[j]):
+                    go_next=True
+                    break
+        if go_next:
+            continue            
         if i == ndf[0][0]:
             sorted_ndf.append(i)
+            sorted_pop.append(popi.get_f()[i])
+            sorted_xs.append(popi.get_x()[i])
         else:
             for j in range(len(sorted_ndf)):
                 if j == len(sorted_ndf)-1:
                     sorted_ndf.append(i)
+                    sorted_pop.append(popi.get_f()[i])
+                    sorted_xs.append(popi.get_x()[i])
                     break
                 elif j == 0 and popi.get_f()[i][0] < popi.get_f()[sorted_ndf[j]][0]:
                     sorted_ndf.insert(j,i)
+                    sorted_pop.insert(j,popi.get_f()[i])
+                    sorted_xs.insert(j,popi.get_x()[i])
                     break
                 elif (popi.get_f()[i][0] < popi.get_f()[sorted_ndf[j]][0]) and j>0:
                     if(popi.get_f()[i][0] >= popi.get_f()[sorted_ndf[j-1]][0]):
 #                        print(popi.get_f()[i][0],popi.get_f()[sorted_ndf[j]][0],popi.get_f()[sorted_ndf[j-1]][0])
                         sorted_ndf.insert(j,i)
+                        sorted_pop.insert(j,popi.get_f()[i])
+                        sorted_xs.insert(j,popi.get_x()[i])
                     break 
-    print(ndf[0], sorted_ndf)
+#    print(ndf[0], sorted_ndf)
     
     write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, "4f_FP2_FP3/")
+    count_dups = 0
     for i in range(1,len(sorted_ndf)+1):
         j = sorted_ndf[i-1] 
+        print(popi.get_f()[j])
+        if i > 1:
+            for k in range(i-1):
+                if np.array_equal(sorted_pop[i-1],sorted_pop[k]):
+                    count_dups += 1
+                    break
         write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), i, "4f_FP2_FP3/")
+    print(len(sorted_ndf), count_dups)
     return
 
 
@@ -177,6 +262,7 @@ def plot_2d(popi,filename):
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
     ref_point = hv.refpoint()
+    ref_point = (1e10,1e10,1e10,1e10) 
     best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
 #    print(pg.sort_population_mo(popi.get_f()))
@@ -245,7 +331,8 @@ def plot_4d(popi,filename):
 
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
-    ref_point = hv.refpoint()
+#    ref_point = hv.refpoint()
+    ref_point = (1e10,1e10,1e10,1e10) 
     best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
 #    print(pg.sort_population_mo(popi.get_f()))
@@ -272,7 +359,7 @@ def plot_4d(popi,filename):
 #        axs[plot_y].axvline(x=best_point[0],linestyle="dotted",color="blue")
         axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
         for i in ndf[0]:
-            if np.all(np.array(popi.get_f()[i]) < 1) == True:
+            if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
 #            if np.all(np.array(popi.get_f()[i]) < 1) == True and first:
                 ndf_champ.append(popi.get_f()[i])
                 reduced_ndf.append(i)
@@ -321,21 +408,27 @@ def plot_4d(popi,filename):
     return
 
 def main(filename):
-    popi = read_pop(filename)
+    popi = read_pop_df(filename)
+#    print("started")
+#    popi = read_pop("../../output/output_4f_moead_FP2_FP3_150_40.csv")
+#    for i in range(41,60):
+#        print(i)
+#        popi = read_pop("../../output/output_4f_moead_FP2_FP3_150_{}.csv".format(i), popi)
 #    print(popi)
 #    popi = read_pop("init_pop.csv")
     hv = pg.hypervolume(popi)
-    ref_point = hv.refpoint()
+#    ref_point = hv.refpoint()
+    ref_point = (1e10,1e10,1e10,1e10) 
 #    print(ref_point)
-#    hv.compute(ref_point = ref_point)
-#    print(hv.compute(ref_point = ref_point))
+    hv.compute(ref_point = ref_point)
+    print(hv.compute(ref_point = ref_point))
 #    print(hv.greatest_contributor(ref_point))
 #    print(popi.get_f()[hv.greatest_contributor(ref_point)])
 #    plt.show()
 #    plot_2d(popi,filename)
 #    output_2d_cosy(popi, filename)
     plot_4d(popi,filename)
-#    output_4d_cosy(popi, filename)
+    output_4d_cosy(popi, filename)
 #    plot_2d(popi)
 
 if __name__=='__main__':

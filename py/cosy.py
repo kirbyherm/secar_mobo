@@ -151,6 +151,7 @@ def cosyrun(qs=qNom):
         xbound = max(abs(xmax[i] * 1000),abs(xmin[i] * 1000))
         ybound = max(abs(ymax[i] * 1000),abs(ymin[i] * 1000))
         max_width = max(xbound/magnet_dims[i][0],ybound/magnet_dims[i][1],max_width)
+        print(i, xbound, magnet_dims[i][0], ybound, magnet_dims[i][1])
         if xbound > magnet_dims[i][0] or ybound > magnet_dims[i][1]:
             print(xbound, magnet_dims[i][0], ybound, magnet_dims[i][1])
             resol = array([1e9,1e9,1e9,1e9])         

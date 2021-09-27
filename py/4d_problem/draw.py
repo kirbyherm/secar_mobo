@@ -1,4 +1,4 @@
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python3.9
+#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd

@@ -9,11 +9,9 @@
 #
 # echo -e "version\tn\tmax\tl2norm\ttime" 
 
-start=120
-stop=$(($start+9))
-
-for TOSSES in $(seq $start 1 $stop) 
+for TOSSES in $(seq 0 1 13) 
 do
-  ./draw.py ../output/output_4f_moead_FP2_FP3_225_"$TOSSES".csv
+#  ./draw.py ../../output/output_4f_moead_FP2_FP3_150_"$TOSSES".csv
+  ./cosy_draw.py ./4f_FP2_FP3/pygmoCosy"$TOSSES".fox
 done
 

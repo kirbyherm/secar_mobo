@@ -1,4 +1,4 @@
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python3.9
+#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 import sys, math
 import os, shutil
@@ -18,8 +18,9 @@ qNew = array([1.00311026,1.02485471,0.86210439,0.71888156,1.06544479,0.98006624,
 #qNew = array([-0.319612, 0.198440, 0.221305,-0.179820, 0.090087, 0.194583,-0.040515])
 
 qNew = array([1.973248348851267,3.435842142158499,1.863635914537548,0.263583540331633,2.316445182494209,1.262226405304527,0.493986935739694])
-PYGMO_DIR = '/mnt/home/herman67/cosy/pygmo/'
+PYGMO_DIR = '../../'
 FOX_DIR = PYGMO_DIR + 'fox/'
+COSY_DIR = '/mnt/simulations/secarml/COSY/'
 
 def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     input_len = len(qs)
@@ -36,7 +37,11 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     with open(cosy_input, 'r') as f:
         text = f.readlines()
 
-    start_line = 560
+    start_line = 0 
+    for i in range(len(text)):
+        if "SET MAGNETS" in text[i]:
+            start_line = i+1
+            print(text[i], text[start_line])
     for i in range(len(qs)):
         text[i+start_line] = "Q{0}:= {1};\n".format(i+1,qs[i])
 
