@@ -16,13 +16,12 @@ from numpy.random import random as rng
 from numpy import array, append, zeros, power
 import timeit
 
-# Q1, Q2, B1, B2, HEX1, Q3, Q4, Q5, B3, B4, HEX2, Q6, Q7, HEX3, OCT1, Q8, Q9, B5, B6, Q10, Q11, Q12, Q13, B7, B8, Q14, Q15
+magnet_names = array(["Q1", "Q2", "B1", "B2", "HEX1", "Q3", "Q4", "Q5", "B3", "B4", "HEX2", "Q6", "Q7", "HEX3", "OCT1", "Q8", "Q9", "B5", "B6", "Q10", "Q11", "Q12", "Q13", "B7", "B8", "Q14", "Q15"])
 # define the dimensions of the magnet chambers
 magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[146,126],[102,102],[156,104],[156,104],[240,102],[280,110],[280,110],[165,115],[102,102],[100,100],[120,90],[148,66],[148,66],[180,96],[240,91],[140,140],[100,100],[130,60],[130,60],[100,100],[100,100]])/2
-print(magnet_dims)
 
 # define the nominal values for the objective function
-fNom = array([215.7997411346150, 237.3677022535934, 0.5090584934220124, 0.05151361676274798])
+fNom = array([215.799736819908, 237.367732010562, 1.0181169870596236, 0.051513614843321])
 
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(11)+1
@@ -166,7 +165,9 @@ def cosyrun(qs=qNom):
         if split[i].strip() == "BeamSpotSize":
             beamspotsize_bool = True
 
-
+    # scale factor to account for the beam spot issue
+    #   even the nominal setting is outside the bounds...
+    scale = 4.0
     max_width = 0
     # setup value to be returned, here 4 different objectives
     resol = zeros(4) 
@@ -179,11 +180,11 @@ def cosyrun(qs=qNom):
         xbound = max(abs(xmax[i] * 1000),abs(xmin[i] * 1000))
         ybound = max(abs(ymax[i] * 1000),abs(ymin[i] * 1000))
         max_width = max(xbound/magnet_dims[i][0],ybound/magnet_dims[i][1],max_width)
-        print(i, xbound, magnet_dims[i][0], ybound, magnet_dims[i][1])
-        if xbound > magnet_dims[i][0] or ybound > magnet_dims[i][1]:
-            print(xbound, magnet_dims[i][0], ybound, magnet_dims[i][1])
+        print(i, magnet_names[i], "{:.2f}".format(xbound), magnet_dims[i][0], "{:.2f}".format(ybound), magnet_dims[i][1])
+        if xbound > magnet_dims[i][0] * scale or ybound > magnet_dims[i][1] * scale:
+#            print("{:.2f}".format(xbound), magnet_dims[i][0], "{:.2f}".format(ybound), magnet_dims[i][1])
             resol = array([1e9,1e9,1e9,1e9])         
-#            break
+            break
         resol = [fp2res,fp3res,max_width,beamspotsize]
     print(resol)
     if max(resol) < 1e9:
