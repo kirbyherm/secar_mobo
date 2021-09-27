@@ -1,8 +1,14 @@
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
 
+# make sure above path points to the version of python where you have pygmo installed 
+# nscl servers
+#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
+# hpcc servers
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
+
+#import commands
 import sys, math
 import os, shutil, signal
-#import commands
 import subprocess as commands
 import re
 import random
@@ -20,10 +26,10 @@ import pandas as pd
 script, batch_no = sys.argv
 
 seed = 56448189
-# SGA hyperparameters
+# MOEAD hyperparameters
 generations = 225
-cr_p = 0.9 # probability of crossover, 0.9 by default
-mu_p = 0.7 # probability of mutation, 0.02 by default
+cr_p = 1.0 # crossover parameter, 1.0 by default
+f_p = 0.5 # diff evolution operator parameter, 0.5 by default
 mu_str = "gaussian" # mutation strategy, polynomial by default
 mu_param_m = 0.05
 magnet_dim = 11 
