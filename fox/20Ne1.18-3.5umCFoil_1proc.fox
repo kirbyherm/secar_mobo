@@ -135,8 +135,8 @@ WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
 CENTER := (WW(1)+WW(2))/2;
 
-WRITE 6 'Xmax' WW(1)-CENTER;
-WRITE 6 'Xmin' WW(2)-CENTER;
+WRITE 6 'Xmax' WW(1);
+WRITE 6 'Xmin' WW(2);
 
 ENDPROCEDURE;
 
@@ -148,8 +148,8 @@ WW(2):= VMIN(RAY(3));
 WV:=(WW(1)-WW(2));
 CENTER := (WW(1)+WW(2))/2;
 
-WRITE 6 'Ymax' WW(1)-CENTER;
-WRITE 6 'Ymin' WW(2)-CENTER;
+WRITE 6 'Ymax' WW(1);
+WRITE 6 'Ymin' WW(2);
 
 ENDPROCEDURE;
 

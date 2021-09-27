@@ -558,6 +558,7 @@ UM;
 CR {Clears all rays}; UM;
 
 
+{SET MAGNETS}
 Q1:= 1.000;
 Q2:= 1.000;
 Q3:= 1.000;
@@ -608,6 +609,7 @@ BP;
 SECTION_ONE Q1 Q2 HEX1 Q3 Q4 Q5;
 SECTION_TWO HEX2 Q6 Q7 HEX3 OCT1;
 
+{READ_RAY;}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));

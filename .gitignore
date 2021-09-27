@@ -5,3 +5,4 @@ output/
 *.png
 *COSY.bin
 *RKLOG.DAT
+*.lis
