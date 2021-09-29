@@ -3,6 +3,8 @@ slurmfiles/
 fox/pygmoCosy*
 output/
 *.png
-*COSY.bin
 *RKLOG.DAT
 *.lis
+COSY10.0/*.o
+COSY10.0/cosy
+COSY10.0/cosysh

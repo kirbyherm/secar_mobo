@@ -1,0 +1,208 @@
+{******************************************************************************
+*                                                                             *
+*                               guielements.fox                               *
+*                                                                             *
+*       An overview over all COSY GUI elements and what they look like        *
+*                                                                             *
+*                                COSY INFINITY                                *
+*                                 VERSION 10.0                                *
+*                                                                             *
+*               Originally written by Alexander Wittig in 2010                *
+*                Stylistically changed by Kyoko Makino in 2013                *
+*                            UPDATED IN JULY, 2013                            *
+*                                                                             *
+******************************************************************************}
+BEGIN ;
+VARIABLE BUTTON 100 ; VARIABLE PROGRESS 1 ; VARIABLE TEMP 100 ;
+VARIABLE IN1 100 ; VARIABLE IN2 100 ; VARIABLE IN3 100 ;
+VARIABLE IN4 100 ; VARIABLE IN5 100 ; VARIABLE IN6 100 ;
+VARIABLE IN7 100 ; VARIABLE IN8 100 ; VARIABLE IN9 100 ;
+
+{Set up and show a window with static elements (that don't return values)}
+PROCEDURE STATIC ;
+   WRITE -201 '\Title' 'GUI Elements Demonstration' ;
+   WRITE -201 '\Center' '\Text' 'STATIC GUI ELEMENTS' '16' ;
+   WRITE -201 '\Spacer' 0 30 ;
+   WRITE -201 '\NewLine' '\Just' '\Line' '\NewLine' '\NewLine' ;
+   {\Text}
+   WRITE -201 '\Text' '''\Text'' ''This is the result of a \Text command'''
+              '\NewLine' ;
+   WRITE -201 '\Text' 'This is the result of a \Text command' '\NewLine' ;
+   {\Image}
+   WRITE -201 '\Text' '''\Image'' ''cosy://cosy.png''' '\NewLine' ;
+   WRITE -201 '\Image' 'cosy://cosy.png' '\NewLine' ;
+   {\Align}
+   WRITE -201 '\Text' '''\Right'' ''\Text'' ''The \Align command''' '\NewLine' ;
+   WRITE -201 '\Right' '\Text' 'The \Align command' '\NewLine' ;
+   {\Line}
+   WRITE -201 '\Text' '''\Just'' ''\Line''' '\NewLine' ;
+   WRITE -201 '\Just' '\Line' '\NewLine' ;
+   {\Spacer}
+   WRITE -201 '\Text' '''\Text'' ''...'' ''\Spacer'' 50 50 ''\Text'' ''...'''
+              '\NewLine' ;
+   WRITE -201 '\Text' '...' '\Spacer' 50 50 '\Text' '...' '\NewLine' ;
+   {\Console}
+   WRITE -201 '\Text' '''\Console'' 1&2&3&4&5&6&7 ''This was a vector'''
+              '\NewLine' ;
+   WRITE -201 '\Console' 1&2&3&4&5&6&7 'This was a vector' '\NewLine' ;
+   {\ReadProgress}
+   WRITE -201 '\Text' '''\Just'' ''\ReadProgress'' PROGRESS' '\NewLine' ;
+   WRITE -201 '\Just' '\ReadProgress' PROGRESS '\NewLine' ;
+   {\ReadProgress 2}
+   WRITE -201 '\Text' '''\Just'' ''\ReadProgress''' '\NewLine' ;
+   WRITE -201 '\Just' '\ReadProgress' '\NewLine' ;
+   {\Button}
+   WRITE -201 '\Text' '''\Align'' ''C''' '\NewLine' ;
+   WRITE -201 '\Text' '''\Button'' ''Button 1'' 1' '\NewLine' ;
+   WRITE -201 '\Text' '''\Button'' ''Button 2'' 0' '\NewLine' ;
+   WRITE -201 '\Center' '\Button' 'Button 1' 1 '\Button' 'Button 2' 0
+              '\NewLine' ;
+   {Show window}
+   WRITE -201 '\Show' 0.02 0.1 ; {Show on the left of the screen}
+   ENDPROCEDURE ;
+
+{Set up and show a window with input elements (that do return values)}
+PROCEDURE INPUT ;
+   WRITE -202 '\Title' 'GUI Elements Demonstration' ;
+   WRITE -202 '\Center' '\Text' 'INPUT GUI ELEMENTS' '16' ;
+   WRITE -202 '\Spacer' 0 30 ;
+   WRITE -202 '\NewLine' '\Just' '\Line' '\NewLine' '\NewLine' ;
+   {\ReadField}
+   WRITE -202 '\Text' '''\ReadField'' 99.5' '\NewLine' ;
+   WRITE -202 '\ReadField' 99.5 '\NewLine' ;
+   READ  -202 IN1 ;
+   {\ReadList not editable}
+   WRITE -202 '\Text'
+              '''\ReadList'' ''Option A|Option B|Option C'' ''Option C'''
+              '\NewLine' ;
+   WRITE -202 '\ReadList' 'Option A|Option B|Option C' 'Option C' '\NewLine' ;
+   READ  -202 IN2 ;
+   {\ReadList editable}
+   WRITE -202 '\Text'
+              '''\ReadList'' ''Option A|Option B|Option C'' ''Option X'' 1'
+              '\NewLine' ;
+   WRITE -202 '\ReadList' 'Option A|Option B|Option C' 'Option X' 1 '\NewLine' ;
+   READ  -202 IN3 ;
+   {\ReadOption}
+   WRITE -202 '\Text' '''\ReadOption'' ''Option 1'' 0' '\NewLine' ;
+   WRITE -202 '\Text' '''\ReadOption'' ''Option 2'' 1' '\NewLine' ;
+   WRITE -202 '\ReadOption' 'Option 1' 0 ;
+   READ  -202 IN4 ;
+   WRITE -202 '\ReadOption' 'Option 2' 1 '\NewLine' ;
+   READ  -202 IN5 ;
+   {\ReadCheckBox}
+   WRITE -202 '\Text' '''\ReadCheckBox'' ''Option 1'' 0 ''Tooltip'''
+              '\NewLine' ;
+   WRITE -202 '\ReadCheckBox' 'Option 1' 0 'Tooltip' '\NewLine' ;
+   READ  -202 IN6 ;
+   {\ReadNumber not editable}
+   WRITE -202 '\Text' '''\ReadNumber'' 13 10 20 0.1 0' '\NewLine' ;
+   WRITE -202 '\ReadNumber' 13 10 20 0.1 0 '\NewLine' ;
+   READ  -202 IN7 ;
+   {\ReadNumber editable}
+   WRITE -202 '\Text' '''\ReadNumber'' 25 0 100 1' '\NewLine' ;
+   WRITE -202 '\ReadNumber' 25 0 100 1 '\NewLine' ;
+   READ  -202 IN8 ;
+   {\ReadFileName}
+   WRITE -202 '\Text' '''\ReadFileName'' ''elements.fox''' '\NewLine' ;
+   WRITE -202 '\ReadFileName' 'elements.fox' '\NewLine' ;
+   READ  -202 IN9 ;
+   {Show window}
+   WRITE -202 '\Show' 0.65 0.1 ; {Show to the right of the screen}
+   ENDPROCEDURE ;
+
+{Set up and show the control window with buttons to change behavior}
+PROCEDURE CONTROL ;
+   WRITE -203 '\Title' 'GUI Elements Demonstration' ;
+   WRITE -203 '\Center' '\Text' 'COSY INFINITY GUI CONTROL CENTER' '16' ;
+   WRITE -203 '\Spacer' 0 30 ;
+   WRITE -203 '\NewLine' '\Just' '\Line' '\NewLine' '\NewLine' ;
+   {Controls}
+   WRITE -203 '\Center' '\Text' 'Left: Static elements' '\NewCell' ;
+   WRITE -203 '\Center' '\Text' 'Right: Input elements' '\NewLine' ;
+   WRITE -203 '\Just' '\Button' 'Open left' '\NewCell' ;
+   WRITE -203 '\Just' '\Button' 'Open right' '\NewLine' ;
+   WRITE -203 '\Just' '\Button' 'Close left' '\NewCell' ;
+   WRITE -203 '\Just' '\Button' 'Close right' '\NewLine' ;
+   WRITE -203 '\Just' '\Button' 'Activate left' '\NewCell' ;
+   WRITE -203 '\Just' '\Button' 'Activate right' '\NewLine' ;
+   WRITE -203 '\Just' '\Button' 'Deactivate left' '\NewCell' ;
+   WRITE -203 '\Just' '\Button' 'Deactivate right' '\NewLine' ;
+   WRITE -203 '\Just' '\Button' 'Progress!' '\NewCell' ;
+   WRITE -203 '\Just' '\Button' 'Read!' '\NewLine' ;
+   {Debugging}
+   WRITE -203 '\NewLine' '\Just' '\Line' '\NewLine' '\NewLine' ;
+   WRITE -203 '\Text' 'GUI wide debugger settings:' '\NewLine' ;
+   WRITE -203 '\Just' '\Button' 'Debug on' '\NewCell' ;
+   WRITE -203 '\Just' '\Button' 'Debug off' '\NewLine' ;
+   {Passthrough}
+   WRITE -203 '\NewLine' '\Just' '\Line' '\NewLine' '\NewLine' ;
+   WRITE -203 '\Text' 'GUI passthrough unit:' '\NewLine' ;
+   WRITE -203 '\Just' '\Button' 'Passthrough' '\NewLine' ;
+   WRITE -203 '\Text' 'Warning: Don''t push this button unless you ran the'
+              '\NewLine' ;
+   WRITE -203 '\Text' 'GUI from a console and have access to its standard I/O.'
+              '\NewLine' ;
+   {Quit}
+   WRITE -203 '\NewLine' '\Just' '\Line' '\NewLine' ;
+   WRITE -203 '\Center' '\Button' 'Quit' 1 ;
+   WRITE -203 '\Show' ; {Show centered}
+   ENDPROCEDURE ;
+
+{Set up and show a window with the results from reading from window 2}
+PROCEDURE RESULTS ;
+   WRITE -204 '\Title' 'GUI Elements Demonstration' ;
+   WRITE -204 '\Center' '\Text' 'READ RESULTS' '16' ;
+   WRITE -204 '\Spacer' 0 30 ;
+   WRITE -204 '\NewLine' '\Just' '\Line' '\NewLine' '\NewLine' ;
+   WRITE -204 '\Text' 'The following has been read from the right window:' ;
+   WRITE -204 '\Console'    'ReadField:'    IN1 ;
+   WRITE -204 '\Console' '' 'ReadList1:'    IN2 ;
+   WRITE -204 '\Console' '' 'ReadList2:'    IN3 ;
+   WRITE -204 '\Console' '' 'ReadOption1:'  IN4 ;
+   WRITE -204 '\Console' '' 'ReadOption2:'  IN5 ;
+   WRITE -204 '\Console' '' 'ReadCheckbox:' IN6 ;
+   WRITE -204 '\Console' '' 'ReadNumber1:'  IN7 ;
+   WRITE -204 '\Console' '' 'ReadNumber2:'  IN8 ;
+   WRITE -204 '\Console' '' 'ReadFileName:' IN9 ;
+   GUIIO -204 ; {Using the simple one argument version here to add OK button}
+   WRITE -204 '\Close' ;
+              {Probably also done by the above GUIIO call, but anyway}
+   ENDPROCEDURE ;
+
+
+{Main Program}
+CONTROL ;
+BUTTON := '' ;
+PROGRESS := 51 ;
+
+WHILE BUTTON#'Quit' ;
+   GUIIO -203 BUTTON ;
+   IF     BUTTON='Deactivate left' ;  WRITE -201 '\Deactivate' ;
+   ELSEIF BUTTON='Activate left' ;    WRITE -201 '\Activate' ;
+   ELSEIF BUTTON='Open left' ;        STATIC ;
+   ELSEIF BUTTON='Close left' ;       WRITE -201 '\Close' ;
+   ELSEIF BUTTON='Deactivate right' ; WRITE -202 '\Deactivate' ;
+   ELSEIF BUTTON='Activate right' ;   WRITE -202 '\Activate' ;
+   ELSEIF BUTTON='Open right' ;       INPUT ;
+   ELSEIF BUTTON='Close right' ;      WRITE -202 '\Close' ;
+   ELSEIF BUTTON='Progress!' ;        PROGRESS := PROGRESS + 9 ;
+          IF PROGRESS>100 ; PROGRESS := 0 ; ENDIF ;
+          WRITE -201 '\Set' 1 PROGRESS ; {1 since the progress bar is the first}
+                                   {element that returns a value in that window}
+   ELSEIF BUTTON='Read!' ;            GUIIO -202 TEMP ;
+          IF TEMP#-1 ; RESULTS ; ENDIF ; {-1 is returned if the window was}
+                                      {closed, else 0 (since there's no button)}
+   ELSEIF BUTTON='Debug on' ;         WRITE -201 '\Debug' 3 ;
+                                 {You could write this to any GUI window number}
+   ELSEIF BUTTON='Debug off' ;        WRITE -201 '\Debug' 0 ;
+   ELSEIF BUTTON='Passthrough' ;
+          WRITE -999 'This is the COSY GUI speaking. Now enter something:' ;
+          READ  -999 TEMP ;
+          WRITE -999 'Great, you entered: '&TEMP
+                     'Now return to the GUI CONTROL window.' ;
+          WRITE -203 '\Focus' ;
+   ENDIF ;
+   ENDWHILE ;
+
+END ;

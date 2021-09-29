@@ -1,0 +1,176 @@
+{******************************************************************************
+*                                                                             *
+*                                 guidemo.fox                                 *
+*                                                                             *
+*      A simple example showing how to use all the COSY GUI facilitiess       *
+*                This program uses the picture file coffee.png                *
+*                                                                             *
+*                                COSY INFINITY                                *
+*                                 VERSION 10.0                                *
+*                                                                             *
+*               Originally written by Alexander Wittig in 2010                *
+*                Stylistically changed by Kyoko Makino in 2013                *
+*                            UPDATED IN JULY, 2013                            *
+*                                                                             *
+******************************************************************************}
+BEGIN ;
+VARIABLE I 1 ; VARIABLE J 1 ; VARIABLE TEMP 100 ; VARIABLE BUTTON 100 ;
+VARIABLE PEOPLE 5000 ; VARIABLE DRINK 25 ; VARIABLE WHO 30 ; VARIABLE shot 1 ;
+VARIABLE small 1 ; VARIABLE medium 1 ; VARIABLE large 1 ; VARIABLE bucket 1 ;
+VARIABLE apple 1 ; VARIABLE muffin 1 ; VARIABLE bagle 1 ; VARIABLE yoghurt 1 ;
+VARIABLE banana 1 ; VARIABLE PAY 1 ; VARIABLE TAX 1 ; VARIABLE PIC 100 ;
+
+FUNCTION SS A I1 I2 ; SS := A|(I1&I2) ; ENDFUNCTION ; {Substring}
+
+{To see the COSY error handling in the GUI, uncomment one of the next lines.}
+{OPENF 44 'does-not-exist' 'OLD' ; {Produces a FORTRAN runtime error} }
+{I := TM(1) ; {Produces a COSY runtime error} }
+{QUIT 1 ; {Just quits} }
+
+{Set default values}
+DRINK := 'Cocoa' ; WHO := 'Lupo' ;
+shot := 0 ; small := 0 ; medium := 1 ; large := 0 ; bucket := 0 ;
+apple := 1 ; muffin := 1 ; bagle := 0 ; yoghurt := 0 ; banana := 1 ;
+PAY := 2.5 ; TAX := 6 ; PIC := 'coffee.png' ;
+PEOPLE := 'Totoro|Asterix|Obelix|Goofy' ; BUTTON := 'Yes' ;
+
+{The main program loop}
+WHILE BUTTON='Yes' ;
+   {Define and show the main GUI}
+   WRITE -201 '\Title' 'Alex Coffee House' ;
+   WRITE -201 '\Center' '\Image' 'coffee.png' '\NewLine' ;
+   WRITE -201 '\Center' '\Text' 'Hello and welcome to Alex Coffee House' '16'
+              '\Spacer' 0 50 ;
+   WRITE -201 '\NewLine' '\Just' '\Line' '\NewLine' ;
+   WRITE -201 '\Text' 'What would you like to drink:' '\NewCell' ;
+   WRITE -201 '\Just' ;
+   WRITE -201 '\ReadList' 'Coffee|Tea|Cocoa|Milk|Water|Beer|Wine|Magic Potion'
+              DRINK ;
+   READ  -201 DRINK ;
+   WRITE -201 '\NewLine' ;
+   WRITE -201 '\Text' 'Who''s this drink for?' '\NewCell' ;
+   WRITE -201 '\Just' '\ReadList' PEOPLE WHO 1 ;
+   READ  -201 WHO ;
+   WRITE -201 '\NewLine' '\Text' 'What size would you like:' '\NewCell' ;
+   WRITE -201 '\ReadOption' 'Shot' shot ;
+   READ  -201 shot ;
+   WRITE -201 '\NewLine' '\NewCell' ;
+   WRITE -201 '\ReadOption' 'Small' small ;
+   READ  -201 small ;
+   WRITE -201 '\NewLine' '\NewCell' ;
+   WRITE -201 '\ReadOption' 'Medium' medium ;
+   READ  -201 medium ;
+   WRITE -201 '\NewLine' '\NewCell' ;
+   WRITE -201 '\ReadOption' 'Large' large ;
+   READ  -201 large ;
+   WRITE -201 '\NewLine' '\NewCell' ;
+   WRITE -201 '\ReadOption' 'Bucket' bucket ;
+   READ  -201 bucket ;
+   WRITE -201 '\NewLine' '\NewLine' '\Just' '\Line' '\NewLine' ;
+   WRITE -201 '\Text' 'Extras:' '\NewLine' ;
+   WRITE -201 '\ReadCheckBox' 'Apple' apple 'A healthy choice!' ;
+   READ  -201 apple ;
+   WRITE -201 '\ReadCheckBox' 'Muffin' muffin 'Very tasty!' ;
+   READ  -201 muffin ;
+   WRITE -201 '\ReadCheckBox' 'Bagle' bagle 'A classic!' ;
+   READ  -201 bagle ;
+   WRITE -201 '\ReadCheckBox' 'Yoghurt' yoghurt 'Are you on a diet?' ;
+   READ  -201 yoghurt ;
+   WRITE -201 '\ReadCheckBox' 'Banana' banana 'Monkey see, monkey do!' ;
+   READ  -201 banana ;
+   WRITE -201 '\NewLine' '\NewLine' '\Just' '\Line' '\NewLine' ;
+   WRITE -201 '\Text' 'How much are you willing to pay:' ;
+   WRITE -201 '\NewCell' '\Just' '\Text' '$' ;
+   WRITE -201 '\ReadNumber' PAY 1.5 10 0.1 1 ;
+   READ  -201 PAY ;
+   WRITE -201 '\NewLine' '\Text' 'Your Sales Tax (in %):' ;
+   WRITE -201 '\NewCell' '\Just' ;
+   WRITE -201 '\ReadNumber' TAX 0 100 1 0 ;
+   READ  -201 TAX ;
+   WRITE -201 '\NewLine' '\Text' 'Your favourite picture:' ;
+   WRITE -201 '\NewCell' '\Just' ;
+   WRITE -201 '\ReadFileName' PIC ;
+   READ  -201 PIC ;
+   WRITE -201 '\NewLine' '\NewLine' '\Center' ;
+   WRITE -201 '\Button' 'Errr, no.' '\NewCell' '\Center' ;
+   WRITE -201 '\Button' 'Place order!' 1 ;
+   WRITE -201 '\Show' ;
+
+   {Wait for button and read from GUI}
+   GUIIO -201 BUTTON ;
+   IF BUTTON#'Place order!' ; QUIT 0 ; ENDIF ;
+
+   {Write the results to next window}
+   PEOPLE := PEOPLE&'|'&WHO ; {Append input to list of people for next time}
+   WRITE -201 '\Title' 'Alex Coffee House: Review Order' ;
+   WRITE -201 '\Text' 'Thank you for your order:' '\NewLine' ;
+   WRITE -201 '\Console' 'Here is your order for '&WHO '' ;
+
+   IF     DRINK='Coffe' ; WRITE -201 '\Console' 'Our most awesome Coffe' ;
+   ELSEIF DRINK='Tea' ;   WRITE -201 '\Console'
+                                     'Splendid, old chap! A nice cup of tea' ;
+   ELSEIF DRINK='Cocoa' ; WRITE -201 '\Console' 'Yummy hot cocoa' ;
+   ELSEIF DRINK='Milk' ;  WRITE -201 '\Console' 'A glass of fresh milk' ;
+   ELSEIF DRINK='Water' ; WRITE -201 '\Console' 'Just water' ;
+   ELSEIF DRINK='Beer' ;  WRITE -201 '\Console' 'Fresh German beer' ;
+   ELSEIF DRINK='Wine' ;  WRITE -201 '\Console' 'Wine it is' ;
+   ELSEIF DRINK='Magic Potion' ;
+     IF WHO='Obelix' ;    WRITE -201 '\Console'
+                          'No Obelix, you know you can''t have magic potion!' ;
+     ELSEIF LO(1) ;       WRITE -201 '\Console' 'Getafix'' Magic Potion' ;
+     ENDIF ;
+   ENDIF ;
+
+   IF     shot=1 ;   TEMP:='Shot' ;
+   ELSEIF small=1 ;  TEMP:='Small' ;
+   ELSEIF medium=1 ; TEMP:='Medium' ;
+   ELSEIF large=1 ;  TEMP:='Large' ;
+   ELSEIF bucket=1 ; TEMP:='Bucket' ;
+   ENDIF ;
+
+   WRITE -201 '\Console' 'Size of your beverage: '&TEMP ;
+   TEMP := '' ;
+   IF apple=1 ;   TEMP := TEMP&'apple, ' ;   ENDIF ;
+   IF muffin=1 ;  TEMP := TEMP&'muffin, ' ;  ENDIF ;
+   IF bagle=1 ;   TEMP := TEMP&'bagle, ' ;   ENDIF ;
+   IF yoghurt=1 ; TEMP := TEMP&'yoghurt, ' ; ENDIF ;
+   IF banana=1 ;  TEMP := TEMP&'banana, ' ;  ENDIF ;
+
+   WRITE -201 '\Console'
+             ('On the side, you will get the following: '
+              &SS(TEMP,1,length(TEMP)-2)) '' '' ;
+   WRITE -201 '\Console' 1&2&3&4&5&6&7&8
+             ('This vector was a test of the vector emergency '
+              &'broadcasting network.') ;
+   WRITE -201 '\NewLine' '\Center' '\Image' PIC '\NewLine' ;
+   WRITE -201 '\NewLine' '\NewLine' '\Text'
+              'Please stand by while we freshly prepare your order!' ;
+   WRITE -201 '\NewLine' '\Just' '\ReadProgress' '0' ;
+   WRITE -201 '\Show' ; {Implicitly closes the previous window}
+
+   {Waste some time, like in a real restaurant}
+   TEMP := 1000 ;
+   J := 0 ;
+   LOOP I 1 30000000 ; TEMP := SQR(SQRT(LOG(EXP(TEMP)))) ;
+      IF J#INT(100*I/30000000) ; J := INT(100*I/30000000) ;
+         WRITE -201 '\Set' 1 J ; {Set value of the progress bar}
+         ENDIF ; ENDLOOP ;
+
+   {Present the bill}
+   RECST PAY*(1+TAX/100) '(F5.2)' TEMP ;
+   WRITE -202 '\Text' 'Your order is ready now. This will be $'&TEMP&'.' ;
+   WRITE -202 '\NewLine' '\Text' 'Thanks for stopping by!'
+              '\NewLine' '\NewLine' ;
+   WRITE -202 '\Image' 'cosy://ask.png' ;
+   WRITE -202 '\Text' '  Would you like to place another order?' ;
+   WRITE -202 '\NewLine' '\Center' '\Button' 'Yes' 1 '\Button' 'No' ;
+   WRITE -202 '\Show' ;
+   WRITE -201 '\Deactivate' ;
+
+   {Wait for button}
+   GUIIO -202 BUTTON ;
+   WRITE -202 '\Hide' ;
+   WRITE -201 '\Hide' ;
+   ENDWHILE ;
+
+END ;

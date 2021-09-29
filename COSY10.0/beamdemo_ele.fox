@@ -1,0 +1,26 @@
+{******************************************************************************
+*                                                                             *
+*                              beamdemo_ele.fox                               *
+*                                                                             *
+*                  An example of a sequence of beam elements                  *
+*                  from COSY INFINITY 10.0 Programmer's Manual                *
+*                                                                             *
+*                                COSY INFINITY                                *
+*                                 VERSION 10.0                                *
+*                                                                             *
+*                           UPDATED IN OCTOBER, 2015                          *
+*                                                                             *
+******************************************************************************}
+INCLUDE 'COSY' ;
+PROCEDURE RUN ;
+  OV 5 2 0 ; {order 5, phase space dim 2, # of parameters 0}
+  RP 10 4 2 ; {kinetic energy 10MeV, mass 4 amu, charge 2}
+  UM ;    {sets map to unity}
+  DL .1 ; {drift of length .1 m}
+  MQ .2 .1 .05 ; {focusing quad; length .2 m, field .1 T, aperture .05 m}
+  DL .1 ;
+  MQ .2 -.1 .05 ; {defocusing}
+  DL .1 ;
+  PM 6 ; {prints map to display}
+  ENDPROCEDURE ;
+RUN ; END ;

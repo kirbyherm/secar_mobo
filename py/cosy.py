@@ -13,21 +13,22 @@ import os, shutil
 import subprocess as commands
 import re
 from numpy.random import random as rng
-from numpy import array, append, zeros, power
+from numpy import array, append, zeros, power, isnan
 import timeit
 
 magnet_names = array(["Q1", "Q2", "B1", "B2", "HEX1", "Q3", "Q4", "Q5", "B3", "B4", "HEX2", "Q6", "Q7", "HEX3", "OCT1", "Q8", "Q9", "B5", "B6", "Q10", "Q11", "Q12", "Q13", "B7", "B8", "Q14", "Q15"])
 # define the dimensions of the magnet chambers
-magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[146,126],[102,102],[156,104],[156,104],[240,102],[280,110],[280,110],[165,115],[102,102],[100,100],[120,90],[148,66],[148,66],[180,96],[240,91],[140,140],[100,100],[130,60],[130,60],[100,100],[100,100]])/2
+magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[146,126],[102,102],[156,104],[156,104],[240,102],[280,110],[280,110],[165,115],[102,102],[100,100],[120,90],[148,66],[148,66],[180,96],[240,91],[140,140],[100,100],[130,60],[130,60],[100,100],[100,100]])
 
 # define the nominal values for the objective function
-fNom = array([215.799736819908, 237.367732010562, 1.0181169870596236, 0.051513614843321])
+fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
 
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(11)+1
 
 # define a non nominal qvalue array, if checking the values
-qNew = array([1.029116370504024,1.027586221796089,0.948009341322751,0.846517309969750,0.888012998083179,0.989275012835886,0.919427494202570,0.977212813272792,0.979037350285672, 0.87447623778262, 1.00129050151537])
+qNew = array([0.5924182514791451,-0.8758860089293923,-0.6100796679131815,-0.14615536797341183,0.9770480402400011,-0.7391592447117457,-0.7498637465288235,0.16544225901836773,0.19998299730932922,-0.6100283855003581,-0.25827968836883713])
+qNew = power(2,qNew)
 
 # set working DIR for PYGMO, FOX, COSY
 PYGMO_DIR = '../'
@@ -52,7 +53,7 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     else:
         rand = name
     # get the fox file for the simulation and change the qvalues
-    cosy_input = FOX_DIR + '20Ne1.18-3.5umCFoil_ydims.fox'
+    cosy_input = FOX_DIR + '20Ne1.18-3.5umCFoil_truenom.fox'
     text = None
     with open(cosy_input, 'r') as f:
         text = f.readlines()
@@ -63,7 +64,7 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
         # dummy text line in the fox file that the code searches for to find the qvalue setting
         if "SET MAGNETS" in text[i]:
             start_line = i+1
-            print(text[i], text[start_line])
+#            print(text[i], text[start_line])
     # change the q setttings
     for i in range(len(qs)):
         text[i+start_line] = "Q{0}:= {1};\n".format(i+1,qs[i])
@@ -103,13 +104,11 @@ def cosyrun(qs=qNom):
     split = stripped.split()
 
     # initiate all variables to be read, and bools for the reader to check
-    xmax, xmin = [], []
-    ymax, ymin = [], []
+    xdim, ydim = [], []
     fp2res, fp2espread = 0, 0
     fp3res, fp3espread = 0, 0
     beamspotsize = 0
-    xmax_bool, xmin_bool = False, False
-    ymax_bool, ymin_bool = False, False
+    xdim_bool, ydim_bool = False, False
     fp2res_bool, fp2espread_bool = False, False
     fp3res_bool, fp3espread_bool = False, False
     beamspotsize_bool = False
@@ -119,18 +118,12 @@ def cosyrun(qs=qNom):
     #   the below code will check if the bool is true and if so write the corresponding value and false the bool
     #   in total we parse through all the cosy output and find all the different variables
     for i in range(len(split)):
-        if xmax_bool:
-            xmax.append(float(split[i]))
-            xmax_bool = False
-        if xmin_bool:
-            xmin.append(float(split[i]))
-            xmin_bool = False
-        if ymax_bool:
-            ymax.append(float(split[i]))
-            ymax_bool = False
-        if ymin_bool:
-            ymin.append(float(split[i]))
-            ymin_bool = False
+        if xdim_bool:
+            xdim.append(float(split[i]))
+            xdim_bool = False
+        if ydim_bool:
+            ydim.append(float(split[i]))
+            ydim_bool = False
         if fp2res_bool:
             fp2res = (float(split[i]))
             fp2res_bool = False
@@ -146,14 +139,10 @@ def cosyrun(qs=qNom):
         if beamspotsize_bool:
             beamspotsize = power(float(split[i]),0.5)
             beamspotsize_bool = False
-        if split[i].strip() == "Xmax":
-            xmax_bool = True
-        if split[i].strip() == "Xmin":
-            xmin_bool = True
-        if split[i].strip() == "Ymax":
-            ymax_bool = True
-        if split[i].strip() == "Ymin":
-            ymin_bool = True
+        if split[i].strip() == "Xdim":
+            xdim_bool = True
+        if split[i].strip() == "Ydim":
+            ydim_bool = True
         if split[i].strip() == "FP2Res":
             fp2res_bool = True
         if split[i].strip() == "FP2Espread":
@@ -171,17 +160,18 @@ def cosyrun(qs=qNom):
     max_width = 0
     # setup value to be returned, here 4 different objectives
     resol = zeros(4) 
+    print(qs)
     for i in range(len(magnet_dims)):
-        # if no x-ymax/min values, just return an error run (all 1e9)
-        if len(xmax) == 0 or len(xmin) == 0 or len(ymax) == 0 or len(ymin) == 0:
+        # if no x-ydim values, just return outside constraints (all 1e9)
+        if len(xdim) == 0 or len(ydim) == 0:
             resol = array([1e9,1e9,1e9,1e9])         
             break            
-        # find  
-        xbound = max(abs(xmax[i] * 1000),abs(xmin[i] * 1000))
-        ybound = max(abs(ymax[i] * 1000),abs(ymin[i] * 1000))
+        # find xbound, ybound
+        xbound = (abs(xdim[i])*1000)
+        ybound = (abs(ydim[i])*1000)
         max_width = max(xbound/magnet_dims[i][0],ybound/magnet_dims[i][1],max_width)
-        print(i, magnet_names[i], "{:.2f}".format(xbound), magnet_dims[i][0], "{:.2f}".format(ybound), magnet_dims[i][1])
-        if xbound > magnet_dims[i][0] * scale or ybound > magnet_dims[i][1] * scale:
+#        print(i, magnet_names[i], "{:.2f}".format(xbound), magnet_dims[i][0], "{:.2f}".format(ybound), magnet_dims[i][1])
+        if xbound > magnet_dims[i][0] * scale or ybound > magnet_dims[i][1] * scale or isnan(xbound) or isnan(ybound):
 #            print("{:.2f}".format(xbound), magnet_dims[i][0], "{:.2f}".format(ybound), magnet_dims[i][1])
             resol = array([1e9,1e9,1e9,1e9])         
             break
@@ -211,6 +201,6 @@ if __name__ == "__main__":
     # if running from console, just run the nominal setting
     print(cosyrun(qNom))
     # if running from console, just run the assigned setting
-#    print(cosyrun(qNew))
+    print(cosyrun(qNew))
 
 
