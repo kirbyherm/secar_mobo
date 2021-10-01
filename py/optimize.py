@@ -27,7 +27,7 @@ script, batch_no = sys.argv
 
 seed = 56448189
 # MOEAD hyperparameters
-generations = 225
+generations = 450
 cr_p = 1.0 # crossover parameter, 1.0 by default
 f_p = 0.5 # diff evolution operator parameter, 0.5 by default
 mu_str = "gaussian" # mutation strategy, polynomial by default

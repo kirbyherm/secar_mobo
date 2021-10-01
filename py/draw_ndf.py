@@ -73,6 +73,7 @@ def read_pop(filename,pop=None):
 #            else:
             if df["f"+str(j)][i] < 0 or np.isnan(df["f"+str(j)][i]):
                 print(df["f"+str(j)][i], i)
+                df["f"+str(j)][i] = 1e10
             fs.append(df["f"+str(j)][i])
         if np.all(np.array(fs) < 1) == True or True:
             pop.push_back(xs,f=fs)
