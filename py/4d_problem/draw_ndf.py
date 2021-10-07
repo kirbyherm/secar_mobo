@@ -1,15 +1,8 @@
 #!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
-# make sure above path points to the version of python where you have pygmo installed 
-# nscl servers
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-# hpcc servers
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
-
-
-#import commands
 import sys, math
 import os, shutil, signal
+#import commands
 import subprocess as commands
 import re
 import random
@@ -18,32 +11,64 @@ import matplotlib.pyplot as plt
 import time
 import itertools
 import timeit
+
 from cosy_draw import cosyrun, write_fox
 import pygmo as pg
 from problem import optimizeRes
 import pandas as pd
 
-# specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
+
 plt.rcParams.update({
     "text.usetex": True,
 })
 
+# SGA hyperparameters
+generations = 30 
+cr_p = 0.9 # probability of crossover, 0.9 by default
+mu_p = 0.7 # probability of mutation, 0.02 by default
+fNom = [-870.9084099103394, 0.01625617474106655, 0.02579740767554017, 0.0020116413429212]
+fNom = [1,1,1,1]
+fNames = [r"{FP2-res}${}^{-1}$",r"FP2-e-xangle",r"FP3-res",r"FP3-e-xangle"]
+
 script, filename = sys.argv
 optimized_params = 4
-fNom = np.zeros(optimized_params)+1
-fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
-fNames = fNames[:optimized_params]
-print(len(fNames))
 
-# read pop from h5 file (i.e. after running view_db.py)
+def is_pareto_efficient_simple(costs):
+    """
+    Find the pareto-efficient points
+    :param costs: An (n_points, n_costs) array
+    :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
+    """
+    is_efficient = np.ones(costs.shape[0], dtype = bool)
+    for i, c in enumerate(costs):
+#        print(i,c,is_efficient[i])
+        if is_efficient[i]:
+            is_efficient[is_efficient] = np.any(costs[is_efficient]<c, axis=1)  # Keep any point with a lower cost
+            is_efficient[i] = True  # And keep self
+    return is_efficient
+
 def read_pop_df(filename, pop=None):
     df = pd.read_hdf(filename)
     magnet_dim = len(df.columns)-optimized_params
+#    df = df.loc[(df['FP2_res'] < 1.0) & (df['FP2_e_xangle'] < 1.0) & (df['FP3_res'] < 1.0) & (df['FP3_e_xangle'] <1.0)]
+#    costs = df[['FP2_res','FP2_e_xangle','FP3_res','FP3_e_xangle']]
+#    costs = np.array(costs)
+#    pareto = is_pareto_efficient_simple(costs)
+#    df['pareto'] = pareto
+#    print(np.count_nonzero(pareto) )
+#    df = (df.loc[(df['pareto']==True)])
+#    df = df.sort_values(by='FP2_res',ignore_index=True)
+#    df["f0"] = df['f0'] * 1.0 / 4.419411469795324
+#    df['f1'] = df['f1'] * 1.0 / 2.7701491204695756
+#    print(magnet_dim)
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
     if pop == None:
         pop = pg.population(p_optimizeRes)
+#    df_2 = df.loc[(df["f0"] < 10) & (df["f1"] < 10) & (df["f2"] < 10) & (df["f3"] < 10)]
+#    df = df_2
     nrow, ncol = df.shape
+#    print(df)
     for i in df.index:
         append=True
         xs = []
@@ -52,52 +77,62 @@ def read_pop_df(filename, pop=None):
         xs = np.asarray(xs)
         fs = []
         for j in range(magnet_dim,ncol+0):
+#            if j > 0:
+#                fs.append(df["f"+str(j)][i]/fNom[j])
+#            else:
+#            if df["f"+str(j)][i] >= 1.0:
+#                append=False 
+#            if df["f"+str(j)][i] < 0 or np.isnan(df["f"+str(j)][i]):
+#                print(df["f"+str(j)][i], i)
             fs.append(df.iloc[i,j])
         if append:
             pop.push_back(xs,f=fs)
+#    print(pop)
     return pop    
 
-# read in pop from csv output file
-def read_pop(filename,pop=None):
-    # get magnet dimensions 
-    magnet_dim = len(pd.read_csv(filename).columns)-optimized_params
-    # init problem for creating pop
-    p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
-    obj_dim = p_optimizeRes.get_nobj()
+def read_pop(filename, pop=None):
+    df = pd.read_csv(filename,names=["x0","x1","x2","x3","x4","x5","x6","f0","f1","f2","f3"])
+    magnet_dim = len(df.columns)-optimized_params
     quads = []
-    # construct columns to read from csv
     for i in range(magnet_dim):
         quads.append("x{}".format(i))
     columns = quads
-    for i in range(obj_dim):
-        columns.append("f{}".format(i))
-    # read df from csv
-    df = pd.read_csv(filename,names=columns)
-    # initialize pop if none
+    columns.append("f0")
+    columns.append("f1")
+    columns.append("f2")
+    columns.append("f3")
+    
+#    df["f0"] = df['f0'] * 1.0 / 4.419411469795324
+#    df['f1'] = df['f1'] * 1.0 / 2.7701491204695756
+#    print(magnet_dim)
+    p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
     if pop == None:
         pop = pg.population(p_optimizeRes)
-
-    # construct pop from df 
+#    df_2 = df.loc[(df["f0"] < 10) & (df["f1"] < 10) & (df["f2"] < 10) & (df["f3"] < 10)]
+#    df = df_2
     nrow, ncol = df.shape
+#    print(df)
     for i in df.index:
+        append=True
         xs = []
         for j in range(magnet_dim):
             xs.append(df["x"+str(j)][i]) 
         xs = np.asarray(xs)
         fs = []
         for j in range(ncol-magnet_dim):
-            # if not a valid obj value throw out point
+#            if j > 0:
+#                fs.append(df["f"+str(j)][i]/fNom[j])
+#            else:
+            if df["f"+str(j)][i] >= 1.0:
+                append=False 
             if df["f"+str(j)][i] < 0 or np.isnan(df["f"+str(j)][i]):
                 print(df["f"+str(j)][i], i)
-                df["f"+str(j)][i] = 1e10
             fs.append(df["f"+str(j)][i])
-        # add point to population
-        pop.push_back(xs,f=fs)
-    # return population to main()
+        if append:
+            pop.push_back(xs,f=fs)
+#    print(pop)
     return pop    
 
-# 2d functions are not updated, this one was for creating pngs for a movie of the evolution
-#   movie made from pngs using ffmpeg
 def plot_2d_evo(popi):
 
     magnet_dim = len(popi.get_x()[0])
@@ -125,7 +160,6 @@ def plot_2d_evo(popi):
         plt.savefig("popi{}".format(j))
     return
 
-# outdated
 def output_2d_cosy(popi,filename):
 
     hv = pg.hypervolume(popi)
@@ -157,8 +191,6 @@ def output_2d_cosy(popi,filename):
         j = sorted_ndf[i] 
         write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), i, "2f_FP3/")
     return
-
-# write cosy draw files from the best points
 def output_4d_cosy(popi,filename):
 
     hv = pg.hypervolume(popi)
@@ -224,11 +256,13 @@ def output_4d_cosy(popi,filename):
     print(len(sorted_ndf), count_dups)
     return
 
+
 def plot_2d(popi,filename):
 
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
     ref_point = hv.refpoint()
+    ref_point = (1e10,1e10,1e10,1e10) 
     best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
 #    print(pg.sort_population_mo(popi.get_f()))
@@ -295,28 +329,41 @@ def plot_2d(popi,filename):
 
 def plot_4d(popi,filename):
 
-    good_results=0
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
-    ref_point = np.zeros(optimized_params)+1e10 
+#    ref_point = hv.refpoint()
+    ref_point = (1e10,1e10,1e10,1e10) 
+    best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
+#    print(pg.sort_population_mo(popi.get_f()))
     ndf_champ = []
+#    for j in range(2,200):
+#    print(pg.select_best_N_mo(popi.get_f(),10))
+    best_10 = (pg.select_best_N_mo(popi.get_f(),10))
+#    for i in best_10:
+#        print(i, np.power(np.zeros(magnet_dim)+2,popi.get_x()[i]), popi.get_f()[i])
+    x = np.linspace(pg.ideal(popi.get_f())[0],0)
+    y = np.zeros(50)+(1)
     plot_x, plot_y = 0,0
-    fig, axs = plt.subplots(optimized_params-1,sharex=True)
+    fig, axs = plt.subplots(3,sharex=True)
     fig.suptitle('Pareto Fronts of each parameter vs. Res at FP2')
     axs[2].set_xlabel(fNames[0])
+#    for i in ndf[0]:
+#        if max(popi.get_f()[i]) < 10:
+#            print(i, np.power(np.zeros(magnet_dim)+2,popi.get_x()[i]), popi.get_f()[i])
     reduced_ndf = []
     first = True
-    for j in range(1,optimized_params):
+    for j in range(1,4):
+#        axs[plot_y].plot(x,y,linestyle="dashed",color="red")
         axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
+#        axs[plot_y].axvline(x=best_point[0],linestyle="dotted",color="blue")
         axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
         for i in ndf[0]:
-            check_val=1e9
-            if np.all(np.array(popi.get_f()[i]) < check_val) == True:
-                good_results+=1
-#                print(filename[-6:-4], good_results, popi.get_f()[i])
+            if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
+#            if np.all(np.array(popi.get_f()[i]) < 1) == True and first:
                 ndf_champ.append(popi.get_f()[i])
                 reduced_ndf.append(i)
+                first = False
         try:
             pg.plot_non_dominated_fronts(ndf_champ,comp=[0,j],axes=axs[plot_y])
             if j == 1:
@@ -324,17 +371,24 @@ def plot_4d(popi,filename):
         except:
             print(filename[-6:-4], "no better than nominal solutions")
             return
+#    ax.plot(color="C{}".format(j))
+#        ax = pg.plot_non_dominated_fronts(popi.get_f()[0:j])
+
         axs[plot_y].set_ylabel(fNames[j])
+#        axs[plot_y].set_ylim(1e-1,1e1)
         axs[plot_y].set_yscale('log')
+#        axs[plot_y].set_xlim(0.1,10.0)
         axs[plot_y].set_xscale('log')
         plot_y += 1
-
+#    print(ndf_champ, ndf[0])
+#    print(ndf)
     fig.tight_layout()
     fig.savefig(filename+"_ndf.png")
     plt.cla()
     fig2, axs2 = plt.subplots(3,4)
     plot_x, plot_y = 0,0
     reduced_qs = np.array(popi.get_x())[reduced_ndf]
+#    print(reduced_qs)
     df = pd.DataFrame(reduced_qs, columns = ['y0','y1','y2','y3','y4','y5','y6','y7','y8','y9','y10'])
     qNom = np.zeros(magnet_dim)
     for i in range(magnet_dim):
@@ -354,19 +408,29 @@ def plot_4d(popi,filename):
     return
 
 def main(filename):
-
-    file_extension = os.path.splitext(filename)[-1]
-    popi = None
-    print(file_extension)
-    if file_extension == ".h5":
-        popi = read_pop_df(filename)
-        output_4d_cosy(popi, filename)
-    else: 
-        popi = read_pop(filename)
+    popi = read_pop_df(filename)
+#    print("started")
+#    popi = read_pop("../../output/output_4f_moead_FP2_FP3_150_40.csv")
+#    for i in range(41,60):
+#        print(i)
+#        popi = read_pop("../../output/output_4f_moead_FP2_FP3_150_{}.csv".format(i), popi)
+#    print(popi)
+#    popi = read_pop("init_pop.csv")
+    hv = pg.hypervolume(popi)
+#    ref_point = hv.refpoint()
+    ref_point = (1e10,1e10,1e10,1e10) 
+#    print(ref_point)
+    hv.compute(ref_point = ref_point)
+    print(hv.compute(ref_point = ref_point))
+#    print(hv.greatest_contributor(ref_point))
+#    print(popi.get_f()[hv.greatest_contributor(ref_point)])
+#    plt.show()
+#    plot_2d(popi,filename)
+#    output_2d_cosy(popi, filename)
     plot_4d(popi,filename)
+    output_4d_cosy(popi, filename)
+#    plot_2d(popi)
 
 if __name__=='__main__':
     main(filename)
-
-
 
