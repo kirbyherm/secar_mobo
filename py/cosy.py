@@ -24,7 +24,7 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
 
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
-qNom = zeros(11)+1
+qNom = zeros(15)+1
 
 # define a non nominal qvalue array, if checking the values
 qNew = array([0.5924182514791451,-0.8758860089293923,-0.6100796679131815,-0.14615536797341183,0.9770480402400011,-0.7391592447117457,-0.7498637465288235,0.16544225901836773,0.19998299730932922,-0.6100283855003581,-0.25827968836883713])
@@ -46,7 +46,6 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     if (len(qNom)-input_len>0):
         for i in range(len(qNom)-input_len):
             qs = append(qs,qNom[i+input_len])
-    [q1s, q2s, q3s, q4s, q5s, q6s, q7s, q8s, q9s, q10s, q11s] = qs
     # get rand number for the temporary file
     if name==None:
         rand = rng()

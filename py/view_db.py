@@ -39,7 +39,7 @@ def is_pareto_efficient_simple(costs):
 show_best = 100 
 
 # specify database for input
-db_out = OUTPUT_DIR + "secar_4d_db_140s.h5"
+db_out = OUTPUT_DIR + "secar_4d_db_150s.h5"
 # initialize empty df
 df = None
 # list the objective names

@@ -24,10 +24,11 @@ from problem import optimizeRes
 import pandas as pd
 
 # specify Tex details for pretty plots
-os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
-plt.rcParams.update({
-    "text.usetex": True,
-})
+# os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
+#os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
+#plt.rcParams.update({
+#    "text.usetex": True,
+#})
 
 script, filename = sys.argv
 optimized_params = 4
@@ -332,10 +333,13 @@ def plot_4d(popi,filename):
     fig.tight_layout()
     fig.savefig(filename+"_ndf.png")
     plt.cla()
-    fig2, axs2 = plt.subplots(3,4)
+    fig2, axs2 = plt.subplots(4,4)
     plot_x, plot_y = 0,0
     reduced_qs = np.array(popi.get_x())[reduced_ndf]
-    df = pd.DataFrame(reduced_qs, columns = ['y0','y1','y2','y3','y4','y5','y6','y7','y8','y9','y10'])
+    ycolumns = []
+    for i in range(magnet_dim):
+        ycolumns.append('y{}'.format(i))
+    df = pd.DataFrame(reduced_qs, columns = ycolumns)
     qNom = np.zeros(magnet_dim)
     for i in range(magnet_dim):
         if plot_x > 3:
