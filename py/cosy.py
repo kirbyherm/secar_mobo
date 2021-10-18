@@ -51,7 +51,6 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     if (len(qNom)-input_len>0):
         for i in range(len(qNom)-input_len):
             qs = append(qs,qNom[i+input_len])
-#    [q1s, q2s, q3s, q4s, q5s, q6s, q7s, q8s, q9s, q10s, q11s] = qs
     # get rand number for the temporary file
     if name==None:
         rand = rng()
@@ -90,6 +89,9 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
 
 # Function that runs cosy 
 # check problem.py and optimize.py for more on how the operation works
+# idea is that evolve() in optimize.py will call fitness() in problem.py
+#   fitness() will pass a set of magnet factors (between 0.5 and 2.0) to cosyrun
+#   and will return the resulting objectives to the algorithm
 def cosyrun(qs=qNom):
 
     # make fox file and get name
@@ -120,7 +122,7 @@ def cosyrun(qs=qNom):
     beamspotsize_bool = False
 
     # my method could probably be better optimized but this works and is mostly straight-forward
-    #   idea is just that keywords are output for each variable, e.g. "Xmax" for the Xmax for a magnet dimension
+    #   idea is just that keywords are output for each variable, e.g. "Xdim" for the Xdim for a magnet dimension
     #   the below code will check if the bool is true and if so write the corresponding value and false the bool
     #   in total we parse through all the cosy output and find all the different variables
     for i in range(len(split)):
@@ -175,16 +177,21 @@ def cosyrun(qs=qNom):
         # find xbound, ybound
         xbound = (abs(xdim[i])*1000)
         ybound = (abs(ydim[i])*1000)
+        # if ratio of *bound to magnet_dim is larger than max_width, set max_width
         max_width = max(xbound/magnet_dims[i][0],ybound/magnet_dims[i][1],max_width)
 #        print(i, magnet_names[i], "{:.2f}".format(xbound), magnet_dims[i][0], "{:.2f}".format(ybound), magnet_dims[i][1])
+        # if *bound more than 4x magnet_dim, or is nan, return outside constraints
         if xbound > magnet_dims[i][0] * scale or ybound > magnet_dims[i][1] * scale or isnan(xbound) or isnan(ybound):
 #            print("{:.2f}".format(xbound), magnet_dims[i][0], "{:.2f}".format(ybound), magnet_dims[i][1])
             resol = array([1e9,1e9,1e9,1e9])         
             break
+        # if within constraints, set resol temporarily
         resol = [fp2res,fp3res,max_width,beamspotsize]
     print(resol)
+    # if within constraints, set resol as a ratio to nominal
     if max(resol) < 1e9:
         for i in range(len(resol)):
+            # make sure we are working with positive numbers
             if resol[i] > 0: 
                 resol[i] = float(resol[i])
             else:
@@ -192,14 +199,21 @@ def cosyrun(qs=qNom):
                     resol[i] = float(1e-9)
                 else:
                     resol[i] = float(1e9)
+            # we try to maximize fp*res, but the algorithm wants to minimize
+            #   objective values, so we have to take an inverse ratio
+            #   i.e. a ratio < 1.0 is good
             if i == 0 or i == 1:
                 resol[i] = fNom[i]/resol[i]
+            # we want to minimize max_width and beamspotsize, so just take resol/fNom
             else:    
                 resol[i] = resol[i]/fNom[i]
     print(resol)            
+
+    # remove old cosy fox and lis file
     commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
 
+    # return the objective values
     return (resol)
     
 
