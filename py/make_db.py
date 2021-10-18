@@ -31,7 +31,7 @@ columns.append("FP4_BeamSpot")
 
 # i run batches in 10s, so i specify the first id of the batch
 start_i = 170
-end_i = start_i + 1
+end_i = start_i + 10
 # name the output
 db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
 

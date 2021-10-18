@@ -44,7 +44,7 @@ FOX_DIR = PYGMO_DIR + 'fox/'
 COSY_DIR = PYGMO_DIR + 'COSY10.0/'
 
 # write the qvalue array to a fox file for cosy to run
-def write_fox(qs=qNom, name=None, directory=FOX_DIR):
+def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='20Ne1.18-3.5umCFoil_truenom.fox'):
     # how many magnets to set
     input_len = len(qs)
     # if less than qNom, use qNom values (0) for remainder
@@ -57,7 +57,7 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     else:
         rand = name
     # get the fox file for the simulation and change the qvalues
-    cosy_input = FOX_DIR + '20Ne1.18-3.5umCFoil_truenom.fox'
+    cosy_input = FOX_DIR + fox_file
     text = None
     with open(cosy_input, 'r') as f:
         text = f.readlines()
