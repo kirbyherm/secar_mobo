@@ -22,7 +22,7 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 
 # define the nominal values for the objective function
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
-
+fNom = array([47.88887360472972, 52.15770137530011, 1.1573789066034321, 0.10272268939088063])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(15)+1
 
@@ -210,7 +210,7 @@ def cosyrun(qs=qNom):
     print(resol)            
 
     # remove old cosy fox and lis file
-#    commands.run(['rm','-f',cosyFilename])
+    commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
 
     # return the objective values

@@ -575,7 +575,7 @@ ENDIF;
 DL 0.1;
 PS 0.102/2;
 DL 1.750011-0.1;                                            {DL21}
-READ_RAY;
+{READ_RAY;}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
@@ -698,7 +698,7 @@ FR 3;
 
 DL 4.60;                                                  {DL29}
 PS 0.02;                                                  {FP3}
-READ_RAY;
+{READ_RAY;}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
@@ -755,7 +755,7 @@ DL 2.1082;                                                 {from umcp to viewer}
 PS (0.035);                                                {Viewer FP4}
 DL 0.3302;                                                 {from viewer to dssd}
 PS (0.064)/2;                                              {DSSD}
-READ_RAY;
+{READ_RAY;}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WVX:=(WW(1)-WW(2))*(WW(1)-WW(2));
@@ -875,12 +875,12 @@ BP;
 RECOIL_BL;
 EP;
 
-{PG -12 -12;}
+PG -12 -12;
 PP -12 0. 0.;
 PP -12 0. 90.;
 
 READ_RAY;
-{WW(1):= VMAX(RAY(1));
+WW(1):= VMAX(RAY(1));
 WRITE 6 'VMAX_SIZE=' WW(1);
 WW(2):= VMIN(RAY(1));
 WRITE 6 'VMIN_SIZE=' WW(2);
@@ -896,7 +896,7 @@ WRITE 6 'Mass Res.Power at FP2 or FP3 =' MRESOL_P1;
 
 WRITE 6 'Resol.by max.ray =' ABS(ME(1,7))/(2*WV);
 WRITE 6 'ME(1,1),ME(1,2),ME(1,6), ME(2,6),ME(1,7)=' ME(1,1) ME(1,2) ME(1,6) ME(2,6) ME(1,7);
-WRITE 6 'M11*M22=' ME(1,1)*ME(2,2);}
+WRITE 6 'M11*M22=' ME(1,1)*ME(2,2);
 
 ENDPROCEDURE ;
 RUN ;
