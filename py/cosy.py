@@ -1,4 +1,4 @@
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
 # nscl servers
