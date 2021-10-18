@@ -44,7 +44,7 @@ FOX_DIR = PYGMO_DIR + 'fox/'
 COSY_DIR = PYGMO_DIR + 'COSY10.0/'
 
 # write the qvalue array to a fox file for cosy to run
-def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='20Ne1.18-3.5umCFoil_truenom.fox'):
+def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_14m_v1.fox'):
     # how many magnets to set
     input_len = len(qs)
     # if less than qNom, use qNom values (0) for remainder
@@ -71,7 +71,7 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='20Ne1.18-3.5umCFo
 #            print(text[i], text[start_line])
     # change the q setttings
     for i in range(len(qs)):
-        text[i+start_line] = "Q{0}:= {1};\n".format(i+1,qs[i])
+        text[i+start_line] = "Q{0}_SC:= {1};\n".format(i+1,qs[i])
 
     # temporary output file
     cosyFilename = directory + 'pygmoCosy'+str(rand)+'.fox'
@@ -210,7 +210,7 @@ def cosyrun(qs=qNom):
     print(resol)            
 
     # remove old cosy fox and lis file
-    commands.run(['rm','-f',cosyFilename])
+#    commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
 
     # return the objective values
