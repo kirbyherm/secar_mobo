@@ -27,12 +27,12 @@ script, batch_no = sys.argv
 
 seed = 56448189
 # MOEAD hyperparameters
-generations = 450
+generations = 800
 cr_p = 1.0 # crossover parameter, 1.0 by default
 f_p = 0.5 # diff evolution operator parameter, 0.5 by default
 mu_str = "gaussian" # mutation strategy, polynomial by default
 mu_param_m = 0.05
-magnet_dim = 11 
+magnet_dim = 15 
 neighbors = 20
 outputFile = "output_4f_moead_FP2_FP3_{}_{}.csv".format(generations, batch_no)
 

@@ -5,8 +5,9 @@ import os
 
 PYGMO_DIR = "../"
 OUTPUT_DIR = PYGMO_DIR + "output/"
-OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_moead_FP2_FP3_450_'
-magnet_dim = 11
+generations = 800
+OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_moead_FP2_FP3_{}_'.format(generations)
+magnet_dim = 15
 quads = []
 for i in range(magnet_dim):
     quads.append("q{}".format(i+1))
@@ -18,7 +19,7 @@ columns.append("FP3_res")
 columns.append("MaxBeamWidth")
 columns.append("FP4_BeamSpot")
 
-start_i = 140
+start_i = 170
 db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
 df = None
 #if os.path.exists(db_out):
@@ -37,5 +38,6 @@ print(df)
 df.to_hdf(db_out,key='df')
 #df = df.loc[(df['FP2_res'] < 1.0) & (df['FP2_e_xangle'] < 1.0) & (df['FP3_res'] < 1.0) & (df['FP3_e_xangle'] <1.0)]
 df = df.loc[(df['FP2_res'] < 1.0) & (df['FP3_res'] < 1.0) & (df['MaxBeamWidth'] < 1.0) & (df['FP4_BeamSpot'] <1.0)]
+print(df)
 #df.to_csv(OUTPUT_DIR + 'better_than_nominal.csv', index=False)
 #df.to_hdf(OUTPUT_DIR + 'better_than_nominal.h5',key='df')

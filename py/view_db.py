@@ -25,7 +25,8 @@ OUTPUT_DIR = PYGMO_DIR + "output/"
 OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_moead_FP2_FP3_150_'
 show_best = 84
 
-db_out = OUTPUT_DIR + "secar_4d_db_140s.h5"
+start_i = 170
+db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
 #db_out = OUTPUT_DIR + "better_than_nominal.h5"
 df = None
 
@@ -37,24 +38,26 @@ if os.path.exists(db_out):
 df = df.dropna()
 #print(df[objectives])
 
-max_obj = 1e9
+max_obj = 1
 df = df.loc[(df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
 #df = df.loc[()]
 
+print( df.shape )
 costs = df[['FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']]
 #print(costs)
 costs = np.array(costs)
 #print(costs)
 pareto = is_pareto_efficient_simple(costs)
 df['pareto'] = pareto
-print(np.count_nonzero(pareto) )
+#print(np.count_nonzero(pareto) )
 df = (df.loc[(df['pareto']==True)])
 #df['ssobjs'] = np.sqrt(df['FP2_res']**2+df['FP3_res']**2+df['MaxBeamWidth']**2+df['FP4_BeamSpot']**2)
 #df = df.sort_values(by='ssobjs',ignore_index=True)
 #df = df.loc[df['ssobjs'] < df['ssobjs'][show_best]]
-df = df.sort_values(by='FP2_res',ignore_index=True)
-print(df.iloc[:100,11:15])
-print(np.power(2,df.iloc[0,:11]))
-df = df.iloc[:,:15]
+#df = df.sort_values(by='FP2_res',ignore_index=True)
+df = df.sort_values(by='FP4_BeamSpot',ignore_index=True)
+print(df.iloc[:,15:])
+print(np.power(2,df.iloc[:,:15]))
+df = df.iloc[:,:19]
 df.to_hdf('test.h5',key='df')
 #df.to_hdf('test.h5')#,header=False,index=False)

@@ -27,12 +27,12 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     if (len(qNom)-input_len>0):
         for i in range(len(qNom)-input_len):
             qs = append(qs,qNom[i+input_len])
-    [q1s, q2s, q3s, q4s, q5s, q6s, q7s, q8s, q9s, q10s, q11s] = qs
+#    [q1s, q2s, q3s, q4s, q5s, q6s, q7s, q8s, q9s, q10s, q11s] = qs
     if name==None:
         rand = rng()
     else:
         rand = name
-    cosy_input = FOX_DIR + '20Ne1.18-3.5umCFoil_draw.fox'
+    cosy_input = FOX_DIR + '20Ne1.18-3.5umCFoil_draw4d.fox'
     text = None
     with open(cosy_input, 'r') as f:
         text = f.readlines()

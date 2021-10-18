@@ -24,11 +24,16 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
 
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
-qNom = zeros(11)+1
+qNom = zeros(15)+1
 
 # define a non nominal qvalue array, if checking the values
-qNew = array([0.5924182514791451,-0.8758860089293923,-0.6100796679131815,-0.14615536797341183,0.9770480402400011,-0.7391592447117457,-0.7498637465288235,0.16544225901836773,0.19998299730932922,-0.6100283855003581,-0.25827968836883713])
+qNew = array([0.5924182514791451,-0.8758860089293923,-0.6100796679131815,-0.14615536797341183,0.9770480402400011,-0.7391592447117457,-0.7498637465288235,0.16544225901836773,0.19998299730932922,-0.6100283855003581,-0.25827968836883713,-1.5,1.5,1.9,-1.9])
 qNew = power(2,qNew)
+qNew = array([2.93038477,1.90063726,0.426385,  0.43573147,0.8350062,  0.26068104,
+ 0.61171371,2.05445898,0.3762753, 3.31110943,3.97101987,3.91936971,
+ 0.80816148,2.69208215,0.62319133])
+qNew = array([1,1,1,1,1,1,1,1,0.9,2.5,1.1,0.5,0.2,1.2,1.2])
+
 
 # set working DIR for PYGMO, FOX, COSY
 PYGMO_DIR = '../'
@@ -46,7 +51,7 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR):
     if (len(qNom)-input_len>0):
         for i in range(len(qNom)-input_len):
             qs = append(qs,qNom[i+input_len])
-    [q1s, q2s, q3s, q4s, q5s, q6s, q7s, q8s, q9s, q10s, q11s] = qs
+#    [q1s, q2s, q3s, q4s, q5s, q6s, q7s, q8s, q9s, q10s, q11s] = qs
     # get rand number for the temporary file
     if name==None:
         rand = rng()
@@ -102,6 +107,7 @@ def cosyrun(qs=qNom):
     # get output and now convert into the necessary values to return to pygmo
     stripped = output.stdout.strip().decode('utf8','strict')
     split = stripped.split()
+    print(split)
 
     # initiate all variables to be read, and bools for the reader to check
     xdim, ydim = [], []
@@ -156,14 +162,14 @@ def cosyrun(qs=qNom):
 
     # scale factor to account for the beam spot issue
     #   even the nominal setting is outside the bounds...
-    scale = 4.0
+    scale = 1e9 
     max_width = 0
     # setup value to be returned, here 4 different objectives
     resol = zeros(4) 
     print(qs)
     for i in range(len(magnet_dims)):
         # if no x-ydim values, just return outside constraints (all 1e9)
-        if len(xdim) == 0 or len(ydim) == 0:
+        if len(xdim) < len(magnet_dims) or len(ydim) < len(magnet_dims):
             resol = array([1e9,1e9,1e9,1e9])         
             break            
         # find xbound, ybound
