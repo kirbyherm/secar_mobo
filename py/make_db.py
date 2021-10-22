@@ -30,7 +30,7 @@ columns.append("MaxBeamWidth")
 columns.append("FP4_BeamSpot")
 
 # i run batches in 10s, so i specify the first id of the batch
-start_i = 180
+start_i = 200
 end_i = start_i + 10
 # name the output
 db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
@@ -56,7 +56,7 @@ for i in range(start_i, end_i):
 print(df)
 # write df to h5
 df.to_hdf(db_out,key='df')
-max_obj = 1e9 
+max_obj = 1
 # check for solutions strictly better than nominal (all objs < 1)
 df = df.loc[(df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
 print(df)

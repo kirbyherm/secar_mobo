@@ -11,6 +11,7 @@
 import pandas as pd
 import numpy as np
 import os
+from kmeans_cluster import run_kmeans
 
 # set pandas view options to print everything
 pd.set_option("max_rows", None)
@@ -19,6 +20,13 @@ pd.set_option("max_columns", None)
 # set important directories and files
 PYGMO_DIR = "../"
 OUTPUT_DIR = PYGMO_DIR + "output/"
+
+Qnom = np.array([-0.40033,0.219852,0.2552369,-0.246677876,0.11087109,0.175336731,-0.0268214976,-0.14859,0.2855,-0.0335,0.149432825,-0.182,0.1910,0.12900,-0.1380])
+# Q1H:=0.003703;
+# H1:=0.0103564;
+# H2:=0.0052735{*0.5};
+# H3:=-0.008774463{*1.5};
+# O1:=0.031283{*2.0};
 
 # function i found which constructs a pareto front from an input set of points
 def is_pareto_efficient_simple(costs):
@@ -67,19 +75,24 @@ df['pareto'] = pareto
 print(np.count_nonzero(pareto) )
 # restrict df to only those points on the pareto front
 df = (df.loc[(df['pareto']==True)])
-
+df = df.reset_index(drop=True)
+print(df.iloc[:100,:4])
 # additional code which provides an alternate way of sorting/filtering df, based on sum-squares of objs
 #df['ssobjs'] = np.sqrt(df['FP2_res']**2+df['FP3_res']**2+df['MaxBeamWidth']**2+df['FP4_BeamSpot']**2)
 #df = df.sort_values(by='ssobjs',ignore_index=True)
 #df = df.loc[df['ssobjs'] < df['ssobjs'][show_best]]
-
+df = run_kmeans(df, 15, 10)
 
 # sort df by FP4_BeamSpot values, and reindex
 df = df.sort_values(by='FP4_BeamSpot',ignore_index=True)
 # print objective values for [show_best] number of points, sorted by FP4_BeamSpot
-print(df.iloc[:,15:])
+#print(df.iloc[:,15:])
 # print the magnet scale factors for the best FP4_BeamSpot points
-print(np.power(2,df.iloc[:,:15]))
+(np.power(2,df.loc[df['closest']==True].iloc[:,:15])).round(5).to_csv('magnet_factors.csv',index=False)
+(Qnom * np.power(2,df.loc[df['closest']==True].iloc[:,:15])).round(5).to_csv('magnet_values.csv',index=False)
 # write only the magnet values and objective values to df
-df = df.iloc[:,:19]
+print(df.columns)
+df = df.drop('pareto',1)
+#df = df.iloc[:,:19]
 df.to_hdf('best.h5',key='df')
+

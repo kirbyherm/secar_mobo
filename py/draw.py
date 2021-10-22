@@ -24,11 +24,11 @@ from problem import optimizeRes
 import pandas as pd
 
 # specify Tex details for pretty plots
-# os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
+os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 #os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
-#plt.rcParams.update({
-#    "text.usetex": True,
-#})
+plt.rcParams.update({
+    "text.usetex": True,
+})
 
 script, filename = sys.argv
 optimized_params = 4
@@ -40,8 +40,9 @@ print(len(fNames))
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
     df = pd.read_hdf(filename)
-    magnet_dim = len(df.columns)-optimized_params
+    magnet_dim = 15
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
+    nobj = p_optimizeRes.get_nobj()
     if pop == None:
         pop = pg.population(p_optimizeRes)
     nrow, ncol = df.shape
@@ -52,11 +53,13 @@ def read_pop_df(filename, pop=None):
             xs.append(df["q"+str(j)][i]) 
         xs = np.asarray(xs)
         fs = []
-        for j in range(magnet_dim,ncol+0):
+        for j in range(magnet_dim,magnet_dim+nobj):
+#            if i == 0:
+#                print(df.iloc[i,magnet_dim:magnet_dim+p_optimizeRes.get_nobj()])
             fs.append(df.iloc[i,j])
         if append:
             pop.push_back(xs,f=fs)
-    return pop    
+    return pop, df
 
 # read in pop from csv output file
 def read_pop(filename,pop=None):
@@ -136,6 +139,7 @@ def output_2d_cosy(popi,filename):
     magnet_dim = len(popi.get_x()[0])
     ndf_champ = []
     sorted_ndf = []
+    sort_param = 3
     for i in ndf[0]:
         if i == ndf[0][0]:
             sorted_ndf.append(i)
@@ -144,11 +148,11 @@ def output_2d_cosy(popi,filename):
                 if j == len(sorted_ndf)-1:
                     sorted_ndf.append(i)
                     break
-                elif j == 0 and popi.get_f()[i][0] < popi.get_f()[sorted_ndf[j]][0]:
+                elif j == 0 and popi.get_f()[i][sort_param] < popi.get_f()[sorted_ndf[j]][sort_param]:
                     sorted_ndf.insert(j,i)
                     break
-                elif (popi.get_f()[i][0] < popi.get_f()[sorted_ndf[j]][0]) and j>0:
-                    if(popi.get_f()[i][0] >= popi.get_f()[sorted_ndf[j-1]][0]):
+                elif (popi.get_f()[i][sort_param] < popi.get_f()[sorted_ndf[j]][sort_param]) and j>0:
+                    if(popi.get_f()[i][sort_param] >= popi.get_f()[sorted_ndf[j-1]][sort_param]):
 #                        print(popi.get_f()[i][0],popi.get_f()[sorted_ndf[j]][0],popi.get_f()[sorted_ndf[j-1]][0])
                         sorted_ndf.insert(j,i)
                     break 
@@ -160,7 +164,7 @@ def output_2d_cosy(popi,filename):
     return
 
 # write cosy draw files from the best points
-def output_4d_cosy(popi,filename):
+def output_4d_cosy(popi,filename,df):
 
     hv = pg.hypervolume(popi)
     ref_point = hv.refpoint()
@@ -172,6 +176,7 @@ def output_4d_cosy(popi,filename):
     sorted_ndf = []
     sorted_pop = []
     sorted_xs = []
+    sort_param = 3
     for i in ndf[0]:
         if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
 #            print(popi.get_f()[i])
@@ -197,13 +202,13 @@ def output_4d_cosy(popi,filename):
                     sorted_pop.append(popi.get_f()[i])
                     sorted_xs.append(popi.get_x()[i])
                     break
-                elif j == 0 and popi.get_f()[i][0] < popi.get_f()[sorted_ndf[j]][0]:
+                elif j == 0 and popi.get_f()[i][sort_param] < popi.get_f()[sorted_ndf[j]][sort_param]:
                     sorted_ndf.insert(j,i)
                     sorted_pop.insert(j,popi.get_f()[i])
                     sorted_xs.insert(j,popi.get_x()[i])
                     break
-                elif (popi.get_f()[i][0] < popi.get_f()[sorted_ndf[j]][0]) and j>0:
-                    if(popi.get_f()[i][0] >= popi.get_f()[sorted_ndf[j-1]][0]):
+                elif (popi.get_f()[i][sort_param] < popi.get_f()[sorted_ndf[j]][sort_param]) and j>0:
+                    if(popi.get_f()[i][sort_param] >= popi.get_f()[sorted_ndf[j-1]][sort_param]):
 #                        print(popi.get_f()[i][0],popi.get_f()[sorted_ndf[j]][0],popi.get_f()[sorted_ndf[j-1]][0])
                         sorted_ndf.insert(j,i)
                         sorted_pop.insert(j,popi.get_f()[i])
@@ -211,18 +216,24 @@ def output_4d_cosy(popi,filename):
                     break 
 #    print(ndf[0], sorted_ndf)
     
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, "4f_FP2_FP3/", '20Ne1.18-3.5umCFoil_draw4d.fox' )
+    df_closest = df.loc[df['closest']==True]
+    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, "4f_FP2_FP3/", 'SEC_neutrons_WF_14m_v1_draw.fox' )
     count_dups = 0
-    for i in range(1,len(sorted_ndf)+1):
+#    for i in range(1,len(sorted_ndf)+1):
+    print(df_closest,df_closest.index)
+    plot_i = 1
+    for i in df_closest.index:
+        i = i + 1
         j = sorted_ndf[i-1] 
-        print(popi.get_f()[j])
-        if i > 1:
-            for k in range(i-1):
-                if np.array_equal(sorted_pop[i-1],sorted_pop[k]):
-                    count_dups += 1
-                    break
-        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), i, "4f_FP2_FP3/", '20Ne1.18-3.5umCFoil_draw4d.fox')
-    print(len(sorted_ndf), count_dups)
+#        print(popi.get_f()[j])
+#        if i > 1:
+#            for k in range(i-1):
+#                if np.array_equal(sorted_pop[i-1],sorted_pop[k]):
+#                    count_dups += 1
+#                    break
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, "4f_FP2_FP3/", 'SEC_neutrons_WF_14m_v1_draw.fox')
+        plot_i += 1
+#    print(len(sorted_ndf), count_dups)
     return
 
 def plot_2d(popi,filename):
@@ -294,8 +305,9 @@ def plot_2d(popi,filename):
 #    fig.savefig(filename+"_logndf.png")
     return
 
-def plot_4d(popi,filename):
+def plot_4d(popi,filename,df):
 
+    sort_param = 3
     good_results=0
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
@@ -304,11 +316,12 @@ def plot_4d(popi,filename):
     ndf_champ = []
     plot_x, plot_y = 0,0
     fig, axs = plt.subplots(optimized_params-1,sharex=True)
-    fig.suptitle('Pareto Fronts of each parameter vs. Res at FP2')
-    axs[2].set_xlabel(fNames[0])
+    fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at FP4')
+    axs[optimized_params-2].set_xlabel(fNames[sort_param])
     reduced_ndf = []
     first = True
-    for j in range(1,optimized_params):
+    df_closest = df
+    for j in range(0,optimized_params-1):
         axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
         axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
         for i in ndf[0]:
@@ -319,12 +332,16 @@ def plot_4d(popi,filename):
                 ndf_champ.append(popi.get_f()[i])
                 reduced_ndf.append(i)
         try:
-            pg.plot_non_dominated_fronts(ndf_champ,comp=[0,j],axes=axs[plot_y])
+            pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
             if j == 1:
                 print(filename[-6:-4], len(ndf_champ))
         except:
             print(filename[-6:-4], "no better than nominal solutions")
             return
+        if "closest" in df.columns:
+            df_closest = df.loc[df['closest']==True]
+#            print(df_closest.iloc[:,15:19])
+            axs[plot_y].plot(df_closest.iloc[:,18],df_closest.iloc[:,15+j],'x',color='red')
         axs[plot_y].set_ylabel(fNames[j])
         axs[plot_y].set_yscale('log')
         axs[plot_y].set_xscale('log')
@@ -341,15 +358,22 @@ def plot_4d(popi,filename):
         ycolumns.append('y{}'.format(i))
     df = pd.DataFrame(reduced_qs, columns = ycolumns)
     qNom = np.zeros(magnet_dim)
+    df_closest = df_closest.reset_index(drop=True)
     for i in range(magnet_dim):
         if plot_x > 3:
             plot_x, plot_y = 0, plot_y+1 
-        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=20,range=(-1,1))
+        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-1,1))
         axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
 #        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
         axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
         axs2[plot_y,plot_x].axes.set_xlim(-1,1)
         axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
+        y_min, y_max = axs2[plot_y,plot_x].get_ylim()
+        df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/15*(y_max-y_min)+y_min)
+        print(df_closest.iloc[:,:15])
+#        if "closest" in df.columns:
+        axs2[plot_y,plot_x].plot(df_closest["q{0}".format(i+1)],df_closest['yplot'],'x',color='red')
+        
         plot_x += 1
     
     fig2.delaxes(axs2[plot_y,plot_x])
@@ -362,12 +386,14 @@ def main(filename):
     file_extension = os.path.splitext(filename)[-1]
     popi = None
     print(file_extension)
+    df = None
     if file_extension == ".h5":
-        popi = read_pop_df(filename)
-        output_4d_cosy(popi, filename)
+        popi, df = read_pop_df(filename)
+        output_4d_cosy(popi, filename, df)
     else: 
         popi = read_pop(filename)
-    plot_4d(popi,filename)
+    print(df)
+    plot_4d(popi,filename,df)
 
 if __name__=='__main__':
     main(filename)
