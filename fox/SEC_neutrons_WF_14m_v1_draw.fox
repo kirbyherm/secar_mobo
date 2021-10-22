@@ -1,4 +1,4 @@
-INCLUDE '../COSY10.0/COSY';
+INCLUDE '/mnt/simulations/secarml/secar_mobo/COSY10.0/COSY';
 
 
 PROCEDURE RUN ;
@@ -697,13 +697,15 @@ FD;
 FR 3;
 
 DL 4.60;                                                  {DL29}
-PS 0.02;                                                  {FP3}
 {READ_RAY;}
+PRINT_XDIM;
+PRINT_YDIM;
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
 WRITE 6 'FP3Res' (ABS(ME(1,7))/(2*WV));
 
+PS 0.02;                                                  {FP3}
 {SECTION 4}
 DL 0.25115-0.1;                                            {DL30}
 PS 0.167/2;
@@ -751,10 +753,19 @@ DL 0.1;
 PS 0.101/2;
 DL 0.7112-0.1;                                             {Dist to UMCP} {71.12 cm} {from the coils of Q15 to umcp}
 PS (0.075/1.41)/2;			                                   {0.075 mm horiz., tilted 45 deg for vert direction}
+WRITE 6 'MCP';
+PRINT_XDIM;
+PRINT_YDIM;
 DL 2.1082;                                                 {from umcp to viewer}
 PS (0.035);                                                {Viewer FP4}
+WRITE 6 'viewer FP4';
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.3302;                                                 {from viewer to dssd}
 PS (0.064)/2;                                              {DSSD}
+WRITE 6 'DSSD FP4';
+PRINT_XDIM;
+PRINT_YDIM;
 {READ_RAY;}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
@@ -777,8 +788,8 @@ SETEFB; {SET THE DIPOLES EFB's and WF E- and B-FIELDS INHOMOGENEITIES}
 {YOU DEFINE THE INITIAL RAY PARAMETERS HERE}
 XX:=0.00075;
 YY:=0.00075;
-AX:=0.02;
-AY:=0.02;
+AX:=0.020;
+AY:=0.020;
 DE:= 0.027;
 
 NMAX:=190;
@@ -847,6 +858,7 @@ UM;
 CR {Clears all rays}; UM;
 
 N1:=1;N2:=2;N3:=1;N4:=3;N5:=1;
+{N1:=1; N2:=3; N3:=1; N4:=1; N5:=2;}
 
 LOOP NX 1 2*N1+1;LOOP NA 1 2*N2+1;LOOP NY 1 2*N3+1;LOOP NB 1 2*N4+1;
 LOOP NE 1 2*N5+1;

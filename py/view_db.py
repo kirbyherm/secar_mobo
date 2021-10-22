@@ -46,7 +46,7 @@ def is_pareto_efficient_simple(costs):
 # only show best 100 since we get a lot of points
 show_best = 100 
 
-start_i = 190
+start_i = 200
 # specify database for input
 db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
 # initialize empty df
@@ -81,7 +81,7 @@ print(df.iloc[:100,:4])
 #df['ssobjs'] = np.sqrt(df['FP2_res']**2+df['FP3_res']**2+df['MaxBeamWidth']**2+df['FP4_BeamSpot']**2)
 #df = df.sort_values(by='ssobjs',ignore_index=True)
 #df = df.loc[df['ssobjs'] < df['ssobjs'][show_best]]
-df = run_kmeans(df, 15, 15)
+df = run_kmeans(df, 15, 10)
 
 # sort df by FP4_BeamSpot values, and reindex
 df = df.sort_values(by='FP4_BeamSpot',ignore_index=True)
