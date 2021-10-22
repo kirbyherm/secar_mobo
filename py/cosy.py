@@ -211,7 +211,7 @@ def cosyrun(qs=qNom):
     print(resol)            
 
     # remove old cosy fox and lis file
-#    commands.run(['rm','-f',cosyFilename])
+    commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
 
     # return the objective values
