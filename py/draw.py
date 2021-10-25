@@ -340,8 +340,10 @@ def plot_4d(popi,filename,df):
             return
         if "closest" in df.columns:
             df_closest = df.loc[df['closest']==True]
+            df_closest = df_closest.reset_index(drop=True)
 #            print(df_closest.iloc[:,15:19])
-            axs[plot_y].plot(df_closest.iloc[:,18],df_closest.iloc[:,15+j],'x',color='red')
+            for i_closest in df_closest.index:
+                axs[plot_y].text(df_closest.iloc[:,18][i_closest],df_closest.iloc[:,15+j][i_closest],str(i_closest+1),color='red')
         axs[plot_y].set_ylabel(fNames[j])
         axs[plot_y].set_yscale('log')
         axs[plot_y].set_xscale('log')
@@ -358,21 +360,21 @@ def plot_4d(popi,filename,df):
         ycolumns.append('y{}'.format(i))
     df = pd.DataFrame(reduced_qs, columns = ycolumns)
     qNom = np.zeros(magnet_dim)
-    df_closest = df_closest.reset_index(drop=True)
     for i in range(magnet_dim):
         if plot_x > 3:
             plot_x, plot_y = 0, plot_y+1 
         axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-1,1))
-        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
+#        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
 #        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
         axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
         axs2[plot_y,plot_x].axes.set_xlim(-1,1)
         axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
         y_min, y_max = axs2[plot_y,plot_x].get_ylim()
-        df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/15*(y_max-y_min)+y_min)
+        df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/len(df_closest.index)*(y_max-y_min)+y_min)
         print(df_closest.iloc[:,:15])
 #        if "closest" in df.columns:
-        axs2[plot_y,plot_x].plot(df_closest["q{0}".format(i+1)],df_closest['yplot'],'x',color='red')
+        for i_closest in df_closest.index:
+            axs2[plot_y,plot_x].text(df_closest["q{0}".format(i+1)][i_closest],df_closest['yplot'][i_closest],str(i_closest+1),color='red')
         
         plot_x += 1
     
