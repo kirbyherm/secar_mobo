@@ -780,7 +780,7 @@ ENDPROCEDURE;
 {##############################################################}
 {###############DEFINITION AND COMMAND ########################}
 {##############################################################}
-OV 3 3 2 ;
+OV 4 3 2 ;
 
 WSET 1.5E-3; {REQUIRED TO MINIMIZE ERROR IN WF INTEGRATION}
 SETEFB; {SET THE DIPOLES EFB's and WF E- and B-FIELDS INHOMOGENEITIES}

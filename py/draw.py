@@ -35,7 +35,7 @@ optimized_params = 4
 fNom = np.zeros(optimized_params)+1
 fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
-print(len(fNames))
+#print(len(fNames))
 
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
@@ -92,7 +92,7 @@ def read_pop(filename,pop=None):
         for j in range(ncol-magnet_dim):
             # if not a valid obj value throw out point
             if df["f"+str(j)][i] < 0 or np.isnan(df["f"+str(j)][i]):
-                print(df["f"+str(j)][i], i)
+                print("error: ", df["f"+str(j)][i], i)
                 df["f"+str(j)][i] = 1e10
             fs.append(df["f"+str(j)][i])
         # add point to population
@@ -217,10 +217,14 @@ def output_4d_cosy(popi,filename,df):
 #    print(ndf[0], sorted_ndf)
     
     df_closest = df.loc[df['closest']==True]
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, "4f_FP2_FP3/", 'SEC_neutrons_WF_14m_v1_draw.fox' )
+    PROFILES_PATH = 'profiles'
+    if os.path.exists(PROFILES_PATH) and os.path.isdir(PROFILES_PATH):
+        shutil.rmtree(PROFILES_PATH)
+    os.mkdir(PROFILES_PATH)
+    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, "profiles/", 'SEC_neutrons_WF_14m_v1_draw.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):
-    print(df_closest,df_closest.index)
+#    print(df_closest,df_closest.index)
     plot_i = 1
     for i in df_closest.index:
         i = i + 1
@@ -231,7 +235,7 @@ def output_4d_cosy(popi,filename,df):
 #                if np.array_equal(sorted_pop[i-1],sorted_pop[k]):
 #                    count_dups += 1
 #                    break
-        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, "4f_FP2_FP3/", 'SEC_neutrons_WF_14m_v1_draw.fox')
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, "profiles/", 'SEC_neutrons_WF_14m_v1_draw.fox')
         plot_i += 1
 #    print(len(sorted_ndf), count_dups)
     return
@@ -313,7 +317,6 @@ def plot_4d(popi,filename,df):
     hv = pg.hypervolume(popi)
     ref_point = np.zeros(optimized_params)+1e10 
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
-    ndf_champ = []
     plot_x, plot_y = 0,0
     fig, axs = plt.subplots(optimized_params-1,sharex=True)
     fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at FP4')
@@ -322,6 +325,7 @@ def plot_4d(popi,filename,df):
     first = True
     df_closest = df
     for j in range(0,optimized_params-1):
+        ndf_champ = []
         axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
         axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
         for i in ndf[0]:
@@ -333,8 +337,8 @@ def plot_4d(popi,filename,df):
                 reduced_ndf.append(i)
         try:
             pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
-            if j == 1:
-                print(filename[-6:-4], len(ndf_champ))
+#            if j == 1:
+#                print(filename[-6:-4], len(ndf_champ))
         except:
             print(filename[-6:-4], "no better than nominal solutions")
             return
@@ -363,15 +367,17 @@ def plot_4d(popi,filename,df):
     for i in range(magnet_dim):
         if plot_x > 3:
             plot_x, plot_y = 0, plot_y+1 
-        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-1,1))
+        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-2,1))
 #        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
 #        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
         axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
-        axs2[plot_y,plot_x].axes.set_xlim(-1,1)
+#        axs2[plot_y,plot_x].axes.set_yscale("log")
+#        axs2[plot_y,plot_x].axes.set_ylim(0.1,20)
+        axs2[plot_y,plot_x].axes.set_xlim(-2,2)
         axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
         y_min, y_max = axs2[plot_y,plot_x].get_ylim()
         df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/len(df_closest.index)*(y_max-y_min)+y_min)
-        print(df_closest.iloc[:,:15])
+#        print(df_closest.iloc[:,:15])
 #        if "closest" in df.columns:
         for i_closest in df_closest.index:
             axs2[plot_y,plot_x].text(df_closest["q{0}".format(i+1)][i_closest],df_closest['yplot'][i_closest],str(i_closest+1),color='red')
@@ -387,14 +393,14 @@ def main(filename):
 
     file_extension = os.path.splitext(filename)[-1]
     popi = None
-    print(file_extension)
+    print("reading {} file".format(file_extension))
     df = None
     if file_extension == ".h5":
         popi, df = read_pop_df(filename)
         output_4d_cosy(popi, filename, df)
     else: 
         popi = read_pop(filename)
-    print(df)
+#    print(df)
     plot_4d(popi,filename,df)
 
 if __name__=='__main__':
