@@ -64,13 +64,17 @@ def main(gens=generations, batch_id=210):
         else:
             df = df_new
     
-    print("percent done: {:.2f}%".format(len(df.index)/(generations*population_size)*10))
+    print("percent done: {:.2f}%".format(len(df.index)/((generations+1)*population_size)*10))
     # write df to h5
     df.to_hdf(db_out,key='df')
     max_obj = 1e9
     # check for solutions strictly better than nominal (all objs < 1)
     df = df.loc[(df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
-    print("converged islands: ", converged, "\nbetter than nominal islands: ", better_than_nominal, "\nbetter than nominal points: ", len(df.index))
+    converged_points = len(df.index)
+    max_obj = 1
+    # check for solutions strictly better than nominal (all objs < 1)
+    df = df.loc[(df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
+    print("converged islands: ", converged, "\nconverged points: ", converged_points, "\nbetter than nominal islands: ", better_than_nominal, "\nbetter than nominal points: ", len(df.index))
     return
 
 if __name__=='__main__':

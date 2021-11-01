@@ -9,6 +9,7 @@
 
 #import commands
 import sys, math
+sys.path.insert(1, '/mnt/simulations/secarml/secar_mobo/py/')
 import os, shutil, signal
 import subprocess as commands
 import re
@@ -278,7 +279,7 @@ def plot_2d(popi,filename):
         axs.axhline(y=1.0,linestyle="dashed",color="red")
         ndf_champ.append([popi.get_f()[i] for i in ndf[0]])
         pg.plot_non_dominated_fronts(ndf_champ[0],comp=[0,j],axes=axs)
-#    ax.plot(color="C{}".format(j))
+#    ax.plot        df = (color="C{}".format(j))
 #        ax = pg.plot_non_dominated_fronts(popi.get_f()[0:j])
 
         axs.set_ylabel(fNames[2])
@@ -315,84 +316,108 @@ def plot_2d(popi,filename):
 
 def plot_4d(popi,filename,df):
 
-    sort_param = 3
-    good_results=0
-    magnet_dim = len(popi.get_x()[0])
-    hv = pg.hypervolume(popi)
-    ref_point = np.zeros(optimized_params)+1e10 
-    ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
-    plot_x, plot_y = 0,0
-    fig, axs = plt.subplots(optimized_params-1,sharex=True)
-    fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at FP4')
-    axs[optimized_params-2].set_xlabel(fNames[sort_param])
-    reduced_ndf = []
-    first = True
-    df_closest = df
-    for j in range(0,optimized_params-1):
-        ndf_champ = []
-        axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
-        axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
-        for i in ndf[0]:
-            check_val=1e9
-            if np.all(np.array(popi.get_f()[i]) < check_val) == True:
-                good_results+=1
-#                print(filename[-6:-4], good_results, popi.get_f()[i])
-                ndf_champ.append(popi.get_f()[i])
-                reduced_ndf.append(i)
-        try:
-            pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
-#            if j == 1:
-#                print(filename[-6:-4], len(ndf_champ))
-        except:
-            print(filename[-6:-4], "no better than nominal solutions")
-            return
-        if "closest" in df.columns:
-            df_closest = df.loc[df['closest']==True]
-            df_closest = df_closest.reset_index(drop=True)
-#            print(df_closest.iloc[:,15:19])
-            for i_closest in df_closest.index:
-                axs[plot_y].text(df_closest.iloc[:,18][i_closest],df_closest.iloc[:,15+j][i_closest],str(i_closest+1),color='red')
-        axs[plot_y].set_ylabel(fNames[j])
-        axs[plot_y].set_yscale('log')
-        axs[plot_y].set_xscale('log')
-        plot_y += 1
+    pop = None
+    for i_cluster in range(10):
+        df_i = df.loc[(df['kcluster'] == i_cluster)]
+        magnet_dim = 15
+        p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
+        nobj = p_optimizeRes.get_nobj()
+        if pop == None:
+            pop = pg.population(p_optimizeRes)
+        nrow, ncol = df_i.shape
+        for i in df_i.index:
+            append=True
+            xs = []
+            for j in range(1,magnet_dim+1):
+                xs.append(df_i["q"+str(j)][i]) 
+            xs = np.asarray(xs)
+            fs = []
+            for j in range(magnet_dim,magnet_dim+nobj):
+#                if i == 0:
+#                    print(df.iloc[i,magnet_dim:magnet_dim+p_optimizeRes.get_nobj()])
+                fs.append(df.iloc[i,j])
+            if append:
+                pop.push_back(xs,f=fs)
 
-    fig.tight_layout()
-    fig.savefig(filename+"_paretos.png")
-    plt.cla()
-    fig2, axs2 = plt.subplots(4,4)
-    plot_x, plot_y = 0,0
-    reduced_qs = np.array(popi.get_x())[reduced_ndf]
-    ycolumns = []
-    for i in range(magnet_dim):
-        ycolumns.append('y{}'.format(i))
-    df = pd.DataFrame(reduced_qs, columns = ycolumns)
-    qNom = np.zeros(magnet_dim)
-    for i in range(magnet_dim):
-        if plot_x > 3:
-            plot_x, plot_y = 0, plot_y+1 
-        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-3,3))
-#        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
-#        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
-        axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
-#        axs2[plot_y,plot_x].axes.set_yscale("log")
-#        axs2[plot_y,plot_x].axes.set_ylim(0.1,20)
-        xlower, xupper = popi.problem.get_bounds()
-        xlower, xupper = np.min(xlower), np.max(xupper)
-        axs2[plot_y,plot_x].axes.set_xlim(xlower,xupper)
-        axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
-        y_min, y_max = axs2[plot_y,plot_x].get_ylim()
-        df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/len(df_closest.index)*(y_max-y_min)+y_min)
-#        print(df_closest.iloc[:,:15])
-#        if "closest" in df.columns:
-        for i_closest in df_closest.index:
-            axs2[plot_y,plot_x].text(df_closest["q{0}".format(i+1)][i_closest],df_closest['yplot'][i_closest],str(i_closest+1),color='red')
-        
-        plot_x += 1
+        popi = pop
+        sort_param = 3
+        good_results=0
+        magnet_dim = len(popi.get_x()[0])
+        hv = pg.hypervolume(popi)
+        ref_point = np.zeros(optimized_params)+1e10 
+        ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
+        plot_x, plot_y = 0,0
+        fig, axs = plt.subplots(optimized_params-1,sharex=True)
+        fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at FP4')
+        axs[optimized_params-2].set_xlabel(fNames[sort_param])
+        reduced_ndf = []
+        first = True
+#        df_closest = df.loc[(df['kcluster'] == i_cluster)]
+        for j in range(0,optimized_params-1):
+            ndf_champ = []
+            axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
+            axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
+            for i in ndf[0]:
+                check_val=1e9
+                if np.all(np.array(popi.get_f()[i]) < check_val) == True:
+                    good_results+=1
+    #                print(filename[-6:-4], good_results, popi.get_f()[i])
+                    ndf_champ.append(popi.get_f()[i])
+                    reduced_ndf.append(i)
+            try:
+                pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
+    #            if j == 1:
+    #                print(filename[-6:-4], len(ndf_champ))
+            except:
+                print(filename[-6:-4], "no better than nominal solutions")
+                return
+            if "closest" in df_i.columns:
+                df_closest = df_i.loc[df['closest']==True]
+                df_closest = df_closest.reset_index(drop=True)
+    #            print(df_closest.iloc[:,15:19])
+                for i_closest in df_closest.index:
+                    axs[plot_y].text(df_closest.iloc[:,18][i_closest],df_closest.iloc[:,15+j][i_closest],str(df_closest['kcluster'][0]+1),color='red')
+            axs[plot_y].set_ylabel(fNames[j])
+            axs[plot_y].set_yscale('log')
+            axs[plot_y].set_xscale('log')
+            plot_y += 1
     
-    fig2.delaxes(axs2[plot_y,plot_x])
-    fig2.tight_layout()
-    plt.savefig(filename + "_magnet_hists.png")
+        fig.tight_layout()
+        fig.savefig(filename+"{}_paretos.png".format(i_cluster))
+        plt.cla()
+        fig2, axs2 = plt.subplots(4,4)
+        plot_x, plot_y = 0,0
+        reduced_qs = np.array(popi.get_x())[reduced_ndf]
+        ycolumns = []
+        for i in range(magnet_dim):
+            ycolumns.append('y{}'.format(i))
+        df_i = pd.DataFrame(reduced_qs, columns = ycolumns)
+        qNom = np.zeros(magnet_dim)
+        for i in range(magnet_dim):
+            if plot_x > 3:
+                plot_x, plot_y = 0, plot_y+1 
+            axs2[plot_y,plot_x] = df_i['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-2,2))
+    #        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
+    #        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
+            axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
+    #        axs2[plot_y,plot_x].axes.set_yscale("log")
+    #        axs2[plot_y,plot_x].axes.set_ylim(0.1,20)
+            xlower, xupper = popi.problem.get_bounds()
+            xlower, xupper = np.min(xlower), np.max(xupper)
+            axs2[plot_y,plot_x].axes.set_xlim(xlower,xupper)
+            axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
+            y_min, y_max = axs2[plot_y,plot_x].get_ylim()
+            df_closest['yplot'] = pd.Series(df_closest['kcluster'][0]).apply(lambda x: x/(10)*(y_max-y_min)+y_min)
+    #        print(df_closest.iloc[:,:15])
+    #        if "closest" in df.columns:
+            for i_closest in df_closest.index:
+                axs2[plot_y,plot_x].text(df_closest["q{0}".format(i+1)][i_closest],df_closest['yplot'][i_closest],str(df_closest['kcluster'][0]+1),color='red')
+            
+            plot_x += 1
+        
+        fig2.delaxes(axs2[plot_y,plot_x])
+        fig2.tight_layout()
+        plt.savefig(filename + "{}_magnet_hists.png".format(i_cluster))
     return
 
 def main(filename):
@@ -404,10 +429,10 @@ def main(filename):
     df = None
     if file_extension == ".h5":
         popi, df = read_pop_df(filename)
-        output_4d_cosy(popi, filename, df)
+#        output_4d_cosy(popi, filename, df)
     else: 
         popi = read_pop(filename)
-#    print(df)
+    print(df)
     plot_4d(popi,filename,df)
 
 if __name__=='__main__':

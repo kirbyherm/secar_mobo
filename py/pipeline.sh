@@ -12,9 +12,12 @@
 GENS=1500
 BATCH=220
 
+mkdir results_"$BATCH"
 ./make_db.py $GENS $BATCH
 ./view_db.py $BATCH
-./draw.py best.h5
+mv best"$BATCH".h5 results_"$BATCH"/
+./draw.py results_"$BATCH"/best"$BATCH".h5
+cd results_"$BATCH"
 cd profiles
 
 for TOSSES in $(seq 0 1 10) 
@@ -24,4 +27,4 @@ do
   mv pic001.pdf X${TOSSES}.pdf
   mv pic002.pdf Y${TOSSES}.pdf
 done
-
+rm -r ./*.lis

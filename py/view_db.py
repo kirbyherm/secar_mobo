@@ -95,7 +95,7 @@ def main(start_i=batch):
 #    print(df.columns)
     df = df.drop('pareto',1)
     #df = df.iloc[:,:19]
-    df.to_hdf('best.h5',key='df')
+    df.to_hdf('best{}.h5'.format(start_i),key='df')
     return
 
 if __name__=='__main__':
