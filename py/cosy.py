@@ -96,6 +96,7 @@ def cosyrun(qs=qNom):
 
     # make fox file and get name
     cosyFilename, lisFilename = write_fox(qs)
+#    cosyFilename2, lisFilename2 = write_fox(qs,fox_file=width.fox)
     
     #Run cmd
     cmd = COSY_DIR + 'cosy'
@@ -103,6 +104,13 @@ def cosyrun(qs=qNom):
     startTime = timeit.default_timer()
     # run cosy 
     output = commands.run([cmd ,cosyFilename], capture_output=True)
+    # print time
+    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
+
+    # timer for diagnostics
+    startTime = timeit.default_timer()
+    # run cosy2 
+#    output2 = commands.run([cmd ,cosyFilename2], capture_output=True)
     # print time
     print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
 
@@ -212,6 +220,8 @@ def cosyrun(qs=qNom):
     # remove old cosy fox and lis file
     commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
+#    commands.run(['rm','-f',cosyFilename2])
+#    commands.run(['rm','-f',lisFilename2])
 
     # return the objective values
     return (resol)
