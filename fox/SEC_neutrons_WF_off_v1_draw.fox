@@ -1,4 +1,4 @@
-INCLUDE '../COSY10.0/COSY';
+INCLUDE '/mnt/simulations/secarml/secar_mobo/COSY10.0/COSY';
 {INCLUDE '/Applications/COSY/COSY';}
 
 PROCEDURE RUN ;
@@ -255,6 +255,24 @@ ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;
 AM SAVEMAP;
 ENDPROCEDURE;
 
+PROCEDURE PRINT_XDIM;
+
+{READ_RAY;}
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WRITE 6 'Xdim' WW(1)-WW(2);
+
+ENDPROCEDURE;
+
+PROCEDURE PRINT_YDIM;
+
+{READ_RAY;}
+WW(1):= VMAX(RAY(3));
+WW(2):= VMIN(RAY(3));
+WRITE 6 'Ydim' WW(1)-WW(2);
+
+ENDPROCEDURE;
+
 {**************** RECOIL_LINE ****************}
 
 PROCEDURE RECOIL_BL;
@@ -272,6 +290,8 @@ IF (MISALIGN=1);
  SA 0.000028 0.000074; {x, y}
 ENDIF;
 M5 0.250 Q1*SC Q1H*SC 0 -0.0032*(Q1/-0.40033)*SC 0 0.055;  {Q1+Hex}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  SA -0.000028 -0.000074;
  RA -0.0019;
@@ -290,6 +310,8 @@ IF (MISALIGN=1);
  SA 0.00002 0.000005; {x, y}
 ENDIF;
 MQ 0.2979 Q2*SC 0.068;                                     {Q2}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  SA -0.00002 -0.000005; {-x, -y}
  RA -0.0038; {-Roll}
@@ -308,6 +330,8 @@ IF (MISALIGN=1);
  SA -0.000036 0.000112; {x, y}
 ENDIF;
 MC 1.25 22.51145 0.030 B1N B1S1 B1S2 7;                    {B1}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  SA 0.000036 -0.000112; {-x, -y}
  RA -0.0058; {-Roll}
@@ -324,6 +348,8 @@ IF (MISALIGN=1);
  SA -0.000007 0.000147; {x, y}
 ENDIF;
 MC 1.25 22.5121 0.030 B1N B2S1 B2S2 7;                     {B2}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  SA 0.000007 0.000147; {-x, -y}
  RA -0.0012; {-Roll}
@@ -341,6 +367,8 @@ IF (MISALIGN=1);
  SA 0.000011 0.00002; {x, y}
 ENDIF;
 MH 0.26 H1*SC 0.11;                                        {HEX1}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  TA 0.0165 -0.0048; {Pitch, Yaw}
  RA 0.0055; {Roll}
@@ -359,6 +387,8 @@ IF (MISALIGN=1);
  SA 0.000003 -0.000002; {x, y}
 ENDIF;
 MQ 0.3499 Q3*SC 0.11;                                      {Q3}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  TA 0.0147 0.0009; {Pitch, Yaw}
  RA -0.0037; {Roll}
@@ -377,6 +407,8 @@ IF (MISALIGN=1);
  SA -0.000047 -0.000002; {x, y}
 ENDIF;
 M5 0.3467 Q4*SC 0 0 0 0 0.08;                              {Q4}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  TA -0.0168 -0.0040; {Pitch, Yaw}
  RA -0.0054; {Roll}
@@ -395,6 +427,8 @@ IF (MISALIGN=1);
  SA -0.000012 -0.000005; {x, y}
 ENDIF;
 MQ 0.3466 Q5*SC 0.06;                                      {Q5}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  TA 0.0367 0.0012; {Pitch, Yaw}
  RA -0.0223; {Roll}
@@ -416,10 +450,14 @@ DL 0.16965-0.1;                                            {DL12}
 PS 0.156/2;
 DL 0.1;
 MC 1.25 22.5321 0.05 B1N B3S1 B3S2 7;                      {B3}
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.50685-0.1;                                            {DL13}
 PS 0.156/2;
 DL 0.1;
 MC 1.25 22.5807 0.05 B1N B4S1 B4S2 7;                      {B4}
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.299023-0.1;                                           {DL14}
 PS 0.240/2;
 DL 0.1;
@@ -430,6 +468,8 @@ IF (MISALIGN=1);
  SA -0.000028 -0.000023; {x, y}
 ENDIF;
 M5 0.26 0 H2*SC 0 0 0 0.12;                                {HEX2}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  TA 0.0198 0.0103; {Pitch, Yaw}
  RA 0.0121; {Roll}
@@ -449,6 +489,8 @@ IF (MISALIGN=1);
  SA -0.000035 0.000012; {x, y}
 ENDIF;
 MQ 0.3398 Q6*SC 0.14;                                      {Q6}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1); 
  TA -0.0068 0.0021; {Pitch, Yaw}
  RA -0.0016; {Roll}
@@ -467,6 +509,8 @@ IF (MISALIGN=1);
  SA -0.000028 0.00005; {x, y}
 ENDIF;
 MQ 0.3401 Q7*SC 0.13 ;                                     {Q7}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);  
  TA -0.0013 -0.0096; {Pitch, Yaw}
  RA -0.0039; {Roll}
@@ -504,6 +548,8 @@ IF (MISALIGN=1);
  SA 0.000028 0.000003; {x, y}
 ENDIF;
 M5 0.26 0 H3*SC 0 0 0 0.09;                                {HEX3}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);  
  TA -0.0118 -0.0081; {Pitch, Yaw}
  RA -0.0001; {Roll}
@@ -523,6 +569,8 @@ IF (MISALIGN=1);
  SA 0.000045 -0.000034; {x, y}
 ENDIF;
 M5 0.26 0 0 O1*SC 0 0 0.09;                                {OCT1}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);  
  TA 0.0076 0.0143; {Pitch, Yaw}
  RA -0.0057; {Roll}
@@ -536,11 +584,10 @@ DL 0.1;
 PS 0.102/2;
 DL 1.750011-0.1;                                            {DL21}
 
-WW(1):= VMAX(RAY(1));
+{WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
-{WRITE 6 'FP2Res' (ABS(ME(1,7))/(WV));}
-WRITE 6 'FP2DE' ((WV));
+WRITE 6 'FP2Res' (ABS(ME(1,7))/(WV));}
 
 PS 0.015;
 
@@ -555,6 +602,8 @@ IF (MISALIGN=1);
  SA -0.000046 0.000022; {x, y}
 ENDIF;
 M5 0.25 Q8*SC 0 -9.88E-5*(Q8/-0.14859)*SC 0 0 0.05;        {Q8_oct}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);  
  TA -0.0181 -0.0197; {Pitch, Yaw}
  RA -0.0014; {Roll}
@@ -573,6 +622,8 @@ IF (MISALIGN=1);
  SA 0.000037 0.00005; {x, y}
 ENDIF;
 M5 0.30 Q9*SC 0 0.00015*(Q9/0.2855)*SC 0 0 0.07;           {Q9_oct}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);  
  TA 0.014 0.0090; {Pitch, Yaw}
  RA -0.0102; {Roll}
@@ -586,10 +637,14 @@ PS 0.148/2;
 DL 0.1;
 
 MC 1.25 42.5 0.036 B1N B5S1 B5S2 7;                        {B5} 
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.35-0.1;                                               {DL25}
 PS 0.148/2;
 DL 0.1;
 MC 1.25 42.5 0.036 B1N B6S1 B6S2 7;                        {B6}
+PRINT_XDIM;
+PRINT_YDIM;
 
 DL 0.829984-0.1;                                           {DL26}
 PS 0.222/2; 
@@ -601,6 +656,8 @@ IF (MISALIGN=1);
  SA -0.000026 0.000011; {x, y}
 ENDIF;
 M5 0.26 Q10*SC 0 5.154e-5*(-0.0335/Q10)*SC 0 0 0.09;       {Q10_oct}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);
  TA 0.0099 0.0006; {Pitch, Yaw}
  RA -0.0023; {Roll}
@@ -619,6 +676,8 @@ IF (MISALIGN=1);
  SA -0.000023 0.000011; {x, y}
 ENDIF;
 M5 0.34 Q11*SC 0 0.000115625*(0.149432825/Q11)*SC 0 0 0.12;{Q11_oct}
+PRINT_XDIM;
+PRINT_YDIM;
 IF (MISALIGN=1);  
  TA -0.0184 -0.0197; {Pitch, Yaw}
  RA 0.0023; {Roll}
@@ -648,51 +707,74 @@ FR 3;
 DL 4.60;                                                  {DL29}
 PS 0.02;                                                  {FP3}
 {READ_RAY;}
-WW(1):= VMAX(RAY(1));
+{WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
-{WRITE 6 'FP3Res' (ABS(ME(1,7))/(WV));}
-WRITE 6 'FP3DE' ((WV));
+WRITE 6 'FP3Res' (ABS(ME(1,7))/(WV));}
 
 {SECTION 4}
 DL 0.25115-0.1;                                            {DL30}
 PS 0.167/2;
 DL 0.1;
 MQ 0.2977 Q12*SC 0.07;                                     {Q12}
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.1;
 PS 0.146/2;
 DL 0.35075-0.2;                                            {DL31}
 PS 0.121/2;
 DL 0.1;
 MQ 0.3008 Q13*SC 0.05;                                     {Q13}
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.1;
 PS 0.101/2;
 DL 0.6596-0.2;                                             {DL32}
 PS 0.130/2;
 DL 0.1;
 MC 1.25 55. 0.03 B1N B7S1 B7S2 4;                          {B7}   
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.68-0.1;                                               {DL33} 
 PS 0.130/2;
 DL 0.1;
 MC 1.25 55. 0.03 B1N B8S1 B8S2 4;                          {B8} 
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.86025-0.1;                                            {DL34}
 PS 0.121/2;
 DL 0.1;
 MQ 0.2995 Q14*SC 0.05;                                     {Q14}
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.1;
 PS 0.101/2;
 DL 0.44965-0.2;                                            {DL35}
 PS 0.121/2;
 DL 0.1;
 MQ 0.3012 Q15*SC 0.05;                                     {Q15}
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.1;
 PS 0.101/2;
 DL 0.7112-0.1;                                             {Dist to UMCP} {71.12 cm} {from the coils of Q15 to umcp}
 PS (0.075/1.41)/2;			                                   {0.075 mm horiz., tilted 45 deg for vert direction}
+PRINT_XDIM;
+PRINT_YDIM;
 DL 2.1082;                                                 {from umcp to viewer}
 PS (0.035);                                                {Viewer FP4}
+PRINT_XDIM;
+PRINT_YDIM;
 DL 0.3302;                                                 {from viewer to dssd}
 PS (0.064)/2;                                              {DSSD}
+
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WVX:=(WW(1)-WW(2))*(WW(1)-WW(2));
+WW(1):= VMAX(RAY(3));
+WW(2):= VMIN(RAY(3));
+WVY:=(WW(1)-WW(2))*(WW(1)-WW(2));
+WRITE 6 'BeamSpotSize' (WVX+WVY);
 
 ENDPROCEDURE;
 
@@ -714,32 +796,32 @@ DE:= 0.03;
 NMAX:=190;
 
 {SET MAGNETS}
-Q1_SC:= 1.000;
-Q2_SC:= 1.000;
-Q3_SC:= 1.000;
-Q4_SC:= 1.000;
-Q5_SC:= 1.000;
-Q6_SC:= 1.0000;
-Q7_SC:= 1.0000;
-Q8_SC:= 1.000 ;
-Q9_SC:= 1.000 ;
-Q10_SC:= 1.000 ;
-Q11_SC:= 1.000 ;
-Q12_SC:= 1.000 ;
-Q13_SC:= 1.000 ;
-Q14_SC:= 1.000 ;
-Q15_SC:= 1.000 ;
-H1_SC:= 1.000 ;
-H2_SC:= 1.000 ;
-H3_SC:= 1.000 ;
-O1_SC:= 1.000 ;
+Q1_SC:=0.509520 ;
+Q2_SC:=0.806774 ;
+Q3_SC:=1.242342 ;
+Q4_SC:=1.239327 ;
+Q5_SC:=1.974054 ;
+Q6_SC:=0.672534 ;
+Q7_SC:=0.766150 ;
+Q8_SC:=0.510339 ;
+Q9_SC:=0.512759 ;
+Q10_SC:=1.622186;
+Q11_SC:=1.174119;
+Q12_SC:=0.727105;
+Q13_SC:=0.565194;
+Q14_SC:=0.844446;
+Q15_SC:=0.514664;
+H1_SC:=0.980763 ;
+H2_SC:=1.927882 ;
+H3_SC:=1.063890 ;
+O1_SC:=0.625535 ;
 
 
 {THIS IS WHERE YOU CHANGE YOU CONFIGURATION}
 WF1R:=14.; {define the bending radius in WF1}
 WF2R:=14; {define the bending radius in WF2}
-WF1ON:=0; {WF1 - OFF=0, ON=1}
 WF2ON:=0; {WF2 - OFF=0, ON=1}
+WF1ON:=0; {WF2 - OFF=0, ON=1}
 MISALIGN:=0; {ACCOUNT =1 or not =0 for the measured misalignment}
 OCT1ON:=1; {is Octupole1 ON=1 or OFF=0}
 
@@ -782,7 +864,7 @@ SC:=CONS(CHIM)/CANONICAL_RIGIDITY;
 UM;
 CR {Clears all rays}; UM;
 
-{N1:=1;N2:=1;N3:=1;N4:=1;N5:=3;
+N1:=1;N2:=3;N3:=1;N4:=1;N5:=2;
 
 LOOP NX 1 2*N1+1;LOOP NA 1 2*N2+1;LOOP NY 1 2*N3+1;LOOP NB 1 2*N4+1;
 LOOP NE 1 2*N5+1;
@@ -796,20 +878,25 @@ SRDE:= DE*(NE-(N5+1))/N5;
 IF (((NA-(N2+1))/N2)^2+((NB-(N4+1))/N4)^2+((NE-(N5+1))/N5)^2)<1.01;
 SR SRXX SRAX SRYY SRAY 0 SRDE 0 0 1;
 ENDIF;
-ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;}
+ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;
 
-SR 0 0 0 0 0 DE 0 0 1; {black}
-SR 0 0 0 0 0 0.0585 0 0 2;{blue}
-
-
-{SR 0 0 0 0 0 0.04 0 0 3;{red}
+{SR 0 -0.025 0 0 0 0 0 0 3;{red}
+SR 0 0.025 0 0 0 0 0 0 3;
+SR 0 0 0 0 0 0.04 0 0 2;{blue}
 SR 0 0 0 0 0 -0.04 0 0 2;
 SR 0.0015 0 0 0 0 0 0 0 4;{yellow}
 SR 0 0 0.0015 0 0 0 0 0 4;
 SR 0 0 0 0.025 0 0 0 0 5;{green}
 SR 0 0 0 -0.025 0 0 0 0 5;}
 
+BP;
 RECOIL_BL;
+EP;
+
+PG -12 -12;
+
+PP -12 0. 0.;
+PP -12 0. 90.;
 
 {READ_RAY;}
 {WW(1):= VMAX(RAY(1));

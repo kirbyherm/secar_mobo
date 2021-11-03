@@ -46,6 +46,7 @@ def is_pareto_efficient_simple(costs):
 # only show best 100 since we get a lot of points
 show_best = 100 
 batch = 210
+kclusters = 10
 
 def main(start_i=batch):
     # specify database for input
@@ -82,7 +83,14 @@ def main(start_i=batch):
     #df['ssobjs'] = np.sqrt(df['FP2_res']**2+df['FP3_res']**2+df['MaxBeamWidth']**2+df['FP4_BeamSpot']**2)
     #df = df.sort_values(by='ssobjs',ignore_index=True)
     #df = df.loc[df['ssobjs'] < df['ssobjs'][show_best]]
-    df = run_kmeans(df, 15, 10)
+#    print(df)
+    quads = df.columns
+#    print(quads)
+    for q in range(len(quads)):
+        print(q, quads[q])
+        if "q" in quads[q]:
+            magnet_dim = q+1
+    df = run_kmeans(df, magnet_dim, kclusters)
     
     # sort df by FP4_BeamSpot values, and reindex
     df = df.sort_values(by='FP4_BeamSpot',ignore_index=True)

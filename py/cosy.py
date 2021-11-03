@@ -22,9 +22,9 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 
 # define the nominal values for the objective function
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
-fNom = array([52.93792472193851, 76.54832250054639, 1.11546282637777, 0.07190214613237082])
+fNom = array([0.02285401532682956, 0.04181594290692345, 3.422466427009127, 0.27344973981231574])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
-qNom = zeros(15)+1
+qNom = zeros(19)+1
 
 # define a non nominal qvalue array, if checking the values
 qNew = array([0.5924182514791451,-0.8758860089293923,-0.6100796679131815,-0.14615536797341183,0.9770480402400011,-0.7391592447117457,-0.7498637465288235,0.16544225901836773,0.19998299730932922,-0.6100283855003581,-0.25827968836883713,-1.5,1.5,1.9,-1.9])
@@ -32,8 +32,7 @@ qNew = power(2,qNew)
 qNew = array([2.93038477,1.90063726,0.426385,  0.43573147,0.8350062,  0.26068104,
  0.61171371,2.05445898,0.3762753, 3.31110943,3.97101987,3.91936971,
  0.80816148,2.69208215,0.62319133])
-qNew = array([1,1,1,1,1,1,1,1,0.9,2.5,1.1,0.5,0.2,1.2,1.2])
-
+qNew = array([0.509520,0.806774,1.242342,1.239327,1.974054,0.672534,0.766150,0.510339,0.512759,1.622186,1.174119,0.727105,0.565194,0.844446,0.514664,0.980763,1.927882,1.063890,0.625535])
 
 # set working DIR for PYGMO, FOX, COSY
 PYGMO_DIR = '../'
@@ -70,9 +69,17 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_1
             start_line = i+1
 #            print(text[i], text[start_line])
     # change the q setttings
+    magnet_i = 0
     for i in range(len(qs)):
-        text[i+start_line] = "Q{0}_SC:= {1};\n".format(i+1,qs[i])
-
+        magnet_i += 1
+        if i < 15:
+            text[i+start_line] = "Q{0}_SC:= {1};\n".format(magnet_i,qs[i])
+        elif i < 18: 
+            magnet_i = i - 14
+            text[i+start_line] = "H{0}_SC:= {1};\n".format(magnet_i,qs[i])
+        else: 
+            magnet_i = 1
+            text[i+start_line] = "O{0}_SC:= {1};\n".format(magnet_i,qs[i])
     # temporary output file
     cosyFilename = directory + 'pygmoCosy'+str(rand)+'.fox'
     # if by some ridiculous chance we pick the same number as another iteration, find new number
@@ -95,8 +102,8 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_1
 def cosyrun(qs=qNom):
 
     # make fox file and get name
-    cosyFilename, lisFilename = write_fox(qs)
-#    cosyFilename2, lisFilename2 = write_fox(qs,fox_file=width.fox)
+    cosyFilename, lisFilename = write_fox(qs,fox_file="SEC_neutrons_WF_off_v1.fox")
+    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SEC_neutrons_WF_off_DE_rays_v1.fox")
     
     #Run cmd
     cmd = COSY_DIR + 'cosy'
@@ -110,7 +117,7 @@ def cosyrun(qs=qNom):
     # timer for diagnostics
     startTime = timeit.default_timer()
     # run cosy2 
-#    output2 = commands.run([cmd ,cosyFilename2], capture_output=True)
+    output2 = commands.run([cmd ,cosyFilename2], capture_output=True)
     # print time
     print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
 
@@ -118,6 +125,10 @@ def cosyrun(qs=qNom):
     stripped = output.stdout.strip().decode('utf8','strict')
     split = stripped.split()
     print(split)
+    # get output and now convert into the necessary values to return to pygmo
+    stripped2 = output2.stdout.strip().decode('utf8','strict')
+    split2 = stripped2.split()
+    print(split2)
 
     # initiate all variables to be read, and bools for the reader to check
     xdim, ydim = [], []
@@ -140,18 +151,6 @@ def cosyrun(qs=qNom):
         if ydim_bool:
             ydim.append(float(split[i]))
             ydim_bool = False
-        if fp2res_bool:
-            fp2res = (float(split[i]))
-            fp2res_bool = False
-        if fp2espread_bool:
-            fp2espread = (float(split[i]))
-            fp2espread_bool = False
-        if fp3res_bool:
-            fp3res = (float(split[i]))
-            fp3res_bool = False
-        if fp3espread_bool:
-            fp3espread = (float(split[i]))
-            fp3espread_bool = False
         if beamspotsize_bool:
             beamspotsize = power(float(split[i]),0.5)
             beamspotsize_bool = False
@@ -159,16 +158,19 @@ def cosyrun(qs=qNom):
             xdim_bool = True
         if split[i].strip() == "Ydim":
             ydim_bool = True
-        if split[i].strip() == "FP2Res":
-            fp2res_bool = True
-        if split[i].strip() == "FP2Espread":
-            fp2espread_bool = True
-        if split[i].strip() == "FP3Res":
-            fp3res_bool = True
-        if split[i].strip() == "FP3Espread":
-            fp3espread_bool = True
         if split[i].strip() == "BeamSpotSize":
             beamspotsize_bool = True
+    for i in range(len(split2)):
+        if fp2res_bool:
+            fp2res = (float(split2[i]))
+            fp2res_bool = False
+        if fp3res_bool:
+            fp3res = (float(split2[i]))
+            fp3res_bool = False
+        if split2[i].strip() == "FP2DE":
+            fp2res_bool = True
+        if split2[i].strip() == "FP3DE":
+            fp3res_bool = True
 
     # scale factor to account for the beam spot issue
     #   even the nominal setting is outside the bounds...
@@ -220,8 +222,8 @@ def cosyrun(qs=qNom):
     # remove old cosy fox and lis file
     commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
-#    commands.run(['rm','-f',cosyFilename2])
-#    commands.run(['rm','-f',lisFilename2])
+    commands.run(['rm','-f',cosyFilename2])
+    commands.run(['rm','-f',lisFilename2])
 
     # return the objective values
     return (resol)

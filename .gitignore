@@ -8,3 +8,6 @@ output/
 COSY10.0/*.o
 COSY10.0/cosy
 COSY10.0/cosysh
+*.tar.gz
+*.pdf
+*results_*

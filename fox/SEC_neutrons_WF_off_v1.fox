@@ -1,5 +1,5 @@
-{INCLUDE '../COSY10.0/COSY';}
-INCLUDE '/Applications/COSY/COSY';
+INCLUDE '../COSY10.0/COSY';
+{INCLUDE '/Applications/COSY/COSY';}
 
 PROCEDURE RUN ;
 {SEC_2WD_fields_clean, final optimized SECAR, 9/16/2014, GB}
@@ -584,10 +584,10 @@ DL 0.1;
 PS 0.102/2;
 DL 1.750011-0.1;                                            {DL21}
 
-WW(1):= VMAX(RAY(1));
+{WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
-WRITE 6 'FP2Res' (ABS(ME(1,7))/(WV));
+WRITE 6 'FP2Res' (ABS(ME(1,7))/(WV));}
 
 PS 0.015;
 
@@ -707,10 +707,10 @@ FR 3;
 DL 4.60;                                                  {DL29}
 PS 0.02;                                                  {FP3}
 {READ_RAY;}
-WW(1):= VMAX(RAY(1));
+{WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
-WRITE 6 'FP3Res' (ABS(ME(1,7))/(WV));
+WRITE 6 'FP3Res' (ABS(ME(1,7))/(WV));}
 
 {SECTION 4}
 DL 0.25115-0.1;                                            {DL30}

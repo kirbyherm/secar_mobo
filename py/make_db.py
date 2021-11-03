@@ -14,11 +14,11 @@ import os, sys
 # specify important directories and names
 PYGMO_DIR = "../"
 OUTPUT_DIR = PYGMO_DIR + "output/"
-generations = 1000
+generations = 750
 population_size = 84
-batch = 210
+batch = 230
 # specify number of magnets
-magnet_dim = 15
+magnet_dim = 19
 
 def main(gens=generations, batch_id=210):
 

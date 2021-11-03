@@ -34,7 +34,7 @@ seed = 56448189
 
 # MOEAD hyperparameters
 #   default parameters have worked well
-generations = 1500 
+generations = 750 
 cr_p = 1.0 # crossover parameter, 1.0 by default
 f_p = 0.5 # diff evolution operator parameter, 0.5 by default
 eta_m = 20 # distribution index used by the polynomial mutation, 20 by default
@@ -44,7 +44,7 @@ limit = 2 # max number of copies reinserted in the population if preserve_divers
 preserve_diversity=True # activates diversity preservation mechanisms
 
 # specify number of magnets to tune
-magnet_dim = 15 
+magnet_dim = 19 
 # specify output file
 outputFile = "output_4f_moead_FP2_FP3_{}_{}.csv".format(generations, batch_no)
 

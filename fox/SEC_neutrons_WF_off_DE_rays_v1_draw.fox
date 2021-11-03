@@ -1,4 +1,4 @@
-INCLUDE '../COSY10.0/COSY';
+INCLUDE '/mnt/simulations/secarml/secar_mobo/COSY10.0/COSY';
 {INCLUDE '/Applications/COSY/COSY';}
 
 PROCEDURE RUN ;
@@ -809,7 +809,15 @@ SR 0 0 0.0015 0 0 0 0 0 4;
 SR 0 0 0 0.025 0 0 0 0 5;{green}
 SR 0 0 0 -0.025 0 0 0 0 5;}
 
+BP;
 RECOIL_BL;
+EP;
+
+PG -12 -12;
+
+PP -12 0. 0.;
+PP -12 0. 90.;
+
 
 {READ_RAY;}
 {WW(1):= VMAX(RAY(1));

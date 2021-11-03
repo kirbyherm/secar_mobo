@@ -9,12 +9,14 @@
 #
 # echo -e "version\tn\tmax\tl2norm\ttime" 
 
-GENS=1500
-BATCH=220
+GENS=750
+BATCH=230
 
 mkdir results_"$BATCH"
 ./make_db.py $GENS $BATCH
 ./view_db.py $BATCH
+mv magnet_factors.csv results_"$BATCH"/
+mv magnet_values.csv results_"$BATCH"/
 mv best"$BATCH".h5 results_"$BATCH"/
 ./draw.py results_"$BATCH"/best"$BATCH".h5
 cd results_"$BATCH"
@@ -26,5 +28,9 @@ do
   cosy ./pygmoCosy"$TOSSES".fox > "$TOSSES".txt
   mv pic001.pdf X${TOSSES}.pdf
   mv pic002.pdf Y${TOSSES}.pdf
+  cosy ./pygmoCosy"$TOSSES"_DE.fox > "$TOSSES"_DE.txt
+  mv pic001.pdf X${TOSSES}_DE.pdf
+#  mv pic002.pdf Y${TOSSES}_DE.pdf
+  rm -r ./pic*.pdf
 done
 rm -r ./*.lis
