@@ -9,8 +9,8 @@
 #
 # echo -e "version\tn\tmax\tl2norm\ttime" 
 
-GENS=750
-BATCH=230
+GENS=2
+BATCH=240
 
 mkdir results_"$BATCH"
 ./make_db.py $GENS $BATCH

@@ -1,4 +1,4 @@
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
 # nscl servers
@@ -22,7 +22,7 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 
 # define the nominal values for the objective function
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
-fNom = array([0.02285401532682956, 0.04181594290692345, 3.422466427009127, 0.27344973981231574])
+fNom = array([238.6333531058156, 141.3598353654459, 1.012690210533262, 0.07018782033306828])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
 
@@ -102,8 +102,7 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_1
 def cosyrun(qs=qNom):
 
     # make fox file and get name
-    cosyFilename, lisFilename = write_fox(qs,fox_file="SEC_neutrons_WF_off_v1.fox")
-    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SEC_neutrons_WF_off_DE_rays_v1.fox")
+    cosyFilename, lisFilename = write_fox(qs,fox_file="SEC_a_n_WF2_off_10m_v1.fox")
     
     #Run cmd
     cmd = COSY_DIR + 'cosy'
@@ -114,21 +113,10 @@ def cosyrun(qs=qNom):
     # print time
     print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
 
-    # timer for diagnostics
-    startTime = timeit.default_timer()
-    # run cosy2 
-    output2 = commands.run([cmd ,cosyFilename2], capture_output=True)
-    # print time
-    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
-
     # get output and now convert into the necessary values to return to pygmo
     stripped = output.stdout.strip().decode('utf8','strict')
     split = stripped.split()
     print(split)
-    # get output and now convert into the necessary values to return to pygmo
-    stripped2 = output2.stdout.strip().decode('utf8','strict')
-    split2 = stripped2.split()
-    print(split2)
 
     # initiate all variables to be read, and bools for the reader to check
     xdim, ydim = [], []
@@ -160,16 +148,15 @@ def cosyrun(qs=qNom):
             ydim_bool = True
         if split[i].strip() == "BeamSpotSize":
             beamspotsize_bool = True
-    for i in range(len(split2)):
         if fp2res_bool:
-            fp2res = (float(split2[i]))
+            fp2res = (float(split[i]))
             fp2res_bool = False
         if fp3res_bool:
-            fp3res = (float(split2[i]))
+            fp3res = (float(split[i]))
             fp3res_bool = False
-        if split2[i].strip() == "FP2DE":
+        if split[i].strip() == "FP2Res":
             fp2res_bool = True
-        if split2[i].strip() == "FP3DE":
+        if split[i].strip() == "FP3Res":
             fp3res_bool = True
 
     # scale factor to account for the beam spot issue
@@ -222,8 +209,6 @@ def cosyrun(qs=qNom):
     # remove old cosy fox and lis file
     commands.run(['rm','-f',cosyFilename])
     commands.run(['rm','-f',lisFilename])
-    commands.run(['rm','-f',cosyFilename2])
-    commands.run(['rm','-f',lisFilename2])
 
     # return the objective values
     return (resol)

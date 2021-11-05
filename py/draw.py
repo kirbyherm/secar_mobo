@@ -1,4 +1,4 @@
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
 # nscl servers
@@ -24,8 +24,9 @@ from problem import optimizeRes
 import pandas as pd
 
 # specify Tex details for pretty plots
-os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
+#os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 #os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
+os.environ['PATH'] = os.environ['PATH'] + ':/opt/software/texlive/20210316/bin/x86_64-linux/tex'
 plt.rcParams.update({
     "text.usetex": True,
 })
@@ -225,8 +226,7 @@ def output_4d_cosy(popi,filename,df):
             os.remove(f'{PROFILES_PATH}/{file}')     
         shutil.rmtree(PROFILES_PATH)
     os.mkdir(PROFILES_PATH)
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox' )
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), str(0)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox' )
+    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, PROFILES_PATH, 'SEC_a_n_WF2_off_10m_v1_draw.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):
 #    print(df_closest,df_closest.index)
@@ -240,8 +240,7 @@ def output_4d_cosy(popi,filename,df):
 #                if np.array_equal(sorted_pop[i-1],sorted_pop[k]):
 #                    count_dups += 1
 #                    break
-        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox')
-        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox')
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SEC_a_n_WF2_off_10m_v1_draw.fox')
         plot_i += 1
 #    print(len(sorted_ndf), count_dups)
     return

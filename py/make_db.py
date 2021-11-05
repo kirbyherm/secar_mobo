@@ -1,4 +1,4 @@
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
+#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
 # nscl servers
@@ -35,7 +35,7 @@ def main(gens=generations, batch_id=210):
     
     # i run batches in 10s, so i specify the first id of the batch
     start_i = batch_id 
-    end_i = start_i + 10
+    end_i = start_i + 1
     # name the output
     db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
     
