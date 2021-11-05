@@ -46,7 +46,7 @@ def is_pareto_efficient_simple(costs):
 # only show best 100 since we get a lot of points
 show_best = 100 
 
-start_i = 180
+start_i = 210
 # specify database for input
 db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
 # initialize empty df

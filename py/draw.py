@@ -25,7 +25,8 @@ import pandas as pd
 
 # specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
-#os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
+os.environ['PATH'] = os.environ['PATH'] + ':/opt/software/texlive/20210316/bin/x86_64-linux/tex'
+
 plt.rcParams.update({
     "text.usetex": True,
 })
@@ -217,6 +218,8 @@ def output_4d_cosy(popi,filename,df):
 #    print(ndf[0], sorted_ndf)
     
     df_closest = df.loc[df['closest']==True]
+    if not ( os.path.isdir("4f_FP2_FP3") ):
+        os.mkdir("4f_FP2_FP3")
     write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, "4f_FP2_FP3/", 'SEC_neutrons_WF_14m_v1_draw.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):

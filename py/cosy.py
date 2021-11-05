@@ -22,7 +22,7 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 
 # define the nominal values for the objective function
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
-fNom = array([52.93792472193851, 76.54832250054639, 1.11546282637777, 0.07190214613237082])
+fNom = array([52.93792472193848, 76.54832250099213, 1.11546282637913, 0.07190214613207992])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(15)+1
 
@@ -171,7 +171,7 @@ def cosyrun(qs=qNom):
     print(qs)
     for i in range(len(magnet_dims)):
         # if no x-ydim values, just return outside constraints (all 1e9)
-        if len(xdim) < len(magnet_dims) or len(ydim) < len(magnet_dims):
+        if len(xdim) != len(magnet_dims) or len(ydim) != len(magnet_dims):
             resol = array([1e9,1e9,1e9,1e9])         
             break            
         # find xbound, ybound
