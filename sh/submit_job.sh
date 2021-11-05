@@ -2,7 +2,7 @@
 
 ### define resources needed:
 ### walltime - how long you expect the job to run
-#SBATCH --time=0-03:00:00
+#SBATCH --time=6-00:00:00
 #SBATCH --begin=now
 
 ### nodes:ppn - how many nodes & cores per node (ppn) that you require
@@ -14,7 +14,7 @@
 #SBATCH --mem-per-cpu=5G
 ### you can give your job a name for easier identification
 #SBATCH -J pygmo_test 
-#SBATCH --array=240  ##-239
+#SBATCH --array=240-249
 
 ### error/output file specifications
 #SBATCH -o /mnt/home/herman67/cosy/pygmo/sh/slurmfiles/moead_4f_FP2_FP3_%a.txt

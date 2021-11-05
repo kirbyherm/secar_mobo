@@ -34,7 +34,7 @@ seed = 56448189
 
 # MOEAD hyperparameters
 #   default parameters have worked well
-generations = 2
+generations = 1000
 cr_p = 1.0 # crossover parameter, 1.0 by default
 f_p = 0.5 # diff evolution operator parameter, 0.5 by default
 eta_m = 20 # distribution index used by the polynomial mutation, 20 by default
