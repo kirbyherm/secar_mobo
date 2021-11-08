@@ -36,6 +36,7 @@ fNom = np.zeros(optimized_params)+1
 fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
+magnet_dim = 19
 
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
@@ -353,7 +354,7 @@ def plot_4d(popi,filename,df):
             df_closest = df_closest.reset_index(drop=True)
 #            print(df_closest.iloc[:,15:19])
             for i_closest in df_closest.index:
-                axs[plot_y].text(df_closest.iloc[:,22][i_closest],df_closest.iloc[:,19+j][i_closest],str(i_closest+1),color='red')
+                axs[plot_y].text(df_closest.iloc[:,magnet_dim+3][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
         axs[plot_y].set_ylabel(fNames[j])
         axs[plot_y].set_yscale('log')
         axs[plot_y].set_xscale('log')

@@ -41,7 +41,7 @@ fNames = fNames[:optimized_params]
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
     df = pd.read_hdf(filename)
-    magnet_dim = 15
+    magnet_dim = 19
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
     nobj = p_optimizeRes.get_nobj()
     if pop == None:
@@ -226,7 +226,8 @@ def output_4d_cosy(popi,filename,df):
             os.remove(f'{PROFILES_PATH}/{file}')     
         shutil.rmtree(PROFILES_PATH)
     os.mkdir(PROFILES_PATH)
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, PROFILES_PATH, 'SEC_neutrons_WF_14m_v1_draw.fox' )
+    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox' )
+    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), str(0)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):
 #    print(df_closest,df_closest.index)
@@ -240,7 +241,8 @@ def output_4d_cosy(popi,filename,df):
 #                if np.array_equal(sorted_pop[i-1],sorted_pop[k]):
 #                    count_dups += 1
 #                    break
-        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SEC_neutrons_WF_14m_v1_draw.fox')
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox')
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox')
         plot_i += 1
 #    print(len(sorted_ndf), count_dups)
     return
@@ -318,8 +320,10 @@ def plot_4d(popi,filename,df):
 
     pop = None
     for i_cluster in range(10):
-        df_i = df.loc[(df['kcluster'] == i_cluster)]
-        magnet_dim = 15
+        df_closest = df.loc[df['closest']==True]
+        df_closest = df_closest.reset_index(drop=True)
+        df_i = df.loc[(df['kcluster'] == df_closest.iloc[i_cluster].loc['kcluster'])]
+        magnet_dim = 19
         p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
         nobj = p_optimizeRes.get_nobj()
         if pop == None:
@@ -376,7 +380,7 @@ def plot_4d(popi,filename,df):
                 df_closest = df_closest.reset_index(drop=True)
     #            print(df_closest.iloc[:,15:19])
                 for i_closest in df_closest.index:
-                    axs[plot_y].text(df_closest.iloc[:,18][i_closest],df_closest.iloc[:,15+j][i_closest],str(df_closest['kcluster'][0]+1),color='red')
+                    axs[plot_y].text(df_closest.iloc[:,22][i_closest],df_closest.iloc[:,19+j][i_closest],str(df_closest['kcluster'][0]+1),color='red')
             axs[plot_y].set_ylabel(fNames[j])
             axs[plot_y].set_yscale('log')
             axs[plot_y].set_xscale('log')

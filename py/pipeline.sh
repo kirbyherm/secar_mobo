@@ -22,7 +22,7 @@ mv best"$BATCH".h5 results_"$BATCH"/
 cd results_"$BATCH"
 cd profiles
 
-for TOSSES in $(seq 0 1 10) 
+for TOSSES in $(seq 0 1 5) 
 do
 #  ./draw.py ../../output/output_4f_moead_FP2_FP3_150_"$TOSSES".csv
   cosy ./pygmoCosy"$TOSSES".fox > "$TOSSES".txt
