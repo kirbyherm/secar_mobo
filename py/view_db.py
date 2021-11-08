@@ -1,4 +1,4 @@
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
+#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
 # nscl servers
@@ -97,8 +97,8 @@ def main(start_i=batch):
     # print objective values for [show_best] number of points, sorted by FP4_BeamSpot
     #print(df.iloc[:,15:])
     # print the magnet scale factors for the best FP4_BeamSpot points
-    (np.power(2,df.loc[df['closest']==True].iloc[:,:15])).round(5).to_csv('magnet_factors.csv',index=False)
-    (Qnom * np.power(2,df.loc[df['closest']==True].iloc[:,:15])).round(5).to_csv('magnet_values.csv',index=False)
+    (np.power(2,df.loc[df['closest']==True].iloc[:,:magnet_dim])).round(5).to_csv('magnet_factors.csv',index=False)
+    (Qnom * np.power(2,df.loc[df['closest']==True].iloc[:,:magnet_dim])).round(5).to_csv('magnet_values.csv',index=False)
     # write only the magnet values and objective values to df
 #    print(df.columns)
     df = df.drop('pareto',1)

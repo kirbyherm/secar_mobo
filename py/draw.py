@@ -1,4 +1,4 @@
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
+#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
 # nscl servers
@@ -24,9 +24,9 @@ from problem import optimizeRes
 import pandas as pd
 
 # specify Tex details for pretty plots
-#os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
+os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 #os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
-os.environ['PATH'] = os.environ['PATH'] + ':/opt/software/texlive/20210316/bin/x86_64-linux/tex'
+#os.environ['PATH'] = os.environ['PATH'] + ':/opt/software/texlive/20210316/bin/x86_64-linux/tex'
 plt.rcParams.update({
     "text.usetex": True,
 })

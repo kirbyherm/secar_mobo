@@ -1,4 +1,4 @@
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
+#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
 # nscl servers
@@ -57,6 +57,8 @@ class optimizeRes:
     def get_bounds(self):
         qLower =zeros(self.dim) - 1.0
         qUpper =zeros(self.dim) + 1.0
+        qLower[9] = 1.6 
+        qUpper[9] = 1.6 
         return (qLower, qUpper)
 
     # define problem name

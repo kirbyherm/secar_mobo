@@ -9,8 +9,8 @@
 #
 # echo -e "version\tn\tmax\tl2norm\ttime" 
 
-GENS=2
-BATCH=240
+GENS=1000
+BATCH=250
 
 mkdir results_"$BATCH"
 ./make_db.py $GENS $BATCH
@@ -22,14 +22,14 @@ mv best"$BATCH".h5 results_"$BATCH"/
 cd results_"$BATCH"
 cd profiles
 
-for TOSSES in $(seq 0 1 10) 
+for TOSSES in $(seq 0 1 5) 
 do
 #  ./draw.py ../../output/output_4f_moead_FP2_FP3_150_"$TOSSES".csv
   cosy ./pygmoCosy"$TOSSES".fox > "$TOSSES".txt
   mv pic001.pdf X${TOSSES}.pdf
   mv pic002.pdf Y${TOSSES}.pdf
-  cosy ./pygmoCosy"$TOSSES"_DE.fox > "$TOSSES"_DE.txt
-  mv pic001.pdf X${TOSSES}_DE.pdf
+#  cosy ./pygmoCosy"$TOSSES"_DE.fox > "$TOSSES"_DE.txt
+#  mv pic001.pdf X${TOSSES}_DE.pdf
 #  mv pic002.pdf Y${TOSSES}_DE.pdf
   rm -r ./pic*.pdf
 done
