@@ -85,7 +85,7 @@ def main(start_i=batch):
     #df['ssobjs'] = np.sqrt(df['FP2_res']**2+df['FP3_res']**2+df['MaxBeamWidth']**2+df['FP4_BeamSpot']**2)
     #df = df.sort_values(by='ssobjs',ignore_index=True)
     #df = df.loc[df['ssobjs'] < df['ssobjs'][show_best]]
-#    print(df)
+    print(df)
     quads = df.columns
 #    print(quads)
     magnet_dim = 0

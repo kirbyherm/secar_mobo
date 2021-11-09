@@ -33,7 +33,7 @@ plt.rcParams.update({
 script, filename = sys.argv
 optimized_params = 3
 fNom = np.zeros(optimized_params)+1
-fNames = [r"{FP1-res}${}^{-1}$",r"MaxBeamWidth", r"FP4_BeamSpot"]
+fNames = [r"{FP1-res}${}^{-1}$",r"MaxBeamWidth", r"FP1-BeamSpot"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
 magnet_dim = 6
@@ -365,7 +365,7 @@ def plot_4d(popi,filename,df):
 #            print(df_closest.iloc[:,15:19])
             for i_closest in df_closest.index:
                 if optimized_params > 2:
-                    axs[plot_y].text(df_closest.iloc[:,magnet_dim+3][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
+                    axs[plot_y].text(df_closest.iloc[:,magnet_dim+0][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
                 else:
                     print(i_closest, df_closest.iloc[:,magnet_dim+1][i_closest], df_closest.iloc[:,magnet_dim+j][i_closest])
                     axs.text(df_closest.iloc[:,magnet_dim+j][i_closest],df_closest.iloc[:,magnet_dim+1][i_closest],str(i_closest+1),color='red')
@@ -412,8 +412,8 @@ def plot_4d(popi,filename,df):
         
         plot_x += 1
     
-    if optimized_params > 2:
-        fig2.delaxes(axs2[plot_y,plot_x])
+#    if plot_ > 2:
+#    fig2.delaxes(axs2[plot_y,plot_x])
     fig2.tight_layout()
     plt.savefig(filename + "_magnet_hists.png")
     return

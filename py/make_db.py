@@ -72,7 +72,7 @@ def main(gens=generations, batch_id=210):
     max_obj = 1e9
     # check for solutions strictly better than nominal (all objs < 1)
 #    df = df.loc[(df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df_new['FP4_BeamSpot'] < max_obj)]
+    df = df.loc[(df['FP1_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
     converged_points = len(df.index)
     max_obj = 1
     # check for solutions strictly better than nominal (all objs < 1)
