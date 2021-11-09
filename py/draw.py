@@ -31,17 +31,17 @@ plt.rcParams.update({
 })
 
 script, filename = sys.argv
-optimized_params = 4
+optimized_params = 2
 fNom = np.zeros(optimized_params)+1
-fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
+fNames = [r"{FP1-res}${}^{-1}$",r"MaxBeamWidth"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
-magnet_dim = 19
+magnet_dim = 6
 
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
     df = pd.read_hdf(filename)
-    magnet_dim = 19
+    magnet_dim = 6
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
     nobj = p_optimizeRes.get_nobj()
     if pop == None:
@@ -169,7 +169,7 @@ def output_4d_cosy(popi,filename,df):
 
     hv = pg.hypervolume(popi)
     ref_point = hv.refpoint()
-    ref_point = (1e10,1e10,1e10,1e10) 
+    ref_point = np.zeros(optimized_params)+1e10 
     best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
     magnet_dim = len(popi.get_x()[0])
@@ -177,7 +177,7 @@ def output_4d_cosy(popi,filename,df):
     sorted_ndf = []
     sorted_pop = []
     sorted_xs = []
-    sort_param = 3
+    sort_param = 0
     for i in ndf[0]:
         if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
 #            print(popi.get_f()[i])
@@ -318,7 +318,7 @@ def plot_2d(popi,filename):
 
 def plot_4d(popi,filename,df):
 
-    sort_param = 3
+    sort_param = 0
     good_results=0
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
@@ -327,14 +327,21 @@ def plot_4d(popi,filename,df):
     plot_x, plot_y = 0,0
     fig, axs = plt.subplots(optimized_params-1,sharex=True)
     fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at FP4')
-    axs[optimized_params-2].set_xlabel(fNames[sort_param])
+    if optimized_params > 2:
+        axs[optimized_params-2].set_xlabel(fNames[sort_param])
+    else:
+        axs.set_xlabel(fNames[sort_param])
     reduced_ndf = []
     first = True
     df_closest = df
     for j in range(0,optimized_params-1):
         ndf_champ = []
-        axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
-        axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
+        if optimized_params > 2:
+            axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
+            axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
+        else:
+            axs.axvline(x=fNom[0],linestyle="dashed",color="red")
+            axs.axhline(y=1.0,linestyle="dashed",color="red")
         for i in ndf[0]:
             check_val=1e9
             if np.all(np.array(popi.get_f()[i]) < check_val) == True:
@@ -343,7 +350,10 @@ def plot_4d(popi,filename,df):
                 ndf_champ.append(popi.get_f()[i])
                 reduced_ndf.append(i)
         try:
-            pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
+            if optimized_params > 2:
+                pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
+            else:
+                pg.plot_non_dominated_fronts(ndf_champ,comp=[0,1],axes=axs)
 #            if j == 1:
 #                print(filename[-6:-4], len(ndf_champ))
         except:
@@ -354,16 +364,25 @@ def plot_4d(popi,filename,df):
             df_closest = df_closest.reset_index(drop=True)
 #            print(df_closest.iloc[:,15:19])
             for i_closest in df_closest.index:
-                axs[plot_y].text(df_closest.iloc[:,magnet_dim+3][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
-        axs[plot_y].set_ylabel(fNames[j])
-        axs[plot_y].set_yscale('log')
-        axs[plot_y].set_xscale('log')
+                if optimized_params > 2:
+                    axs[plot_y].text(df_closest.iloc[:,magnet_dim+3][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
+                else:
+                    print(i_closest, df_closest.iloc[:,magnet_dim+1][i_closest], df_closest.iloc[:,magnet_dim+j][i_closest])
+                    axs.text(df_closest.iloc[:,magnet_dim+j][i_closest],df_closest.iloc[:,magnet_dim+1][i_closest],str(i_closest+1),color='red')
+        if optimized_params > 2:
+            axs[plot_y].set_ylabel(fNames[j])
+            axs[plot_y].set_yscale('log')
+            axs[plot_y].set_xscale('log')
+        else:
+            axs.set_ylabel(fNames[j])
+            axs.set_yscale('log')
+            axs.set_xscale('log')
         plot_y += 1
 
-    fig.tight_layout()
+#    fig.tight_layout()
     fig.savefig(filename+"_paretos.png")
     plt.cla()
-    fig2, axs2 = plt.subplots(5,4)
+    fig2, axs2 = plt.subplots(3,2)
     plot_x, plot_y = 0,0
     reduced_qs = np.array(popi.get_x())[reduced_ndf]
     ycolumns = []
@@ -372,7 +391,7 @@ def plot_4d(popi,filename,df):
     df = pd.DataFrame(reduced_qs, columns = ycolumns)
     qNom = np.zeros(magnet_dim)
     for i in range(magnet_dim):
-        if plot_x > 3:
+        if plot_x > 1:
             plot_x, plot_y = 0, plot_y+1 
         axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-3,3))
 #        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
@@ -393,7 +412,8 @@ def plot_4d(popi,filename,df):
         
         plot_x += 1
     
-    fig2.delaxes(axs2[plot_y,plot_x])
+    if optimized_params > 2:
+        fig2.delaxes(axs2[plot_y,plot_x])
     fig2.tight_layout()
     plt.savefig(filename + "_magnet_hists.png")
     return
