@@ -441,8 +441,17 @@ DL 0.146731-0.1;                                           {DL10}
 
   PS 0.02;                                                 {FP1}
 
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
 {WRITE 6 'ME(1,2) AT FP1 =' ME(1,2);}
 {WRITE 6 'ME(1,1) AT FP1 =' ME(1,1);}
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WVX:=(WW(1)-WW(2))*(WW(1)-WW(2));
+WW(1):= VMAX(RAY(3));
+WW(2):= VMIN(RAY(3));
+WVY:=(WW(1)-WW(2))*(WW(1)-WW(2));
+WRITE 6 'BeamSpotSize' (WVX+WVY);
 
 ENDPROCEDURE;
 

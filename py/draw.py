@@ -31,9 +31,9 @@ plt.rcParams.update({
 })
 
 script, filename = sys.argv
-optimized_params = 2
+optimized_params = 3
 fNom = np.zeros(optimized_params)+1
-fNames = [r"{FP1-res}${}^{-1}$",r"MaxBeamWidth"]
+fNames = [r"{FP1-res}${}^{-1}$",r"MaxBeamWidth", r"FP4_BeamSpot"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
 magnet_dim = 6
@@ -291,7 +291,7 @@ def plot_2d(popi,filename):
         axs.set_xscale('log')
     else:
         axs[objs-2].set_xlabel('resolution')
-        for j in range(1,2):
+        for j in range(1,3):
     #        axs[plot_y].plot(x,y,linestyle="dashed",color="red")
             axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
             axs[plot_y].axvline(x=best_point[0],linestyle="dotted",color="blue")
@@ -334,7 +334,7 @@ def plot_4d(popi,filename,df):
     reduced_ndf = []
     first = True
     df_closest = df
-    for j in range(0,optimized_params-1):
+    for j in range(1,optimized_params):
         ndf_champ = []
         if optimized_params > 2:
             axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")

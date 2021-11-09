@@ -14,7 +14,7 @@
 #SBATCH --mem-per-cpu=5G
 ### you can give your job a name for easier identification
 #SBATCH -J pygmo_test 
-#SBATCH --array=260-269
+#SBATCH --array=270-279
 
 ### error/output file specifications
 #SBATCH -o /mnt/simulations/secarml/p_n_beam_fp1/sh/slurmfiles/moead_2f_FP1_%a.txt

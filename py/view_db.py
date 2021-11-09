@@ -46,7 +46,7 @@ def is_pareto_efficient_simple(costs):
 # only show best 100 since we get a lot of points
 show_best = 100 
 batch = 210
-kclusters = 3
+kclusters = 5
 
 def main(start_i=batch):
     # specify database for input
@@ -67,11 +67,11 @@ def main(start_i=batch):
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
     max_obj = 1
 #    df = df.loc[(df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj)]
+    df = df.loc[(df['FP1_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
     
     # get costs and pass to pareto function
 #    costs = df[['FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']]
-    costs = df[['FP1_res','MaxBeamWidth']]
+    costs = df[['FP1_res','MaxBeamWidth','FP4_BeamSpot']]
     costs = np.array(costs)
     pareto = is_pareto_efficient_simple(costs)
     # add pareto column to df

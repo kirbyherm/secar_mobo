@@ -77,6 +77,9 @@ def main(pop_init=None):
     if p_optimizeRes.get_nobj() == 4:
         # with 4 objs need pop=84
         pop_n = 84 
+    elif p_optimizeRes.get_nobj() == 3:
+        # with 4 objs need pop=84
+        pop_n = 78 
 
     # check if we are using an input population or need to initialize one
     pop_new = None
