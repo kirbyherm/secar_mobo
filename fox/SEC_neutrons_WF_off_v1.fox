@@ -441,6 +441,9 @@ DL 0.146731-0.1;                                           {DL10}
 
   PS 0.02;                                                 {FP1}
 
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WRITE 6 'FP1Xdim' WW(1)-WW(2);
 {WRITE 6 'ME(1,2) AT FP1 =' ME(1,2);}
 {WRITE 6 'ME(1,1) AT FP1 =' ME(1,1);}
 
@@ -584,6 +587,9 @@ DL 0.1;
 PS 0.102/2;
 DL 1.750011-0.1;                                            {DL21}
 
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WRITE 6 'FP2Xdim' WW(1)-WW(2);
 {WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
@@ -707,6 +713,11 @@ FR 3;
 DL 4.60;                                                  {DL29}
 PS 0.02;                                                  {FP3}
 {READ_RAY;}
+
+WW(1):= VMAX(RAY(1));
+WW(2):= VMIN(RAY(1));
+WRITE 6 'FP3Xdim' WW(1)-WW(2);
+
 {WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
@@ -852,6 +863,7 @@ Q13:=0.1910*Q13_SC;
 {B7/B8}
 Q14:=0.12900*Q14_SC;
 Q15:=-0.1380*Q15_SC;
+
 
 {ALL THE MAGNETIC FIELD WILL BE SCALED TO THE RIGIDITY DEFINED IN THE TWO LINES BELOW}
 {DON'T TOUCH THE NEXT TWO LINES}

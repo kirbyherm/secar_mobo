@@ -22,7 +22,9 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 
 # define the nominal values for the objective function
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
-fNom = array([0.02285401532682956, 0.04181594290692345, 3.422466427009127, 0.27344973981231574])
+fNom = array([0.02285401532682956, 0.04181594290692345, 3.422466427009127, 0.27344973981231574, 0.05])
+fNom = array([0.04191152312524359, 0.03457401051019327, 0.08790627203524701, 6.199553823734411, 0.4920320554679182])
+fNom = array([0.0009201399656821892, 0.0007943037376589886, 0.0008652899891146716, 3.422466427009127, 0.27344973981231574])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
 
@@ -132,12 +134,14 @@ def cosyrun(qs=qNom):
 
     # initiate all variables to be read, and bools for the reader to check
     xdim, ydim = [], []
-    fp2res, fp2espread = 0, 0
-    fp3res, fp3espread = 0, 0
+    fp1res, fp1espread, fp1xdim = 0, 0, 0
+    fp2res, fp2espread, fp2xdim = 0, 0, 0
+    fp3res, fp3espread, fp3xdim = 0, 0, 0
     beamspotsize = 0
     xdim_bool, ydim_bool = False, False
-    fp2res_bool, fp2espread_bool = False, False
-    fp3res_bool, fp3espread_bool = False, False
+    fp1res_bool, fp1espread_bool, fp1xdim_bool = False, False, False
+    fp2res_bool, fp2espread_bool, fp2xdim_bool = False, False, False
+    fp3res_bool, fp3espread_bool, fp3xdim_bool = False, False, False
     beamspotsize_bool = False
 
     # my method could probably be better optimized but this works and is mostly straight-forward
@@ -151,6 +155,15 @@ def cosyrun(qs=qNom):
         if ydim_bool:
             ydim.append(float(split[i]))
             ydim_bool = False
+        if fp1xdim_bool:
+            fp1xdim = (float(split[i])*1000)
+            fp1xdim_bool = False
+        if fp2xdim_bool:
+            fp2xdim = (float(split[i])*1000)
+            fp2xdim_bool = False
+        if fp3xdim_bool:
+            fp3xdim = (float(split[i])*1000)
+            fp3xdim_bool = False
         if beamspotsize_bool:
             beamspotsize = power(float(split[i]),0.5)
             beamspotsize_bool = False
@@ -158,6 +171,12 @@ def cosyrun(qs=qNom):
             xdim_bool = True
         if split[i].strip() == "Ydim":
             ydim_bool = True
+        if split[i].strip() == "FP1Xdim":
+            fp1xdim_bool = True
+        if split[i].strip() == "FP2Xdim":
+            fp2xdim_bool = True
+        if split[i].strip() == "FP3Xdim":
+            fp3xdim_bool = True
         if split[i].strip() == "BeamSpotSize":
             beamspotsize_bool = True
     for i in range(len(split2)):
@@ -167,6 +186,11 @@ def cosyrun(qs=qNom):
         if fp3res_bool:
             fp3res = (float(split2[i]))
             fp3res_bool = False
+        if fp1res_bool:
+            fp1res = (float(split2[i]))
+            fp1res_bool = False
+        if split2[i].strip() == "FP1DE":
+            fp1res_bool = True
         if split2[i].strip() == "FP2DE":
             fp2res_bool = True
         if split2[i].strip() == "FP3DE":
@@ -177,12 +201,16 @@ def cosyrun(qs=qNom):
     scale = 1e9 
     max_width = 0
     # setup value to be returned, here 4 different objectives
-    resol = zeros(4) 
+    objs = 5
+    resol = zeros(objs) 
     print(qs)
     for i in range(len(magnet_dims)):
         # if no x-ydim values, just return outside constraints (all 1e9)
         if len(xdim) < len(magnet_dims) or len(ydim) < len(magnet_dims):
-            resol = array([1e9,1e9,1e9,1e9])         
+            resol = zeros(objs)+1e9         
+            break            
+        if fp1xdim == 0 or fp2xdim == 0 or fp3xdim == 0 or isnan(fp1xdim) or isnan(fp2xdim) or isnan(fp3xdim):
+            resol = zeros(objs)+1e9         
             break            
         # find xbound, ybound
         xbound = (abs(xdim[i])*1000)
@@ -193,10 +221,10 @@ def cosyrun(qs=qNom):
         # if *bound more than 4x magnet_dim, or is nan, return outside constraints
         if xbound > magnet_dims[i][0] * scale or ybound > magnet_dims[i][1] * scale or isnan(xbound) or isnan(ybound):
 #            print("{:.2f}".format(xbound), magnet_dims[i][0], "{:.2f}".format(ybound), magnet_dims[i][1])
-            resol = array([1e9,1e9,1e9,1e9])         
+            resol = zeros(objs)+1e9         
             break
         # if within constraints, set resol temporarily
-        resol = [fp2res,fp3res,max_width,beamspotsize]
+        resol = [fp1res/fp1xdim,fp2res/fp2xdim,fp3res/fp3xdim,max_width,beamspotsize]
     print(resol)
     # if within constraints, set resol as a ratio to nominal
     if max(resol) < 1e9:
@@ -205,14 +233,14 @@ def cosyrun(qs=qNom):
             if resol[i] > 0: 
                 resol[i] = float(resol[i])
             else:
-                if i == 0 or i == 1:
+                if i in [0,1,2]:
                     resol[i] = float(1e-9)
                 else:
                     resol[i] = float(1e9)
             # we try to maximize fp*res, but the algorithm wants to minimize
             #   objective values, so we have to take an inverse ratio
             #   i.e. a ratio < 1.0 is good
-            if i == 0 or i == 1:
+            if i in [0,1,2]:
                 resol[i] = fNom[i]/resol[i]
             # we want to minimize max_width and beamspotsize, so just take resol/fNom
             else:    
