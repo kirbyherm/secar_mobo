@@ -31,9 +31,9 @@ plt.rcParams.update({
 })
 
 script, filename = sys.argv
-optimized_params = 4
+optimized_params = 5
 fNom = np.zeros(optimized_params)+1
-fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
+fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
 magnet_dim = 19
@@ -169,7 +169,7 @@ def output_4d_cosy(popi,filename,df):
 
     hv = pg.hypervolume(popi)
     ref_point = hv.refpoint()
-    ref_point = (1e10,1e10,1e10,1e10) 
+    ref_point = np.zeros(optimized_params)+1e10 
     best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
     magnet_dim = len(popi.get_x()[0])
@@ -177,7 +177,7 @@ def output_4d_cosy(popi,filename,df):
     sorted_ndf = []
     sorted_pop = []
     sorted_xs = []
-    sort_param = 3
+    sort_param = 4
     for i in ndf[0]:
         if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
 #            print(popi.get_f()[i])
@@ -318,7 +318,7 @@ def plot_2d(popi,filename):
 
 def plot_4d(popi,filename,df):
 
-    sort_param = 3
+    sort_param = 4
     good_results=0
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
@@ -354,7 +354,7 @@ def plot_4d(popi,filename,df):
             df_closest = df_closest.reset_index(drop=True)
 #            print(df_closest.iloc[:,15:19])
             for i_closest in df_closest.index:
-                axs[plot_y].text(df_closest.iloc[:,magnet_dim+3][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
+                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
         axs[plot_y].set_ylabel(fNames[j])
         axs[plot_y].set_yscale('log')
         axs[plot_y].set_xscale('log')
