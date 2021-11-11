@@ -18,7 +18,7 @@ generations = 750
 population_size = 84
 batch = 230
 # specify number of magnets
-magnet_dim = 19
+magnet_dim = 13
 
 def main(gens=generations, batch_id=210):
 
@@ -26,9 +26,8 @@ def main(gens=generations, batch_id=210):
     # set up columns for dataframe
     quads = []
     for i in range(magnet_dim):
-        quads.append("q{}".format(i+1))
+        quads.append("q{}".format(i+7))
     columns = quads
-    columns.append("FP1_res")
     columns.append("FP2_res")
     columns.append("FP3_res")
     columns.append("MaxBeamWidth")
@@ -36,7 +35,7 @@ def main(gens=generations, batch_id=210):
     
     # i run batches in 10s, so i specify the first id of the batch
     start_i = batch_id 
-    end_i = start_i + 10
+    end_i = start_i + 5
     # name the output
     db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
     
@@ -52,10 +51,10 @@ def main(gens=generations, batch_id=210):
     better_than_nominal = 0
     for i in range(start_i, end_i):
         df_new = pd.read_csv('{}{}.csv'.format(OUTPUT_PREFIX,i),names=columns)
-        if np.median(df_new.iloc[-int(len(df_new.index)*0.1):,-4:]) < 1e2:
+        if np.median(df_new.iloc[-int(len(df_new.index)*0.1):,-5:]) < 1e2:
             converged += 1
         max_obj = 1
-        if len(df_new.loc[(df_new['FP1_res'] < max_obj) & (df_new['FP2_res'] < max_obj) & (df_new['FP3_res'] < max_obj) & (df_new['MaxBeamWidth'] < max_obj) & (df_new['FP4_BeamSpot'] <max_obj)].index) > len(df_new.index)*0.01:
+        if len(df_new.loc[(df_new['FP2_res'] < max_obj) & (df_new['FP3_res'] < max_obj) & (df_new['MaxBeamWidth'] < max_obj) & (df_new['FP4_BeamSpot'] <max_obj)].index) > len(df_new.index)*0.01:
             better_than_nominal += 1
 #        print(df_new)
         # append to existing df
@@ -68,13 +67,13 @@ def main(gens=generations, batch_id=210):
     print("percent done: {:.2f}%".format(len(df.index)/((generations+1)*population_size)*10))
     # write df to h5
     df.to_hdf(db_out,key='df')
-    max_obj = 1e9
+    max_obj = 1
     # check for solutions strictly better than nominal (all objs < 1)
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
+    df = df.loc[(df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
     converged_points = len(df.index)
     max_obj = 1
     # check for solutions strictly better than nominal (all objs < 1)
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
+    df = df.loc[(df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
     print("converged islands: ", converged, "\nconverged points: ", converged_points, "\nbetter than nominal islands: ", better_than_nominal, "\nbetter than nominal points: ", len(df.index))
     return
 

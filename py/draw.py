@@ -31,17 +31,17 @@ plt.rcParams.update({
 })
 
 script, filename = sys.argv
-optimized_params = 5
+optimized_params = 4
 fNom = np.zeros(optimized_params)+1
-fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
+fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
-magnet_dim = 19
+magnet_dim = 13
 
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
     df = pd.read_hdf(filename)
-    magnet_dim = 19
+    magnet_dim = 13
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
     nobj = p_optimizeRes.get_nobj()
     if pop == None:
@@ -51,7 +51,7 @@ def read_pop_df(filename, pop=None):
         append=True
         xs = []
         for j in range(1,magnet_dim+1):
-            xs.append(df["q"+str(j)][i]) 
+            xs.append(df["q"+str(j+6)][i]) 
         xs = np.asarray(xs)
         fs = []
         for j in range(magnet_dim,magnet_dim+nobj):
@@ -177,7 +177,7 @@ def output_4d_cosy(popi,filename,df):
     sorted_ndf = []
     sorted_pop = []
     sorted_xs = []
-    sort_param = 4
+    sort_param = 3
     for i in ndf[0]:
         if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
 #            print(popi.get_f()[i])
@@ -318,7 +318,7 @@ def plot_2d(popi,filename):
 
 def plot_4d(popi,filename,df):
 
-    sort_param = 4
+    sort_param = 3
     good_results=0
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
@@ -363,15 +363,16 @@ def plot_4d(popi,filename,df):
     fig.tight_layout()
     fig.savefig(filename+"_paretos.png")
     plt.cla()
-    fig2, axs2 = plt.subplots(5,4)
+    fig2, axs2 = plt.subplots(4,4)
     plot_x, plot_y = 0,0
     reduced_qs = np.array(popi.get_x())[reduced_ndf]
     ycolumns = []
-    for i in range(magnet_dim):
+    for i in range(6,magnet_dim+6):
         ycolumns.append('y{}'.format(i))
     df = pd.DataFrame(reduced_qs, columns = ycolumns)
     qNom = np.zeros(magnet_dim)
-    for i in range(magnet_dim):
+    write_qnames = ['q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','h2','h3','o1']
+    for i in range(6,magnet_dim+6):
         if plot_x > 3:
             plot_x, plot_y = 0, plot_y+1 
         axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-3,3))
@@ -383,7 +384,7 @@ def plot_4d(popi,filename,df):
         xlower, xupper = popi.problem.get_bounds()
         xlower, xupper = np.min(xlower), np.max(xupper)
         axs2[plot_y,plot_x].axes.set_xlim(xlower,xupper)
-        axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
+        axs2[plot_y,plot_x].set_title("{0}".format(write_qnames[i-6]))
         y_min, y_max = axs2[plot_y,plot_x].get_ylim()
         df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/len(df_closest.index)*(y_max-y_min)+y_min)
 #        print(df_closest.iloc[:,:15])
