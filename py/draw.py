@@ -31,10 +31,10 @@ plt.rcParams.update({
 })
 
 script, filename = sys.argv
-optimized_params = 5
+optimized_params = 8
 fNom = np.zeros(optimized_params)+1
 fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
-fNames = fNames[:optimized_params]
+#fNames = fNames[:optimized_params]
 #print(len(fNames))
 magnet_dim = 19
 
@@ -177,10 +177,10 @@ def output_4d_cosy(popi,filename,df):
     sorted_ndf = []
     sorted_pop = []
     sorted_xs = []
-    sort_param = 4
+    sort_param = 7
     for i in ndf[0]:
-        if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
-#            print(popi.get_f()[i])
+        if np.all(np.array(popi.get_f()[i])[[0,1,2,6,7]] < 1) == True or True:
+            print(popi.get_f()[i])
             ndf_champ.append(i)
     ndf = [ndf_champ]
     for i in ndf[0]:
@@ -228,6 +228,7 @@ def output_4d_cosy(popi,filename,df):
     os.mkdir(PROFILES_PATH)
     write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox' )
     write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), str(0)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox' )
+    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), str(0)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):
 #    print(df_closest,df_closest.index)
@@ -243,6 +244,7 @@ def output_4d_cosy(popi,filename,df):
 #                    break
         write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox')
         write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox')
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox')
         plot_i += 1
 #    print(len(sorted_ndf), count_dups)
     return
@@ -325,25 +327,29 @@ def plot_4d(popi,filename,df):
     ref_point = np.zeros(optimized_params)+1e10 
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
     plot_x, plot_y = 0,0
-    fig, axs = plt.subplots(optimized_params-1,sharex=True)
+    fig, axs = plt.subplots(optimized_params-4,sharex=True)
     fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at FP4')
-    axs[optimized_params-2].set_xlabel(fNames[sort_param])
+    axs[optimized_params-5].set_xlabel(fNames[sort_param])
     reduced_ndf = []
     first = True
     df_closest = df
     for j in range(0,optimized_params-1):
+        if j in [3,4,5]:
+            continue
+#        elif j in [6]:
+#            j = j-3
         ndf_champ = []
         axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
         axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
         for i in ndf[0]:
             check_val=1e9
-            if np.all(np.array(popi.get_f()[i]) < check_val) == True:
+            if np.all(np.array(popi.get_f()[i])[[0,1,2,6,7]] < check_val) == True:
                 good_results+=1
 #                print(filename[-6:-4], good_results, popi.get_f()[i])
                 ndf_champ.append(popi.get_f()[i])
                 reduced_ndf.append(i)
         try:
-            pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
+            pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param+3,j],axes=axs[plot_y])
 #            if j == 1:
 #                print(filename[-6:-4], len(ndf_champ))
         except:
@@ -354,8 +360,11 @@ def plot_4d(popi,filename,df):
             df_closest = df_closest.reset_index(drop=True)
 #            print(df_closest.iloc[:,15:19])
             for i_closest in df_closest.index:
-                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
-        axs[plot_y].set_ylabel(fNames[j])
+                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param+3][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
+        if j in [6]:
+            axs[plot_y].set_ylabel(fNames[j-3])
+        else:
+            axs[plot_y].set_ylabel(fNames[j])
         axs[plot_y].set_yscale('log')
         axs[plot_y].set_xscale('log')
         plot_y += 1
@@ -371,6 +380,7 @@ def plot_4d(popi,filename,df):
         ycolumns.append('y{}'.format(i))
     df = pd.DataFrame(reduced_qs, columns = ycolumns)
     qNom = np.zeros(magnet_dim)
+    write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','h1','h2','h3','o1']
     for i in range(magnet_dim):
         if plot_x > 3:
             plot_x, plot_y = 0, plot_y+1 
@@ -383,7 +393,7 @@ def plot_4d(popi,filename,df):
         xlower, xupper = popi.problem.get_bounds()
         xlower, xupper = np.min(xlower), np.max(xupper)
         axs2[plot_y,plot_x].axes.set_xlim(xlower,xupper)
-        axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
+        axs2[plot_y,plot_x].set_title("{0}".format(write_qnames[i]))
         y_min, y_max = axs2[plot_y,plot_x].get_ylim()
         df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/len(df_closest.index)*(y_max-y_min)+y_min)
 #        print(df_closest.iloc[:,:15])

@@ -24,7 +24,7 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
 fNom = array([0.02285401532682956, 0.04181594290692345, 3.422466427009127, 0.27344973981231574, 0.05])
 fNom = array([0.04191152312524359, 0.03457401051019327, 0.08790627203524701, 6.199553823734411, 0.4920320554679182])
-fNom = array([0.0009201399656821892, 0.0007943037376589886, 0.0008652899891146716, 3.422466427009127, 0.27344973981231574])
+fNom = array([0.03704135352855681, 0.02285401532682956, 0.04181594290692345, 40.256216347579745, 28.77238799629226, 48.32592937970745, 3.422466427009127, 0.27344973981231574])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
 
@@ -201,7 +201,7 @@ def cosyrun(qs=qNom):
     scale = 1e9 
     max_width = 0
     # setup value to be returned, here 4 different objectives
-    objs = 5
+    objs = 8
     resol = zeros(objs) 
     print(qs)
     for i in range(len(magnet_dims)):
@@ -224,7 +224,7 @@ def cosyrun(qs=qNom):
             resol = zeros(objs)+1e9         
             break
         # if within constraints, set resol temporarily
-        resol = [fp1res/fp1xdim,fp2res/fp2xdim,fp3res/fp3xdim,max_width,beamspotsize]
+        resol = [fp1res,fp2res,fp3res,fp1xdim,fp2xdim,fp3xdim,max_width,beamspotsize]
     print(resol)
     # if within constraints, set resol as a ratio to nominal
     if max(resol) < 1e9:

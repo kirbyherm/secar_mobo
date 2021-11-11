@@ -50,7 +50,7 @@ class optimizeRes:
 
     # define number of objectives
     def get_nobj(self):
-        return 5
+        return 8
 
     # define bounds of x values
     #   i.e. from -1 to 1 (powers of 2)

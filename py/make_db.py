@@ -31,12 +31,15 @@ def main(gens=generations, batch_id=210):
     columns.append("FP1_res")
     columns.append("FP2_res")
     columns.append("FP3_res")
+    columns.append("FP1_xwidth")
+    columns.append("FP2_xwidth")
+    columns.append("FP3_xwidth")
     columns.append("MaxBeamWidth")
     columns.append("FP4_BeamSpot")
     
     # i run batches in 10s, so i specify the first id of the batch
     start_i = batch_id 
-    end_i = start_i + 10
+    end_i = start_i + 5
     # name the output
     db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
     

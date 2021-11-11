@@ -10,7 +10,7 @@
 # echo -e "version\tn\tmax\tl2norm\ttime" 
 
 GENS=750
-BATCH=280
+BATCH=300
 
 mkdir results_"$BATCH"
 ./make_db.py $GENS $BATCH
@@ -30,6 +30,8 @@ do
   mv pic002.pdf Y${TOSSES}.pdf
   cosy ./pygmoCosy"$TOSSES"_DE.fox > "$TOSSES"_DE.txt
   mv pic001.pdf X${TOSSES}_DE.pdf
+  cosy ./pygmoCosy"$TOSSES"_DE_FP1.fox > "$TOSSES"_DE_FP1.txt
+  mv pic001.pdf X${TOSSES}_DE_FP1.pdf
 #  mv pic002.pdf Y${TOSSES}_DE.pdf
   rm -r ./pic*.pdf
 done
