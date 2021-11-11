@@ -1,4 +1,4 @@
-INCLUDE '../COSY10.0/COSY';
+INCLUDE '../../../COSY10.0/COSY';
 {INCLUDE '/Applications/COSY/COSY';}
 
 PROCEDURE RUN ;

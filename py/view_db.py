@@ -21,7 +21,7 @@ pd.set_option("max_columns", None)
 PYGMO_DIR = "../"
 OUTPUT_DIR = PYGMO_DIR + "output/"
 
-Qnom = np.array([-0.40033,0.219852,0.2552369,-0.246677876,0.11087109,0.175336731,-0.0268214976,-0.14859,0.2855,-0.0335,0.149432825,-0.182,0.1910,0.12900,-0.1380])
+Qnom = np.array([-0.40033,0.219852,0.2552369,-0.246677876,0.11087109,0.175336731,-0.0268214976,-0.14859,0.2855,-0.0335,0.149432825,-0.182,0.1910,0.12900,-0.1380,0,0,0,0])
 # Q1H:=0.003703;
 # H1:=0.0103564;
 # H2:=0.0052735{*0.5};
@@ -46,7 +46,7 @@ def is_pareto_efficient_simple(costs):
 # only show best 100 since we get a lot of points
 show_best = 100 
 batch = 210
-kclusters = 10
+kclusters = 5
 
 def main(start_i=batch):
     # specify database for input
@@ -86,6 +86,7 @@ def main(start_i=batch):
 #    print(df)
     quads = df.columns
 #    print(quads)
+    magnet_dim = 0
     for q in range(len(quads)):
         print(q, quads[q])
         if "q" in quads[q]:
@@ -98,12 +99,16 @@ def main(start_i=batch):
     #print(df.iloc[:,15:])
     # print the magnet scale factors for the best FP4_BeamSpot points
     (np.power(2,df.loc[df['closest']==True].iloc[:,:magnet_dim])).round(5).to_csv('magnet_factors.csv',index=False)
-    (Qnom * np.power(2,df.loc[df['closest']==True].iloc[:,:magnet_dim])).round(5).to_csv('magnet_values.csv',index=False)
+#    (Qnom * np.power(2,df.loc[df['closest']==True].iloc[:,:magnet_dim])).round(5).to_csv('magnet_values.csv',index=False)
     # write only the magnet values and objective values to df
 #    print(df.columns)
     df = df.drop('pareto',1)
     #df = df.iloc[:,:19]
     df.to_hdf('best{}.h5'.format(start_i),key='df')
+    df['ssobjs'] = np.sqrt(df['FP2_res']**2+df['FP3_res']**2+df['MaxBeamWidth']**2+df['FP4_BeamSpot']**2)
+    df = df.sort_values(by='ssobjs',ignore_index=True)
+    df = df.iloc[:show_best,-7:]
+    print(df)
     return
 
 if __name__=='__main__':

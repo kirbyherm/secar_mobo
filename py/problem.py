@@ -57,7 +57,7 @@ class optimizeRes:
     def get_bounds(self):
         qLower =zeros(self.dim) - 1.0
         qUpper =zeros(self.dim) + 1.0
-        qLower[9] = 1.6 
+        qLower[9] = -1.6 
         qUpper[9] = 1.6 
         return (qLower, qUpper)
 

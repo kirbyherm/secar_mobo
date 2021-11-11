@@ -372,16 +372,21 @@ def plot_4d(popi,filename,df):
     for i in range(magnet_dim):
         if plot_x > 3:
             plot_x, plot_y = 0, plot_y+1 
-        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-3,3))
+        xlower, xupper = popi.problem.get_bounds()
+        xlower, xupper = xlower[i], xupper[i]
+        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(xlower,xupper))
 #        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
 #        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
         axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
 #        axs2[plot_y,plot_x].axes.set_yscale("log")
 #        axs2[plot_y,plot_x].axes.set_ylim(0.1,20)
-        xlower, xupper = popi.problem.get_bounds()
-        xlower, xupper = np.min(xlower), np.max(xupper)
         axs2[plot_y,plot_x].axes.set_xlim(xlower,xupper)
-        axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
+        if i < 15:
+            axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
+        elif i < 18:
+            axs2[plot_y,plot_x].set_title("h{0}".format(i-14))
+        else:
+            axs2[plot_y,plot_x].set_title("o{0}".format(i-17))
         y_min, y_max = axs2[plot_y,plot_x].get_ylim()
         df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/len(df_closest.index)*(y_max-y_min)+y_min)
 #        print(df_closest.iloc[:,:15])
