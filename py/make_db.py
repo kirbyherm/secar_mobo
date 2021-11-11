@@ -49,14 +49,18 @@ def main(gens=generations, batch_id=210):
     
     # load results from all islands
     converged = 0
+    converged_islands = []
     better_than_nominal = 0
+    better_than_nominal_islands = []
     for i in range(start_i, end_i):
         df_new = pd.read_csv('{}{}.csv'.format(OUTPUT_PREFIX,i),names=columns)
         if np.median(df_new.iloc[-int(len(df_new.index)*0.1):,-4:]) < 1e2:
             converged += 1
+            converged_islands.append(i)
         max_obj = 1
         if len(df_new.loc[(df_new['FP1_res'] < max_obj) & (df_new['FP2_res'] < max_obj) & (df_new['FP3_res'] < max_obj) & (df_new['MaxBeamWidth'] < max_obj) & (df_new['FP4_BeamSpot'] <max_obj)].index) > len(df_new.index)*0.01:
             better_than_nominal += 1
+            better_than_nominal_islands.append(i)
 #        print(df_new)
         # append to existing df
         if i > start_i: # or os.path.exists(db_out):
@@ -75,7 +79,7 @@ def main(gens=generations, batch_id=210):
     max_obj = 1
     # check for solutions strictly better than nominal (all objs < 1)
     df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
-    print("converged islands: ", converged, "\nconverged points: ", converged_points, "\nbetter than nominal islands: ", better_than_nominal, "\nbetter than nominal points: ", len(df.index))
+    print("converged islands: ", converged_islands, "\nconverged points: ", converged_points, "\nbetter than nominal islands: ", better_than_nominal_islands, "\nbetter than nominal points: ", len(df.index))
     return
 
 if __name__=='__main__':
