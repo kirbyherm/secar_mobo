@@ -16,7 +16,7 @@ mkdir results_"$BATCH"
 ./make_db.py $GENS $BATCH
 ./view_db.py $BATCH
 mv magnet_factors.csv results_"$BATCH"/
-mv magnet_values.csv results_"$BATCH"/
+#mv magnet_values.csv results_"$BATCH"/
 mv best"$BATCH".h5 results_"$BATCH"/
 ./draw.py results_"$BATCH"/best"$BATCH".h5
 cd results_"$BATCH"
