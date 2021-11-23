@@ -43,8 +43,8 @@ def is_pareto_efficient_simple(costs):
             is_efficient[i] = True  # And keep self
     return is_efficient
 
-# only show best 100 since we get a lot of points
-show_best = 100 
+# only show best [#] since we get a lot of points
+show_best = 50 
 batch = 210
 kclusters = 5
 
@@ -65,9 +65,8 @@ def main(start_i=batch):
     
     # restrict the df to only the points that fit the problem constraints
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
-    max_obj = 1
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj * 1/2) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
+    max_obj = 1.0
+    df = df.loc[(df['FP1_res'] < max_obj*0.821/max_obj) & (df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj*1.5) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
     
     # get costs and pass to pareto function
     costs = df[['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']]
@@ -93,13 +92,12 @@ def main(start_i=batch):
             magnet_dim = q+1
     df = run_kmeans(df, magnet_dim, kclusters)
     
+    # print objective values for [show_best] number of points, sorted by FP4_BeamSpot
+    print(df.iloc[:show_best,19:].sort_values(by=['FP1_res']))
     # sort df by FP4_BeamSpot values, and reindex
     df = df.sort_values(by='FP4_BeamSpot',ignore_index=True)
-    # print objective values for [show_best] number of points, sorted by FP4_BeamSpot
-    print(df.iloc[:50,19:])
     # print the magnet scale factors for the best FP4_BeamSpot points
     (np.power(2,df.loc[df['closest']==True].iloc[:,:19])).round(5).to_csv('magnet_factors.csv',index=False)
-    (Qnom * np.power(2,df.loc[df['closest']==True].iloc[:,:19])).round(5).to_csv('magnet_values.csv',index=False)
     # write only the magnet values and objective values to df
 #    print(df.columns)
     df = df.drop('pareto',1)

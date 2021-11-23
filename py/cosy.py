@@ -23,18 +23,15 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 # define the nominal values for the objective function
 fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233197451071])
 fNom = array([0.02285401532682956, 0.04181594290692345, 3.422466427009127, 0.27344973981231574, 0.05])
-fNom = array([0.04191152312524359, 0.03457401051019327, 0.08790627203524701, 6.199553823734411, 0.4920320554679182])
-fNom = array([0.0009201399656821892, 0.0007943037376589886, 0.0008652899891146716, 3.422466427009127, 0.27344973981231574])
+fNom = array([1086.7911810119049, 1258.9642382235916, 1155.6819246495133, 3.422466427009127, 0.27344973981231574])
+fNom = array([1431.8410759523508, 821.7565325150232, 650.6352599978524, 0.934467870935426, 0.03972091942829642])
+
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
 
 # define a non nominal qvalue array, if checking the values
-qNew = array([0.5924182514791451,-0.8758860089293923,-0.6100796679131815,-0.14615536797341183,0.9770480402400011,-0.7391592447117457,-0.7498637465288235,0.16544225901836773,0.19998299730932922,-0.6100283855003581,-0.25827968836883713,-1.5,1.5,1.9,-1.9])
-qNew = power(2,qNew)
-qNew = array([2.93038477,1.90063726,0.426385,  0.43573147,0.8350062,  0.26068104,
- 0.61171371,2.05445898,0.3762753, 3.31110943,3.97101987,3.91936971,
- 0.80816148,2.69208215,0.62319133])
-qNew = array([-0.020059, 0.533494,-0.985974,-0.549243,-0.645459,-0.863731,-0.358719,-0.456463,-0.793326, 0.615835, 0.269274,-0.451374,-0.903452, -0.05333,-0.798368, 0.706399,-0.588547, 0.098331, 0.964641])
+qNew = array([1.0371301857113335,1.4897519431921593,0.5402003843384104,0.6080163749223835,0.5965351874518491,0.5279178522813484,0.8474952322221544,0.8290931192132953,0.7350223112146984,0.5049139345530922,0.969681779928563 ,0.8465270119223961,0.7261232553654523,0.6805787940919176,0.6772214286022437,1.6737045402403927,1.3151418622198896,0.8914897696929639,0.6144362243855045])
+
 
 # set working DIR for PYGMO, FOX, COSY
 PYGMO_DIR = '../'
@@ -224,27 +221,24 @@ def cosyrun(qs=qNom):
             resol = zeros(objs)+1e9         
             break
         # if within constraints, set resol temporarily
-        resol = [fp1res/fp1xdim,fp2res/fp2xdim,fp3res/fp3xdim,max_width,beamspotsize]
+        try:
+            resol = [fp1xdim/fp1res,fp2xdim/fp2res,fp3xdim/fp3res,max_width,beamspotsize]
+        except:
+            resol = zeros(objs)+1e9         
     print(resol)
     # if within constraints, set resol as a ratio to nominal
-    if max(resol) < 1e9:
+    if max(resol)/min(fNom) < 1e9:
         for i in range(len(resol)):
             # make sure we are working with positive numbers
             if resol[i] > 0: 
                 resol[i] = float(resol[i])
             else:
-                if i in [0,1,2]:
-                    resol[i] = float(1e-9)
-                else:
-                    resol[i] = float(1e9)
-            # we try to maximize fp*res, but the algorithm wants to minimize
-            #   objective values, so we have to take an inverse ratio
-            #   i.e. a ratio < 1.0 is good
-            if i in [0,1,2]:
-                resol[i] = fNom[i]/resol[i]
+                resol = zeros(objs)+1e9         
+                break
             # we want to minimize max_width and beamspotsize, so just take resol/fNom
-            else:    
-                resol[i] = resol[i]/fNom[i]
+            resol[i] = resol[i]/fNom[i]
+    else:
+        resol = zeros(objs)+1e9         
     print(resol)            
 
     # remove old cosy fox and lis file

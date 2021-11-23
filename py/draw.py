@@ -187,6 +187,7 @@ def output_4d_cosy(popi,filename,df):
         go_next = False
         if len(sorted_ndf) > 1:
             for j in range(len(sorted_ndf)):
+#                print( j, sorted_ndf)
                 if np.array_equal(popi.get_f()[i],sorted_pop[j]) and np.array_equal(popi.get_x()[i],sorted_xs[j]):
                     go_next=True
                     break
@@ -226,8 +227,10 @@ def output_4d_cosy(popi,filename,df):
             os.remove(f'{PROFILES_PATH}/{file}')     
         shutil.rmtree(PROFILES_PATH)
     os.mkdir(PROFILES_PATH)
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox' )
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), str(0)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox' )
+    qNew = np.array([1.0371301857113335,1.4897519431921593,0.5402003843384104,0.6080163749223835,0.5965351874518491,0.5279178522813484,0.8474952322221544,0.8290931192132953,0.7350223112146984,0.5049139345530922,0.969681779928563 ,0.8465270119223961,0.7261232553654523,0.6805787940919176,0.6772214286022437,1.6737045402403927,1.3151418622198896,0.8914897696929639,0.6144362243855045])
+    write_fox((qNew), 0, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox' )
+    write_fox((qNew), str(0)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox' )
+    write_fox((qNew), str(0)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):
 #    print(df_closest,df_closest.index)
@@ -243,6 +246,7 @@ def output_4d_cosy(popi,filename,df):
 #                    break
         write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SEC_neutrons_WF_off_v1_draw.fox')
         write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw.fox')
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox')
         plot_i += 1
 #    print(len(sorted_ndf), count_dups)
     return

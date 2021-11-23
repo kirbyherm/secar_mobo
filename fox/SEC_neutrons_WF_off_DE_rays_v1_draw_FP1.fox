@@ -409,7 +409,7 @@ DL 0.146731-0.1;                                           {DL10}
 
 {WRITE 6 'ME(1,2) AT FP1 =' ME(1,2);}
 {WRITE 6 'ME(1,1) AT FP1 =' ME(1,1);}
-
+{
 {Section 2}
 DL 0.185 ;                                                 {DL11}
 DL 0.16965-0.1;                                            {DL12} 
@@ -653,7 +653,7 @@ WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
 {WRITE 6 'FP3Res' (ABS(ME(1,7))/(WV));}
 WRITE 6 'FP3DE' ((WV));
-{
+
 {SECTION 4}
 DL 0.25115-0.1;                                            {DL30}
 PS 0.167/2;
