@@ -25,6 +25,7 @@ fNom = array([245.5333762546184, 256.5533534865096, 1.016965710603861, 0.0497233
 fNom = array([0.02285401532682956, 0.04181594290692345, 3.422466427009127, 0.27344973981231574, 0.05])
 fNom = array([1086.7911810119049, 1258.9642382235916, 1155.6819246495133, 3.422466427009127, 0.27344973981231574])
 fNom = array([1431.8410759523508, 821.7565325150232, 650.6352599978524, 0.934467870935426, 0.03972091942829642])
+fNom = array([1248.619083706279, 1144.341054003633, 717.7385336012854, 0.934467870935426, 0.03972091942829642])
 
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
@@ -102,7 +103,7 @@ def cosyrun(qs=qNom):
 
     # make fox file and get name
     cosyFilename, lisFilename = write_fox(qs,fox_file="SEC_neutrons_WF_off_v1.fox")
-    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SEC_neutrons_WF_off_DE_rays_v1.fox")
+    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SEC_neutrons_WF_off_-DE_rays_v1.fox")
     
     #Run cmd
     cmd = COSY_DIR + 'cosy'

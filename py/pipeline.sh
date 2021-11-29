@@ -10,7 +10,7 @@
 # echo -e "version\tn\tmax\tl2norm\ttime" 
 
 GENS=1000
-BATCH=300
+BATCH=290
 
 mkdir results_"$BATCH"
 ./make_db.py $GENS $BATCH
@@ -34,3 +34,6 @@ do
   rm -r ./pic*.pdf
 done
 rm -r ./*.lis
+cd ../../
+tar -czvf results_"$BATCH".tar.gz results_"$BATCH"/
+

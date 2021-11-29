@@ -65,8 +65,8 @@ def main(start_i=batch):
     
     # restrict the df to only the points that fit the problem constraints
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
-    max_obj = 1.0
-    df = df.loc[(df['FP1_res'] < max_obj*0.821/max_obj) & (df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj*1.5) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
+    max_obj = 0.9
+    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj*1.0) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
     
     # get costs and pass to pareto function
     costs = df[['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']]
