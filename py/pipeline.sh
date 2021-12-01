@@ -10,30 +10,30 @@
 # echo -e "version\tn\tmax\tl2norm\ttime" 
 
 GENS=1000
-BATCH=290
+BATCH=320
 
 mkdir results_"$BATCH"
 ./make_db.py $GENS $BATCH
 ./view_db.py $BATCH
-mv magnet_factors.csv results_"$BATCH"/
-mv best"$BATCH".h5 results_"$BATCH"/
-./draw.py results_"$BATCH"/best"$BATCH".h5
-cd results_"$BATCH"
-cd profiles
-
-for TOSSES in $(seq 0 1 5) 
-do
-  cosy ./pygmoCosy"$TOSSES".fox > "$TOSSES".txt
-  mv pic001.pdf X${TOSSES}.pdf
-  mv pic002.pdf Y${TOSSES}.pdf
-  cosy ./pygmoCosy"$TOSSES"_DE.fox > "$TOSSES"_DE.txt
-  mv pic001.pdf X${TOSSES}_DE.pdf
-  cosy ./pygmoCosy"$TOSSES"_DE_FP1.fox > "$TOSSES"_DE_FP1.txt
-  mv pic001.pdf X${TOSSES}_DE_FP1.pdf
-#  mv pic002.pdf Y${TOSSES}_DE.pdf
-  rm -r ./pic*.pdf
-done
-rm -r ./*.lis
-cd ../../
-tar -czvf results_"$BATCH".tar.gz results_"$BATCH"/
-
+#mv magnet_factors.csv results_"$BATCH"/
+#mv best"$BATCH".h5 results_"$BATCH"/
+#./draw.py results_"$BATCH"/best"$BATCH".h5
+#cd results_"$BATCH"
+#cd profiles
+#
+#for TOSSES in $(seq 0 1 5) 
+#do
+#  cosy ./pygmoCosy"$TOSSES".fox > "$TOSSES".txt
+#  mv pic001.pdf X${TOSSES}.pdf
+#  mv pic002.pdf Y${TOSSES}.pdf
+#  cosy ./pygmoCosy"$TOSSES"_DE.fox > "$TOSSES"_DE.txt
+#  mv pic001.pdf X${TOSSES}_DE.pdf
+#  cosy ./pygmoCosy"$TOSSES"_DE_FP1.fox > "$TOSSES"_DE_FP1.txt
+#  mv pic001.pdf X${TOSSES}_DE_FP1.pdf
+##  mv pic002.pdf Y${TOSSES}_DE.pdf
+#  rm -r ./pic*.pdf
+#done
+#rm -r ./*.lis
+#cd ../../
+#tar -czvf results_"$BATCH".tar.gz results_"$BATCH"/
+#
