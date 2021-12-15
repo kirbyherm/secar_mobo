@@ -15,6 +15,7 @@ import re
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import time
 import itertools
 import timeit
@@ -26,17 +27,17 @@ import pandas as pd
 # specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 #os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
-#os.environ['PATH'] = os.environ['PATH'] + ':/opt/software/texlive/20210316/bin/x86_64-linux/tex'
 plt.rcParams.update({
     "text.usetex": True,
 })
 
 script, filename = sys.argv
-optimized_params = 4
+optimized_params = 5
 fNom = np.zeros(optimized_params)+1
-fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
+fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
+magnet_dim = 19
 
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
@@ -169,7 +170,7 @@ def output_4d_cosy(popi,filename,df):
 
     hv = pg.hypervolume(popi)
     ref_point = hv.refpoint()
-    ref_point = (1e10,1e10,1e10,1e10) 
+    ref_point = np.zeros(optimized_params)+1e10 
     best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
     ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
     magnet_dim = len(popi.get_x()[0])
@@ -177,7 +178,7 @@ def output_4d_cosy(popi,filename,df):
     sorted_ndf = []
     sorted_pop = []
     sorted_xs = []
-    sort_param = 3
+    sort_param = 4
     for i in ndf[0]:
         if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
 #            print(popi.get_f()[i])
@@ -187,6 +188,7 @@ def output_4d_cosy(popi,filename,df):
         go_next = False
         if len(sorted_ndf) > 1:
             for j in range(len(sorted_ndf)):
+#                print( j, sorted_ndf)
                 if np.array_equal(popi.get_f()[i],sorted_pop[j]) and np.array_equal(popi.get_x()[i],sorted_xs[j]):
                     go_next=True
                     break
@@ -226,7 +228,11 @@ def output_4d_cosy(popi,filename,df):
             os.remove(f'{PROFILES_PATH}/{file}')     
         shutil.rmtree(PROFILES_PATH)
     os.mkdir(PROFILES_PATH)
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, PROFILES_PATH, 'SEC_a_n_WF2_off_10m_v1_draw.fox' )
+    qNew = np.array([1.0371301857113335,1.4897519431921593,0.5402003843384104,0.6080163749223835,0.5965351874518491,0.5279178522813484,0.8474952322221544,0.8290931192132953,0.7350223112146984,0.5049139345530922,0.969681779928563 ,0.8465270119223961,0.7261232553654523,0.6805787940919176,0.6772214286022437,1.6737045402403927,1.3151418622198896,0.8914897696929639,0.6144362243855045])
+    qNew = np.zeros(19)+1
+    write_fox((qNew), 0, PROFILES_PATH, 'SECAR_an_Optics_draw.fox' )
+    write_fox((qNew), str(0)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox' )
+#    write_fox((qNew), str(0)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):
 #    print(df_closest,df_closest.index)
@@ -240,7 +246,9 @@ def output_4d_cosy(popi,filename,df):
 #                if np.array_equal(sorted_pop[i-1],sorted_pop[k]):
 #                    count_dups += 1
 #                    break
-        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SEC_a_n_WF2_off_10m_v1_draw.fox')
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SECAR_an_Optics_draw.fox')
+        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox')
+#        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox')
         plot_i += 1
 #    print(len(sorted_ndf), count_dups)
     return
@@ -316,7 +324,7 @@ def plot_2d(popi,filename):
 
 def plot_4d(popi,filename,df):
 
-    sort_param = 3
+    sort_param = 4
     good_results=0
     magnet_dim = len(popi.get_x()[0])
     hv = pg.hypervolume(popi)
@@ -329,6 +337,8 @@ def plot_4d(popi,filename,df):
     reduced_ndf = []
     first = True
     df_closest = df
+    cmap = matplotlib.colors.ListedColormap(matplotlib.cm.get_cmap("Pastel1").colors[:3])
+
     for j in range(0,optimized_params-1):
         ndf_champ = []
         axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
@@ -352,10 +362,21 @@ def plot_4d(popi,filename,df):
             df_closest = df_closest.reset_index(drop=True)
 #            print(df_closest.iloc[:,15:19])
             for i_closest in df_closest.index:
-                axs[plot_y].text(df_closest.iloc[:,22][i_closest],df_closest.iloc[:,19+j][i_closest],str(i_closest+1),color='red')
+                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
         axs[plot_y].set_ylabel(fNames[j])
         axs[plot_y].set_yscale('log')
+        max_y = max(abs(np.log10(axs[plot_y].get_ylim())))
+        axs[plot_y].set_ylim(np.power(10,-max_y),np.power(10,max_y))
         axs[plot_y].set_xscale('log')
+        max_x = max(abs(np.log10(axs[plot_y].get_xlim())))
+        axs[plot_y].set_xlim(np.power(10,-max_x),np.power(10,max_x))
+        colors = np.zeros((math.ceil(max(axs[plot_y].get_ylim())),math.ceil(max(axs[plot_y].get_xlim())))) + 1
+        for colori in range(1,colors.shape[0]):
+            for colorj in range(1, colors.shape[1]):
+                colors[colori,colorj] = 0
+        colors[0,0] = 2
+        print(colors)
+        axs[plot_y].pcolormesh(colors, cmap=cmap)
         plot_y += 1
 
     fig.tight_layout()
@@ -369,24 +390,20 @@ def plot_4d(popi,filename,df):
         ycolumns.append('y{}'.format(i))
     df = pd.DataFrame(reduced_qs, columns = ycolumns)
     qNom = np.zeros(magnet_dim)
+    write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','h1','h2','h3','o1']
     for i in range(magnet_dim):
         if plot_x > 3:
             plot_x, plot_y = 0, plot_y+1 
-        xlower, xupper = popi.problem.get_bounds()
-        xlower, xupper = xlower[i], xupper[i]
-        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(xlower,xupper))
+        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-3,3))
 #        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
 #        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
         axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
 #        axs2[plot_y,plot_x].axes.set_yscale("log")
 #        axs2[plot_y,plot_x].axes.set_ylim(0.1,20)
+        xlower, xupper = popi.problem.get_bounds()
+        xlower, xupper = np.min(xlower), np.max(xupper)
         axs2[plot_y,plot_x].axes.set_xlim(xlower,xupper)
-        if i < 15:
-            axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
-        elif i < 18:
-            axs2[plot_y,plot_x].set_title("h{0}".format(i-14))
-        else:
-            axs2[plot_y,plot_x].set_title("o{0}".format(i-17))
+        axs2[plot_y,plot_x].set_title("{0}".format(write_qnames[i]))
         y_min, y_max = axs2[plot_y,plot_x].get_ylim()
         df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/len(df_closest.index)*(y_max-y_min)+y_min)
 #        print(df_closest.iloc[:,:15])
@@ -396,7 +413,8 @@ def plot_4d(popi,filename,df):
         
         plot_x += 1
     
-    fig2.delaxes(axs2[plot_y,plot_x])
+    axs2[plot_y,plot_x].axis('off')
+    axs2[plot_y,plot_x].text(0.3, 0.5, 'x-axis is in log2', horizontalalignment='center', verticalalignment='center', transform=axs2[plot_y,plot_x].transAxes)
     fig2.tight_layout()
     plt.savefig(filename + "_magnet_hists.png")
     return

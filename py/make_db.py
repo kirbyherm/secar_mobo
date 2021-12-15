@@ -28,6 +28,7 @@ def main(gens=generations, batch_id=210):
     for i in range(magnet_dim):
         quads.append("q{}".format(i+1))
     columns = quads
+    columns.append("FP1_res")
     columns.append("FP2_res")
     columns.append("FP3_res")
     columns.append("MaxBeamWidth")
@@ -57,7 +58,7 @@ def main(gens=generations, batch_id=210):
             converged += 1
             converged_islands.append(i)
         max_obj = 1
-        if len(df_new.loc[(df_new['FP2_res'] < max_obj) & (df_new['FP3_res'] < max_obj) & (df_new['MaxBeamWidth'] < max_obj) & (df_new['FP4_BeamSpot'] <max_obj)].index) > len(df_new.index)*0.01:
+        if len(df_new.loc[(df_new['FP1_res'] < max_obj) & (df_new['FP2_res'] < max_obj) & (df_new['FP3_res'] < max_obj) & (df_new['MaxBeamWidth'] < max_obj) & (df_new['FP4_BeamSpot'] <max_obj)].index) > len(df_new.index)*0.01:
             better_than_nominal += 1
             better_than_nominal_islands.append(i)
 #        print(df_new)
@@ -73,11 +74,11 @@ def main(gens=generations, batch_id=210):
     df.to_hdf(db_out,key='df')
     max_obj = 1e9
     # check for solutions strictly better than nominal (all objs < 1)
-    df = df.loc[(df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
+    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
     converged_points = len(df.index)
     max_obj = 1
     # check for solutions strictly better than nominal (all objs < 1)
-    df = df.loc[(df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
+    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
     print("converged islands: ", converged_islands, "\nconverged points: ", converged_points, "\nbetter than nominal islands: ", better_than_nominal_islands, "\nbetter than nominal points: ", len(df.index))
     return
 
