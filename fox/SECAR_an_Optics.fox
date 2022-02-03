@@ -1,4 +1,4 @@
-INCLUDE '/mnt/simulations/secarml/secar_mobo/COSY10.0/COSY';
+INCLUDE '/cosy/COSY10.0/COSY';
 {INCLUDE '/Applications/COSY/COSY';}
 
 PROCEDURE RUN ;
