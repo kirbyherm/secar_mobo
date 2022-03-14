@@ -44,9 +44,9 @@ def is_pareto_efficient_simple(costs):
     return is_efficient
 
 # only show best [#] since we get a lot of points
-show_best = 10 
+show_best = 10
 batch = 210
-kclusters = 5
+kclusters = 10
 
 def main(start_i=batch):
     # specify database for input
@@ -65,8 +65,9 @@ def main(start_i=batch):
     
     # restrict the df to only the points that fit the problem constraints
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
-    max_obj = 3.0
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
+    max_obj = 2.0
+#    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
+    df = df.loc[(df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
     
     # get costs and pass to pareto function
     costs = df[['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']]
@@ -82,7 +83,7 @@ def main(start_i=batch):
     # additional code which provides an alternate way of sorting/filtering df, based on sum-squares of objs
     df['ssobjs'] = np.sqrt(df['FP1_res']**2+df['FP2_res']**2+df['FP3_res']**2+df['MaxBeamWidth']**2+df['FP4_BeamSpot']**2)
     df = df.sort_values(by='ssobjs',ignore_index=True)
-    df = df.loc[df['ssobjs'] < df['ssobjs'][show_best]]
+#    df = df.loc[df['ssobjs'] < df['ssobjs'][show_best]]
 #    print(df)
     quads = df.columns
 #    print(quads)

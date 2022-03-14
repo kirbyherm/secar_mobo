@@ -9,13 +9,13 @@
 
 #import commands
 import sys, math
-sys.path.insert(1, '/mnt/simulations/secarml/secar_mobo/py/')
 import os, shutil, signal
 import subprocess as commands
 import re
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import time
 import itertools
 import timeit
@@ -27,21 +27,23 @@ import pandas as pd
 # specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 #os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
-plt.rcParams.update({
-    "text.usetex": True,
-})
+#plt.rcParams.update({
+#    "text.usetex": True,
+#})
 
 script, filename = sys.argv
-optimized_params = 4
+optimized_params = 5
 fNom = np.zeros(optimized_params)+1
-fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
+fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
+magnet_dim = 19
 
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
     df = pd.read_hdf(filename)
-    magnet_dim = 15
+
+    magnet_dim = 19
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
     nobj = p_optimizeRes.get_nobj()
     if pop == None:
@@ -62,362 +64,104 @@ def read_pop_df(filename, pop=None):
             pop.push_back(xs,f=fs)
     return pop, df
 
-# read in pop from csv output file
-def read_pop(filename,pop=None):
-    # get magnet dimensions 
-    magnet_dim = len(pd.read_csv(filename).columns)-optimized_params
-    # init problem for creating pop
-    p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
-    obj_dim = p_optimizeRes.get_nobj()
-    quads = []
-    # construct columns to read from csv
-    for i in range(magnet_dim):
-        quads.append("x{}".format(i))
-    columns = quads
-    for i in range(obj_dim):
-        columns.append("f{}".format(i))
-    # read df from csv
-    df = pd.read_csv(filename,names=columns)
-    # initialize pop if none
-    if pop == None:
-        pop = pg.population(p_optimizeRes)
-
-    # construct pop from df 
-    nrow, ncol = df.shape
-    for i in df.index:
-        xs = []
-        for j in range(magnet_dim):
-            xs.append(df["x"+str(j)][i]) 
-        xs = np.asarray(xs)
-        fs = []
-        for j in range(ncol-magnet_dim):
-            # if not a valid obj value throw out point
-            if df["f"+str(j)][i] < 0 or np.isnan(df["f"+str(j)][i]):
-                print("error: ", df["f"+str(j)][i], i)
-                df["f"+str(j)][i] = 1e10
-            fs.append(df["f"+str(j)][i])
-        # add point to population
-        pop.push_back(xs,f=fs)
-    # return population to main()
-    return pop    
-
-# 2d functions are not updated, this one was for creating pngs for a movie of the evolution
-#   movie made from pngs using ffmpeg
-def plot_2d_evo(popi):
-
-    magnet_dim = len(popi.get_x()[0])
-    ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
-    print(pg.sort_population_mo(popi.get_f()))
-    ndf_champ = []
-#    for j in range(2,200):
-    print(pg.ideal(popi.get_f())[0])
-    x = np.linspace(pg.ideal(popi.get_f())[0],0)
-    y = np.zeros(50)+(1)
-    for j in range(2,100):
-        plt.cla()
-        plt.plot(x,y,linestyle="dashed",color="red")
-        print(ndf[0])
-        ndf_champ.append([popi.get_f()[i] for i in ndf[j]])
-#        ax = pg.plot_non_dominated_fronts(ndf_champ[0],comp=[0,j])
-#    ax.plot(color="C{}".format(j))
-        ax = pg.plot_non_dominated_fronts(popi.get_f()[0:j])
-        ax.set_xlabel('resolution')
-        ax.set_ylabel('xangle_e_min')
-        ax.set_ylim(1e-3,1000)
-        ax.set_yscale('log')
-#    print(ndf_champ, ndf[0])
-#    print(ndf)
-        plt.savefig("popi{}".format(j))
-    return
-
-# outdated
-def output_2d_cosy(popi,filename):
-
-    hv = pg.hypervolume(popi)
-    ref_point = hv.refpoint()
-    best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
-    ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
-    magnet_dim = len(popi.get_x()[0])
-    ndf_champ = []
-    sorted_ndf = []
-    sort_param = 3
-    for i in ndf[0]:
-        if i == ndf[0][0]:
-            sorted_ndf.append(i)
-        else:
-            for j in range(len(sorted_ndf)):
-                if j == len(sorted_ndf)-1:
-                    sorted_ndf.append(i)
-                    break
-                elif j == 0 and popi.get_f()[i][sort_param] < popi.get_f()[sorted_ndf[j]][sort_param]:
-                    sorted_ndf.insert(j,i)
-                    break
-                elif (popi.get_f()[i][sort_param] < popi.get_f()[sorted_ndf[j]][sort_param]) and j>0:
-                    if(popi.get_f()[i][sort_param] >= popi.get_f()[sorted_ndf[j-1]][sort_param]):
-#                        print(popi.get_f()[i][0],popi.get_f()[sorted_ndf[j]][0],popi.get_f()[sorted_ndf[j-1]][0])
-                        sorted_ndf.insert(j,i)
-                    break 
-    print(ndf[0], sorted_ndf)
-    
-    for i in range(len(sorted_ndf)):
-        j = sorted_ndf[i] 
-        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), i, "2f_FP3/")
-    return
-
-# write cosy draw files from the best points
-def output_4d_cosy(popi,filename,df):
-
-    hv = pg.hypervolume(popi)
-    ref_point = hv.refpoint()
-    ref_point = (1e10,1e10,1e10,1e10) 
-    best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
-    ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
-    magnet_dim = len(popi.get_x()[0])
-    ndf_champ = []
-    sorted_ndf = []
-    sorted_pop = []
-    sorted_xs = []
-    sort_param = 3
-    for i in ndf[0]:
-        if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
-#            print(popi.get_f()[i])
-            ndf_champ.append(i)
-    ndf = [ndf_champ]
-    for i in ndf[0]:
-        go_next = False
-        if len(sorted_ndf) > 1:
-            for j in range(len(sorted_ndf)):
-                if np.array_equal(popi.get_f()[i],sorted_pop[j]) and np.array_equal(popi.get_x()[i],sorted_xs[j]):
-                    go_next=True
-                    break
-        if go_next:
-            continue            
-        if i == ndf[0][0]:
-            sorted_ndf.append(i)
-            sorted_pop.append(popi.get_f()[i])
-            sorted_xs.append(popi.get_x()[i])
-        else:
-            for j in range(len(sorted_ndf)):
-                if j == len(sorted_ndf)-1:
-                    sorted_ndf.append(i)
-                    sorted_pop.append(popi.get_f()[i])
-                    sorted_xs.append(popi.get_x()[i])
-                    break
-                elif j == 0 and popi.get_f()[i][sort_param] < popi.get_f()[sorted_ndf[j]][sort_param]:
-                    sorted_ndf.insert(j,i)
-                    sorted_pop.insert(j,popi.get_f()[i])
-                    sorted_xs.insert(j,popi.get_x()[i])
-                    break
-                elif (popi.get_f()[i][sort_param] < popi.get_f()[sorted_ndf[j]][sort_param]) and j>0:
-                    if(popi.get_f()[i][sort_param] >= popi.get_f()[sorted_ndf[j-1]][sort_param]):
-#                        print(popi.get_f()[i][0],popi.get_f()[sorted_ndf[j]][0],popi.get_f()[sorted_ndf[j-1]][0])
-                        sorted_ndf.insert(j,i)
-                        sorted_pop.insert(j,popi.get_f()[i])
-                        sorted_xs.insert(j,popi.get_x()[i])
-                    break 
-#    print(ndf[0], sorted_ndf)
-    
-    df_closest = df.loc[df['closest']==True]
-    results_path = os.path.split(filename)[0]
-    PROFILES_PATH = results_path+'/profiles/'
-    if os.path.exists(PROFILES_PATH) and os.path.isdir(PROFILES_PATH):
-        files_in_dir = os.listdir(PROFILES_PATH)     # get list of files in the directory
-        for file in files_in_dir:                  # loop to delete each file in folder
-            os.remove(f'{PROFILES_PATH}/{file}')     
-        shutil.rmtree(PROFILES_PATH)
-    os.mkdir(PROFILES_PATH)
-    write_fox(np.power(np.zeros(magnet_dim)+2,np.zeros(magnet_dim)), 0, PROFILES_PATH, 'SEC_neutrons_WF_14m_v1_draw.fox' )
-    count_dups = 0
-#    for i in range(1,len(sorted_ndf)+1):
-#    print(df_closest,df_closest.index)
-    plot_i = 1
-    for i in df_closest.index:
-        i = i + 1
-        j = sorted_ndf[i-1] 
-#        print(popi.get_f()[j])
-#        if i > 1:
-#            for k in range(i-1):
-#                if np.array_equal(sorted_pop[i-1],sorted_pop[k]):
-#                    count_dups += 1
-#                    break
-        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SEC_neutrons_WF_14m_v1_draw.fox')
-        plot_i += 1
-#    print(len(sorted_ndf), count_dups)
-    return
-
-def plot_2d(popi,filename):
-
-    magnet_dim = len(popi.get_x()[0])
-    hv = pg.hypervolume(popi)
-    ref_point = hv.refpoint()
-    best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
-    ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
-#    print(pg.sort_population_mo(popi.get_f()))
-    ndf_champ = []
-#    for j in range(2,200):
-#    print(pg.select_best_N_mo(popi.get_f(),10))
-    best_10 = (pg.select_best_N_mo(popi.get_f(),10))
-    for i in best_10:
-        print(i, np.power(np.zeros(magnet_dim)+2,popi.get_x()[i]), popi.get_f()[i])
-    x = np.linspace(pg.ideal(popi.get_f())[0],0)
-    y = np.zeros(50)+(1)
-    plot_x, plot_y = 0,0
-    objs = len(popi.get_f()[0])
-    fig, axs = plt.subplots(objs-1,sharex=True)
-    fig.suptitle('ratios to Nom vs Resolution')
-    log_res, log_x = [], []
-    for i in ndf[0]:
-        log_res.append(np.log(popi.get_f()[i][0])/np.log(10))
-        log_x.append(np.log(popi.get_f()[i][1])/np.log(10))
-        if max(popi.get_f()[i]) < 1000000:
-            print(i, np.power(np.zeros(magnet_dim)+2,popi.get_x()[i]), popi.get_f()[i])
-    if objs == 2:
-        j = 1
-        axs.set_xlabel('resolution')
-        axs.axvline(x=fNom[0],linestyle="dashed",color="red")
-        axs.axvline(x=best_point[0],linestyle="dotted",color="blue")
-        axs.axhline(y=1.0,linestyle="dashed",color="red")
-        ndf_champ.append([popi.get_f()[i] for i in ndf[0]])
-        pg.plot_non_dominated_fronts(ndf_champ[0],comp=[0,j],axes=axs)
-#    ax.plot        df = (color="C{}".format(j))
-#        ax = pg.plot_non_dominated_fronts(popi.get_f()[0:j])
-
-        axs.set_ylabel(fNames[2])
-#        axs.set_ylim(0.9,1.1)
-        axs.set_yscale('log')
-#        axs.set_xlim(0.8,1.2)
-        axs.set_xscale('log')
-    else:
-        axs[objs-2].set_xlabel('resolution')
-        for j in range(1,2):
-    #        axs[plot_y].plot(x,y,linestyle="dashed",color="red")
-            axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
-            axs[plot_y].axvline(x=best_point[0],linestyle="dotted",color="blue")
-            axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
-            ndf_champ.append([popi.get_f()[i] for i in ndf[0]])
-            pg.plot_non_dominated_fronts(ndf_champ[0],comp=[0,j],axes=axs[plot_y])
-    #    ax.plot(color="C{}".format(j))
-    #        ax = pg.plot_non_dominated_fronts(popi.get_f()[0:j])
-    
-            axs[plot_y].set_ylabel(fNames[2])
-    #        axs[plot_y].set_ylim(1e-1,1e1)
-            axs[plot_y].set_yscale('log')
-    #        axs[plot_y].set_xlim(0.1,10.0)
-    #        axs[plot_y].set_xscale('log')
-            plot_y += 1
-#    print(ndf_champ, ndf[0])
-#    print(ndf)
-    fig.tight_layout()
-    fig.savefig(filename+"_ndf.png")
-    plt.clf()
-#    plt.plot(log_res, log_x,"o", linestyle="none", )
-#    fig.savefig(filename+"_logndf.png")
-    return
 
 def plot_4d(popi,filename,df):
 
-    pop = None
-    for i_cluster in range(10):
-        df_i = df.loc[(df['kcluster'] == i_cluster)]
-        magnet_dim = 15
-        p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
-        nobj = p_optimizeRes.get_nobj()
-        if pop == None:
-            pop = pg.population(p_optimizeRes)
-        nrow, ncol = df_i.shape
-        for i in df_i.index:
-            append=True
-            xs = []
-            for j in range(1,magnet_dim+1):
-                xs.append(df_i["q"+str(j)][i]) 
-            xs = np.asarray(xs)
-            fs = []
-            for j in range(magnet_dim,magnet_dim+nobj):
-#                if i == 0:
-#                    print(df.iloc[i,magnet_dim:magnet_dim+p_optimizeRes.get_nobj()])
-                fs.append(df.iloc[i,j])
-            if append:
-                pop.push_back(xs,f=fs)
+    sort_param = 4
+    good_results=0
+    magnet_dim = len(popi.get_x()[0])
+#    hv = pg.hypervolume(popi)
+#    ref_point = np.zeros(optimized_params)+1e10 
+    ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
+    plot_x, plot_y = 0,0
+    fig, axs = plt.subplots(optimized_params-1,sharex=True)
+    fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at FP4')
+    axs[optimized_params-2].set_xlabel(fNames[sort_param])
+    reduced_ndf = []
+    first = True
+    df_closest = df
+    cmap = matplotlib.colors.ListedColormap(matplotlib.cm.get_cmap("Pastel1").colors[:3])
 
-        popi = pop
-        sort_param = 3
-        good_results=0
-        magnet_dim = len(popi.get_x()[0])
-        hv = pg.hypervolume(popi)
-        ref_point = np.zeros(optimized_params)+1e10 
-        ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
-        plot_x, plot_y = 0,0
-        fig, axs = plt.subplots(optimized_params-1,sharex=True)
-        fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at FP4')
-        axs[optimized_params-2].set_xlabel(fNames[sort_param])
-        reduced_ndf = []
-        first = True
-#        df_closest = df.loc[(df['kcluster'] == i_cluster)]
-        for j in range(0,optimized_params-1):
-            ndf_champ = []
-            axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
-            axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
-            for i in ndf[0]:
-                check_val=1e9
-                if np.all(np.array(popi.get_f()[i]) < check_val) == True:
-                    good_results+=1
-    #                print(filename[-6:-4], good_results, popi.get_f()[i])
-                    ndf_champ.append(popi.get_f()[i])
-                    reduced_ndf.append(i)
-            try:
-                pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
-    #            if j == 1:
-    #                print(filename[-6:-4], len(ndf_champ))
-            except:
-                print(filename[-6:-4], "no better than nominal solutions")
-                return
-            if "closest" in df_i.columns:
-                df_closest = df_i.loc[df['closest']==True]
-                df_closest = df_closest.reset_index(drop=True)
-    #            print(df_closest.iloc[:,15:19])
-                for i_closest in df_closest.index:
-                    axs[plot_y].text(df_closest.iloc[:,18][i_closest],df_closest.iloc[:,15+j][i_closest],str(df_closest['kcluster'][0]+1),color='red')
-            axs[plot_y].set_ylabel(fNames[j])
-            axs[plot_y].set_yscale('log')
-            axs[plot_y].set_xscale('log')
-            plot_y += 1
-    
-        fig.tight_layout()
-        fig.savefig(filename+"{}_paretos.png".format(i_cluster))
-        plt.cla()
-        fig2, axs2 = plt.subplots(4,4)
-        plot_x, plot_y = 0,0
-        reduced_qs = np.array(popi.get_x())[reduced_ndf]
-        ycolumns = []
-        for i in range(magnet_dim):
-            ycolumns.append('y{}'.format(i))
-        df_i = pd.DataFrame(reduced_qs, columns = ycolumns)
-        qNom = np.zeros(magnet_dim)
-        for i in range(magnet_dim):
-            if plot_x > 3:
-                plot_x, plot_y = 0, plot_y+1 
-            axs2[plot_y,plot_x] = df_i['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-2,2))
-    #        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
-    #        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
-            axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
-    #        axs2[plot_y,plot_x].axes.set_yscale("log")
-    #        axs2[plot_y,plot_x].axes.set_ylim(0.1,20)
-            xlower, xupper = popi.problem.get_bounds()
-            xlower, xupper = np.min(xlower), np.max(xupper)
-            axs2[plot_y,plot_x].axes.set_xlim(xlower,xupper)
-            axs2[plot_y,plot_x].set_title("q{0}".format(i+1))
-            y_min, y_max = axs2[plot_y,plot_x].get_ylim()
-            df_closest['yplot'] = pd.Series(df_closest['kcluster'][0]).apply(lambda x: x/(10)*(y_max-y_min)+y_min)
-    #        print(df_closest.iloc[:,:15])
-    #        if "closest" in df.columns:
+    for j in range(0,optimized_params-1):
+        ndf_champ = []
+        axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
+        axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
+        for i in ndf[0]:
+            check_val=1e9
+            if np.all(np.array(popi.get_f()[i]) < check_val) == True:
+                good_results+=1
+#                print(filename[-6:-4], good_results, popi.get_f()[i])
+                ndf_champ.append(popi.get_f()[i])
+                reduced_ndf.append(i)
+        try:
+            pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
+#            if j == 1:
+#                print(filename[-6:-4], len(ndf_champ))
+        except:
+            print(filename[-6:-4], "no better than nominal solutions")
+            return
+        if "closest" in df.columns:
+            df_closest = df.loc[df['closest']==True]
+            df_closest = df_closest.reset_index(drop=True)
+#            print(df_closest.iloc[:,15:19])
             for i_closest in df_closest.index:
-                axs2[plot_y,plot_x].text(df_closest["q{0}".format(i+1)][i_closest],df_closest['yplot'][i_closest],str(df_closest['kcluster'][0]+1),color='red')
-            
-            plot_x += 1
+                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
+        axs[plot_y].set_ylabel(fNames[j])
+        axs[plot_y].set_yscale('log')
+#        print(axs[plot_y].get_xlim(),axs[plot_y].get_ylim())
+        max_y = max(abs(np.log10(axs[plot_y].get_ylim())))
+        axs[plot_y].set_ylim(np.power(10,-max_y),np.power(10,max_y))
+        axs[plot_y].set_xscale('log')
+        max_x = max(abs(np.log10(axs[plot_y].get_xlim())))
+        axs[plot_y].set_xlim(np.power(10,-max_x),np.power(10,max_x))
+#        print(math.ceil(max(axs[plot_y].get_ylim())),math.ceil(max(axs[plot_y].get_ylim())))
+        colors = np.zeros((int(math.ceil(max(axs[plot_y].get_ylim()))),int(math.ceil(max(axs[plot_y].get_xlim()))))) + 1
+        for colori in range(1,colors.shape[0]):
+            for colorj in range(1, colors.shape[1]):
+                colors[colori,colorj] = 0
+        colors[0,0] = 2
+#        print(colors)
+        axs[plot_y].pcolormesh(colors, cmap=cmap)
+        plot_y += 1
+
+    fig.tight_layout()
+    fig.savefig(filename+"_paretos.png")
+    plt.cla()
+    fig2, axs2 = plt.subplots(5,4)
+    plot_x, plot_y = 0,0
+    reduced_qs = np.array(popi.get_x())[reduced_ndf]
+    ycolumns = []
+    for i in range(magnet_dim):
+        ycolumns.append('y{}'.format(i))
+    df = pd.DataFrame(reduced_qs, columns = ycolumns)
+    qNom = np.zeros(magnet_dim)
+    write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','h1','h2','h3','o1']
+    for i in range(magnet_dim):
+        if plot_x > 3:
+            plot_x, plot_y = 0, plot_y+1 
+        axs2[plot_y,plot_x] = df['y{0}'.format(i)].plot.hist(ax=axs2[plot_y,plot_x],bins=100,range=(-3,3))
+#        axs2[plot_y,plot_x].axvline( x = qNom[i], ymin=0,ymax=20,color='red',linestyle='dashed')
+#        axs[plot_y,plot_x].axvline( x = max_y[i], ymin=0,ymax=20,color='green',linestyle='dashed')
+        axs2[plot_y,plot_x].axes.yaxis.set_visible(False)
+#        axs2[plot_y,plot_x].axes.set_yscale("log")
+#        axs2[plot_y,plot_x].axes.set_ylim(0.1,20)
+        xlower, xupper = popi.problem.get_bounds()
+        xlower, xupper = np.min(xlower), np.max(xupper)
+        axs2[plot_y,plot_x].axes.set_xlim(xlower,xupper)
+        axs2[plot_y,plot_x].set_title("{0}".format(write_qnames[i]))
+        y_min, y_max = axs2[plot_y,plot_x].get_ylim()
+        df_closest['yplot'] = pd.Series(df_closest.index).apply(lambda x: x/len(df_closest.index)*(y_max-y_min)+y_min)
+#        print(df_closest.iloc[:,:15])
+#        if "closest" in df.columns:
+        for i_closest in df_closest.index:
+            axs2[plot_y,plot_x].text(df_closest["q{0}".format(i+1)][i_closest],df_closest['yplot'][i_closest],str(i_closest+1),color='red')
         
-        fig2.delaxes(axs2[plot_y,plot_x])
-        fig2.tight_layout()
-        plt.savefig(filename + "{}_magnet_hists.png".format(i_cluster))
+        plot_x += 1
+    
+    axs2[plot_y,plot_x].axis('off')
+    axs2[plot_y,plot_x].text(0.3, 0.5, 'x-axis is in log2', horizontalalignment='center', verticalalignment='center', transform=axs2[plot_y,plot_x].transAxes)
+    fig2.tight_layout()
+    plt.savefig(filename + "_magnet_hists.png")
     return
 
 def main(filename):
@@ -426,14 +170,38 @@ def main(filename):
     print(os.path.split(filename))
     popi = None
     print("reading {} file".format(file_extension))
-    df = None
-    if file_extension == ".h5":
-        popi, df = read_pop_df(filename)
-#        output_4d_cosy(popi, filename, df)
-    else: 
-        popi = read_pop(filename)
-    print(df)
-    plot_4d(popi,filename,df)
+#    if file_extension == ".h5":
+#        popi, df_list = read_pop_df(filename)
+#    for df in df_list:
+#        plot_4d(popi,filename,df)
+
+    df = pd.read_hdf(filename)
+    number_of_clusters = np.max(df['kcluster']+1)
+    colors = list(plt.get_cmap('tab20').colors)
+    for obj in ['FP1_res','FP2_res','FP3_res','MaxBeamWidth']:
+        ax = None
+        for i in range(number_of_clusters):
+            print(df.loc[df['closest']==True])
+            df_clos = df.loc[df['closest']==True].sort_values(by=['FP4_BeamSpot']).reset_index(drop=True)
+            print(df_clos.loc[df_clos['kcluster']==i].index)
+            if i == 0:
+                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
+#                ax.text(df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot'],df_clos.loc[df_clos['kcluster']==i][obj],str(df_clos.loc[df_clos['kcluster']==i].index[0]),color=colors[i],backgroundcolor='w')
+#                ax.plot([ax.axes.get_xlim()[0],df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot']],[ax.axes.get_ylim()[0],df_clos.loc[df_clos['kcluster']==i][obj]],color=colors[i])
+            else:
+                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],ax=ax,label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
+#                ax.plot([ax.axes.get_xlim()[0],df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot']],[ax.axes.get_ylim()[0],df_clos.loc[df_clos['kcluster']==i][obj]],color=colors[i])
+#                ax.text(df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot'],df_clos.loc[df_clos['kcluster']==i][obj],str(df_clos.loc[df_clos['kcluster']==i].index[0]),color=colors[i],backgroundcolor='w')
+                ax.axes.set_ylabel(obj)
+                ax.axes.set_xlabel('FP4_BeamSpot')
+                ax.axes.set_yscale('log')
+                ax.axes.set_xscale('log')
+        for i in range(number_of_clusters):
+            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='x',color=colors[i],ax=ax,markersize=20.0,label='_'+obj+'2')
+            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',fillstyle='none',color='b',ax=ax,markersize=20.0,label='_'+obj+'2')
+        plt.tight_layout()
+        plt.savefig(filename+'_'+obj+'.png')
+
 
 if __name__=='__main__':
     main(filename)

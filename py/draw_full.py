@@ -31,7 +31,7 @@ plt.rcParams.update({
     "text.usetex": True,
 })
 
-script, filename = sys.argv
+script, filename, batch = sys.argv
 optimized_params = 5
 fNom = np.zeros(optimized_params)+1
 fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
@@ -425,6 +425,8 @@ def plot_hists(df, df_reduce, filename):
 
     write_qnames = {'q1':'q1','q2':'q2','q3':'q3','q4':'q4','q5':'q5','q6':'q6','q7':'q7','q8':'q8','q9':'q9','q10':'q10','q11':'q11','q12':'q12','q13':'q13','q14':'q14','q15':'q15','q16':'h1','q17':'h2','q18':'h3','q19':'o1'}
     df = df.iloc[:,:19]
+    df_clos = df_reduce.loc[df_reduce['closest']==True].sort_values(by=['FP4_BeamSpot']).reset_index(drop=True)
+    df_best = df_reduce.copy()
     df_reduce = df_reduce.iloc[:,:19]
     df = df.rename(columns=write_qnames)
 #    fig = plt.figure(1)
@@ -454,17 +456,23 @@ def plot_hists(df, df_reduce, filename):
         axs2[i] = axs[i].twinx()
         axs2[i].set_ylim([1,1000])
         axs2[i].set_ylabel('optimized points',rotation=-90)
-    hist = df_reduce.hist(bins=bins,log=True,ax=axs2,color='red',grid=False)
+    number_of_clusters = np.max(df_best['kcluster']+1)
+    colors = list(plt.get_cmap('tab20').colors)
+    write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
+    print(df_best,axs2)
+    for i in range(number_of_clusters):
+#                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
+        hist = df_best.loc[df_best['kcluster']==i][write_qnames].hist(bins=bins,log=True,ax=axs2,color=colors[i],label=df_clos.loc[(df_clos['kcluster']==i)].index[0]+1,grid=False)
     for i in range(len(axs)):
         axs2[i].set_title("")
 
     print(hist)
-    plt.savefig(filename+'_full_hist.png')
+    plt.savefig(filename+'full_hist.png')
     
     return
 
 
-def main(filename):
+def main(filename,batch):
 
     file_extension = os.path.splitext(filename)[-1]
     print(os.path.split(filename))
@@ -473,14 +481,11 @@ def main(filename):
     df = None
     if file_extension == ".h5":
         popi, df = read_pop_df(filename)
-        output_4d_cosy(popi, filename, df)
-    else: 
-        popi = read_pop(filename)
-#    print(df)
-    plot_4d(popi,filename,df)
+    df_full = pd.read_hdf('../output/secar_4d_db_'+batch+'s.h5')
+    plot_hists(df_full, df, "results_"+batch+"/")
 
 if __name__=='__main__':
-    main(filename)
+    main(filename,batch)
 
 
 
