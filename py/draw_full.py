@@ -460,9 +460,15 @@ def plot_hists(df, df_reduce, filename):
     colors = list(plt.get_cmap('tab20').colors)
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
     print(df_best,axs2)
+    df_clos['yplot'] = 0
     for i in range(number_of_clusters):
 #                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
         hist = df_best.loc[df_best['kcluster']==i][write_qnames].hist(bins=bins,log=True,ax=axs2,color=colors[i],label=df_clos.loc[(df_clos['kcluster']==i)].index[0]+1,grid=False)
+        for j in range(len(axs)):
+            y_min, y_max = axs2[j].get_ylim()
+#            df_clos['yplot'][i] = df_clos.index*(y_max-y_min)+y_min
+            print((df_clos['kcluster'][i])*(np.logspace(1.0,3.0,num=10)[i]),(df_clos['kcluster'][i]),(np.logspace(0.0,2.5,num=10)[i]))
+            axs2[j].text(df_clos["q{0}".format(j+1)][i],(np.logspace(0.0,2.8,num=10)[df_clos['kcluster'][i]]),str(df_clos['kcluster'][i]+1),color='black')
     for i in range(len(axs)):
         axs2[i].set_title("")
 

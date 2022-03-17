@@ -433,7 +433,8 @@ DL 0.146731-0.1;                                           {DL10}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WRITE 6 'FP1Xdim' WW(1)-WW(2);
-{WRITE 6 'ME(1,2) AT FP1 =' ME(1,2);}
+WRITE 6 'ME(1,2) AT FP1 =' ME(1,2);
+WRITE 6 'ME(1,6) AT FP1 =' ME(1,6);
 {WRITE 6 'ME(1,1) AT FP1 =' ME(1,1);}
 
 {***** Section 2 *****}
@@ -583,6 +584,8 @@ WRITE 6 'FP2Xdim' WW(1)-WW(2);
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
 WRITE 6 'FP2Res' (ABS(ME(1,7))/(WV));}
+WRITE 6 'ME(1,2) AT FP2 =' ME(1,2);
+WRITE 6 'ME(1,6) AT FP2 =' ME(1,6);
 
 PS 0.015;
 {PRINT_XDIM;}
@@ -711,6 +714,8 @@ WRITE 6 'FP3Res' (ABS(ME(1,7))/(WV));}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WRITE 6 'FP3Xdim' WW(1)-WW(2);
+WRITE 6 'ME(1,2) AT FP3 =' ME(1,2);
+WRITE 6 'ME(1,6) AT FP3 =' ME(1,6);
 
 {PRINT_XDIM;
 PRINT_YDIM;

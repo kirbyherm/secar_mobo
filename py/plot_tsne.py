@@ -17,8 +17,9 @@ n_components = 2
 
 def plot_tsne(filename):
 
-    (fig, subplots) = plt.subplots(2, 4, figsize=(12, 6))
+    (fig, subplots) = plt.subplots(3, 3, figsize=(8, 8))
     perplexities = [5, 30, 50, 100, 300, 500, 1000]
+    perplexities = [50]
     
     X, y = datasets.make_circles(
         n_samples=n_samples, factor=0.5, noise=0.05, random_state=0
@@ -44,7 +45,7 @@ def plot_tsne(filename):
     close = z == True
     
     
-    print (X,y)
+    print (X,y[close])
     
     ax = subplots[0][0]
     for i in range(number_of_clusters):
@@ -54,7 +55,12 @@ def plot_tsne(filename):
 #    ax.scatter(X[blue, 0], X[blue, 1], c="r")
 #    ax.scatter(X[yellow, 0], X[yellow, 1], c="y")
 #    ax.scatter(X[black, 0], X[black, 1], c="k")
-    ax.scatter(X[close,0], X[close,1], marker='x', c='b')
+#    ax.scatter(X[close,0], X[close,1], marker='x', c='b')
+
+    print(X[close,0][0])    
+    for i, txt in enumerate(y[close]):
+        print(i,txt)
+        ax.annotate(txt+1, (X[close,0][txt], X[close,1][txt]))
     ax.xaxis.set_major_formatter(NullFormatter())
     ax.yaxis.set_major_formatter(NullFormatter())
     plt.axis("tight")
@@ -88,7 +94,10 @@ def plot_tsne(filename):
 #        ax.scatter(Y[blue, 0], Y[blue, 1], c="r")
 #        ax.scatter(Y[yellow, 0], Y[yellow, 1], c="y")
 #        ax.scatter(Y[black, 0], Y[black, 1], c="k")
-        ax.scatter(Y[close,0], Y[close,1], marker='x', c='b')
+        for k, txt in enumerate(y[close]):
+            print(k,txt)
+            ax.annotate(txt+1, (Y[close,0][txt], Y[close,1][txt]))
+#        ax.scatter(Y[close,0], Y[close,1], marker='x', c='b')
         ax.xaxis.set_major_formatter(NullFormatter())
         ax.yaxis.set_major_formatter(NullFormatter())
         ax.axis("tight")

@@ -50,15 +50,15 @@ class optimizeRes:
 
     # define number of objectives
     def get_nobj(self):
-        return 5
+        return 8
 
     # define bounds of x values
     #   i.e. from -1 to 1 (powers of 2)
     def get_bounds(self):
         qLower =zeros(self.dim) - 2.0
         qUpper =zeros(self.dim) + 2.0
-        qLower[9] *= 1.5 
-        qUpper[9] *= 1.5 
+        qLower[9] *= 1.0 
+        qUpper[9] *= 1.0 
         return (qLower, qUpper)
 
     # define problem name
