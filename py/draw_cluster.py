@@ -31,13 +31,36 @@ os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/
 #    "text.usetex": True,
 #})
 
-script, filename = sys.argv
+script, filename, filename_compare = sys.argv
 optimized_params = 5
 fNom = np.zeros(optimized_params)+1
 fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
 magnet_dim = 19
+
+def correct_obj_values(df, filename):
+
+    
+    df = df.loc[df['closest']==True]
+    objs =  ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+    nclusters = max(df['kcluster']+1) 
+    x1 = np.array([0.4149030189991541, 1.024219663615905, 0.32276368444381337, 0.28454926622496207, 0.13051896098280003])
+    x2 = np.append(x1,[0.40651582802980557, 0.9107875198036088, 0.24913824216441277, 3.9806676668358776, 3.808775729951597])
+    x3 = np.append(x2,[0.4162521335795522, 0.9444542701708413, 0.5153166810864698, 0.19393722897375568, 0.1705774768981977])
+    x4 = np.append(x3,[0.3945841068155405, 0.518947611092936, 0.5147924366850625, 0.22812565873404525, 0.22328122790935367])
+
+    if '340' in filename:
+        x1 = np.array([1.1602257895768526, 1.9832986250319096, 1.2019965432541717, 1.0225988358141749, 0.5612462612961021])
+        x2 = np.append(x1,[4,4,4,4,4])
+        x3 = np.append(x2,[1.1645946603141062, 1.7004600000167525, 1.7789270074156527, 0.6033383813418585, 0.6022615821623248])
+        x4 = np.append(x3,[1.1390023263255333, 2.0992401393492774, 2.2332984461485816, 0.9315916411551571, 0.9715838648006931])
+
+    for i in range(nclusters):
+        for j in range(len(objs)):
+            df.loc[df['kcluster']==i,objs[j]] = x4[i*len(objs)+j]
+    return df
+        
 
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
@@ -164,7 +187,7 @@ def plot_4d(popi,filename,df):
     plt.savefig(filename + "_magnet_hists.png")
     return
 
-def main(filename):
+def main(filename, filename_compare):
 
     file_extension = os.path.splitext(filename)[-1]
     print(os.path.split(filename))
@@ -176,6 +199,8 @@ def main(filename):
 #        plot_4d(popi,filename,df)
 
     df = pd.read_hdf(filename)
+    df_compare = pd.read_hdf(filename_compare)
+    df_compare = correct_obj_values(df_compare,filename)
     number_of_clusters = np.max(df['kcluster']+1)
     colors = list(plt.get_cmap('tab20').colors)
     for obj in ['FP1_res','FP2_res','FP3_res','MaxBeamWidth']:
@@ -185,11 +210,11 @@ def main(filename):
             df_clos = df.loc[df['closest']==True].sort_values(by=['FP4_BeamSpot']).reset_index(drop=True)
             print(df_clos.loc[df_clos['kcluster']==i].index)
             if i == 0:
-                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
+                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=np.array(colors[i+1]),label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
 #                ax.text(df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot'],df_clos.loc[df_clos['kcluster']==i][obj],str(df_clos.loc[df_clos['kcluster']==i].index[0]),color=colors[i],backgroundcolor='w')
 #                ax.plot([ax.axes.get_xlim()[0],df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot']],[ax.axes.get_ylim()[0],df_clos.loc[df_clos['kcluster']==i][obj]],color=colors[i])
             else:
-                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],ax=ax,label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
+                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=np.array(colors[i+1]),ax=ax,label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
 #                ax.plot([ax.axes.get_xlim()[0],df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot']],[ax.axes.get_ylim()[0],df_clos.loc[df_clos['kcluster']==i][obj]],color=colors[i])
 #                ax.text(df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot'],df_clos.loc[df_clos['kcluster']==i][obj],str(df_clos.loc[df_clos['kcluster']==i].index[0]),color=colors[i],backgroundcolor='w')
                 ax.axes.set_ylabel(obj)
@@ -197,14 +222,16 @@ def main(filename):
                 ax.axes.set_yscale('log')
                 ax.axes.set_xscale('log')
         for i in range(number_of_clusters):
-            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='x',color=colors[i],ax=ax,markersize=20.0,label='_'+obj+'2')
-            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',fillstyle='none',color='b',ax=ax,markersize=20.0,label='_'+obj+'2')
+            plt.plot(df.loc[(df['kcluster']==i)].mean()['FP4_BeamSpot'],df.loc[(df['kcluster']==i)].mean()[obj],marker='s',fillstyle='none',color='b',markersize=20.0,label='_nolegend_')
+            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',fillstyle='none',color='b',ax=ax,markersize=20.0,label='_nolegend_')
+            plt.plot(df.loc[(df['kcluster']==i)].mean()['FP4_BeamSpot'],df.loc[(df['kcluster']==i)].mean()[obj],marker='x',color=np.array(colors[i+1]),markersize=20.0,label='_nolegend_', markeredgewidth=5.0)
+            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='x',color=np.array(colors[i+1]),ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=5.0)
+            ax = df_compare.loc[(df_compare['closest']==True) & (df_compare['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='*',color='k',fillstyle='none',ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=1.0)
         plt.tight_layout()
         plt.savefig(filename+'_'+obj+'.png')
 
 
 if __name__=='__main__':
-    main(filename)
-
+    main(filename,filename_compare)
 
 

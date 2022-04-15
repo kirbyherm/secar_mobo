@@ -21,6 +21,9 @@ pd.set_option("max_columns", None)
 PYGMO_DIR = "../"
 OUTPUT_DIR = PYGMO_DIR + "output/"
 
+scale_factor = np.array([0.916096997902245,1.0682652577138,0.994493371138475,0.93966084500023,1.05275223744803,1.06042964393537,1.00437784795672,0.973641800379054,1.07533403645974,1.06881462007463,1.05902890235334,1.05329541257734,0.998902975441088,1.06217562289834,1.03384085684119,1.00944081324584, 0.944682833032244,0.937425053447303,1.0784587034454])
+scale_factor = np.zeros(len(scale_factor))+1
+
 Qnom = np.array([-0.40033,0.219852,0.2552369,-0.246677876,0.11087109,0.175336731,-0.0268214976,-0.14859,0.2855,-0.0335,0.149432825,-0.182,0.1910,0.12900,-0.1380,0,0,0,0])
 # Q1H:=0.003703;
 # H1:=0.0103564;
@@ -46,7 +49,23 @@ def is_pareto_efficient_simple(costs):
 # only show best [#] since we get a lot of points
 show_best = 10
 batch = 210
-kclusters = 10
+kclusters = 4
+
+def replace_cluster(df, replace_cluster_i):
+    replace_cluster_i = 1
+    df2 = df.loc[df['kcluster']==replace_cluster_i]
+    df2 = df2.drop('kcluster',1) 
+    df2 = df2.drop('closest',1) 
+    df2 = df2.reset_index(drop=True)
+
+    df2 = run_kmeans(df2, magnet_dim, kclusters)
+    df2['kcluster'] += 3
+    df = df.loc[df['kcluster'] != replace_cluster_i]
+    for i in range(3-replace_cluster_i):
+        df['kcluster'].mask(df['kcluster'] == (replace_cluster_i+i+1),replace_cluster_i+i,inplace=True) 
+    df = pd.concat([df,df2])
+    df = df.reset_index(drop=True)
+    return df
 
 def main(start_i=batch):
     # specify database for input
@@ -54,7 +73,7 @@ def main(start_i=batch):
     # initialize empty df
     df = None
     # list the objective names
-    objectives = ['FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
     # read df
     if os.path.exists(db_out):
         print('opening existing db')
@@ -65,12 +84,18 @@ def main(start_i=batch):
     
     # restrict the df to only the points that fit the problem constraints
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
-    max_obj = 2.0
-#    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
-    df = df.loc[(df['FP2_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP3_res'] < max_obj) & (df['FP4_BeamSpot'] < max_obj)]
+    max_obj = 2 
+    if start_i == 340:
+        max_obj = 4
+    query_txt = '' 
+    for i in range(len(objectives)):
+        query_txt += objectives[i] + "<{}".format(max_obj)
+        if i < len(objectives)-1:
+            query_txt+="&"
+    df = df.query(query_txt)
     
     # get costs and pass to pareto function
-    costs = df[['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']]
+    costs = df[objectives]
     costs = np.array(costs)
     pareto = is_pareto_efficient_simple(costs)
     # add pareto column to df
@@ -79,27 +104,30 @@ def main(start_i=batch):
     # restrict df to only those points on the pareto front
     df = (df.loc[(df['pareto']==True)])
     df = df.reset_index(drop=True)
-#    print(df.iloc[:100,-5:-1])
+
     # additional code which provides an alternate way of sorting/filtering df, based on sum-squares of objs
-    df['ssobjs'] = np.sqrt(df['FP1_res']**2+df['FP2_res']**2+df['FP3_res']**2+df['MaxBeamWidth']**2+df['FP4_BeamSpot']**2)
+    df_objs = df[objectives]
+    df_objs['ssobjs'] = (df_objs**2).sum(axis=1)
+    df['ssobjs'] = df_objs['ssobjs']
     df = df.sort_values(by='ssobjs',ignore_index=True)
-#    df = df.loc[df['ssobjs'] < df['ssobjs'][show_best]]
-#    print(df)
+
     quads = df.columns
-#    print(quads)
     for q in range(len(quads)):
         print(q, quads[q])
         if "q" in quads[q]:
             magnet_dim = q+1
+
     df = run_kmeans(df, magnet_dim, kclusters)
-    
+
+#    df = replace_cluster(df, 1)
+
     # print objective values for [show_best] number of points, sorted by FP4_BeamSpot
     print(df.loc[:show_best,['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot','closest','ssobjs','kcluster']].sort_values(by=['ssobjs']))
     # sort df by FP4_BeamSpot values, and reindex
     df = df.sort_values(by='FP4_BeamSpot',ignore_index=True)
     # print the magnet scale factors for the best FP4_BeamSpot points
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','h1','h2','h3','o1']
-    (np.power(2,df.loc[df['closest']==True].iloc[:,:19])).round(5).to_csv('magnet_factors.csv',header=write_qnames,index=False)
+    (scale_factor*np.power(2,df.loc[df['closest']==True].iloc[:,:19])).round(5).to_csv('magnet_factors.csv',header=write_qnames,index=False)
     # write only the magnet values and objective values to df
 #    print(df.columns)
     df = df.drop('pareto',1)

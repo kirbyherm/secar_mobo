@@ -431,7 +431,7 @@ def plot_hists(df, df_reduce, filename):
     df = df.rename(columns=write_qnames)
 #    fig = plt.figure(1)
     fig, axs = plt.subplots(5,4)
-    print(axs)
+#    print(axs)
     fig.delaxes(axs[4][3])
     axs = (fig.axes)
     bins = np.linspace(-3,3,100)
@@ -446,7 +446,7 @@ def plot_hists(df, df_reduce, filename):
     axs2 = axs
     for i in range(len(axs)):
 #    for j in range(len(axs[i])):
-        print(axs[i].get_ylim())
+#        print(axs[i].get_ylim())
         axs[i].set_ylim([100,50000])
         axs[i].set_ylabel('all points')
         if i != 9:
@@ -459,14 +459,20 @@ def plot_hists(df, df_reduce, filename):
     number_of_clusters = np.max(df_best['kcluster']+1)
     colors = list(plt.get_cmap('tab20').colors)
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
-    print(df_best,axs2)
+#    print(df_best,axs2)
+    df_clos['yplot'] = 0
     for i in range(number_of_clusters):
 #                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
-        hist = df_best.loc[df_best['kcluster']==i][write_qnames].hist(bins=bins,log=True,ax=axs2,color=colors[i],label=df_clos.loc[(df_clos['kcluster']==i)].index[0]+1,grid=False)
+        hist = df_best.loc[df_best['kcluster']==i][write_qnames].hist(bins=bins,log=True,ax=axs2,color=np.array([colors[i+1]]),label=df_clos.loc[(df_clos['kcluster']==i)].index[0]+1,grid=False)
+        for j in range(len(axs)):
+            y_min, y_max = axs2[j].get_ylim()
+#            df_clos['yplot'][i] = df_clos.index*(y_max-y_min)+y_min
+#            print((df_clos['kcluster'][i])*(np.logspace(1.0,3.0,num=10)[i]),(df_clos['kcluster'][i]),(np.logspace(0.0,2.5,num=10)[i]))
+            axs2[j].text(df_clos["q{0}".format(j+1)][i],(np.logspace(0.0,2.8,num=10)[df_clos['kcluster'][i]]),str(np.max(df_clos.loc[(df_clos['kcluster']==i)]['kcluster'])+1),color='black')
     for i in range(len(axs)):
         axs2[i].set_title("")
 
-    print(hist)
+#    print(hist)
     plt.savefig(filename+'full_hist.png')
     
     return

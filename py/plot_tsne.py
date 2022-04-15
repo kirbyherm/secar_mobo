@@ -15,56 +15,66 @@ n_samples = 150
 n_components = 2
 
 
-def plot_tsne(filename):
+def plot_tsne(filename,filename_compare):
 
-    (fig, subplots) = plt.subplots(2, 4, figsize=(12, 6))
-    perplexities = [5, 30, 50, 100, 300, 500, 1000]
+    (fig, subplots) = plt.subplots(3, 3, figsize=(8, 8))
+    perplexity = 30
+    perplexities = [perplexity]
     
     X, y = datasets.make_circles(
         n_samples=n_samples, factor=0.5, noise=0.05, random_state=0
     )
     
     df = pd.read_hdf(filename)
+    df_compare = pd.read_hdf(filename_compare)
+#    df = df.loc[df['kcluster']==3]
     print(df)
-    X = np.array(df[['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']])
+    magnets = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
+    plot_combos = [[0,1],[2,3],[3,4],[2,4],[4,6],[6,9],[9,14],[12,14]]
+
+    X = np.array(df[magnets])
+    X_compare = np.array(df_compare[magnets])
+    print(X)
     y = np.array(df['kcluster'])
+    y_compare = np.array(df_compare['kcluster'])
     z = np.array(df['closest'])
+    z_compare = np.array(df_compare['closest'])
     number_of_clusters = np.max(y+1)
     colors = list(plt.get_cmap('tab20').colors)
     clusters = []
+    clusters_compare = []
     for i in range(number_of_clusters):
         clusters.append(y == i)
-    
-#    red = y == 3
-#    green = y == 0
-#    blue = y == 2
-#    yellow = y == 4
-#    black = y == 1
+        clusters_compare.append(y_compare == i)
     
     close = z == True
+    close_compare = z_compare == True
     
     
-    print (X,y)
-    
-    ax = subplots[0][0]
-    for i in range(number_of_clusters):
-        ax.scatter(X[clusters[i],0], X[clusters[i],1], c=(colors[i]))
-#    ax.scatter(X[red, 0], X[red, 1], c="c")
-#    ax.scatter(X[green, 0], X[green, 1], c="m")
-#    ax.scatter(X[blue, 0], X[blue, 1], c="r")
-#    ax.scatter(X[yellow, 0], X[yellow, 1], c="y")
-#    ax.scatter(X[black, 0], X[black, 1], c="k")
-    ax.scatter(X[close,0], X[close,1], marker='x', c='b')
-    ax.xaxis.set_major_formatter(NullFormatter())
-    ax.yaxis.set_major_formatter(NullFormatter())
-    plt.axis("tight")
-    
+    print (X,y[close])
+
     plot_x, plot_y = 0, 0
-    for i, perplexity in enumerate(perplexities):
+    for pair in plot_combos:
+    
+        ax = subplots[plot_y][plot_x]
+        for i in range(number_of_clusters):
+#            if i < 3:
+#                continue
+            ax.scatter(X[clusters[i],pair[0]], X[clusters[i],pair[1]], c=np.array(colors[i+1]).reshape(1,-1))
+        for i, txt in enumerate(y[close]):
+#            if i < 3:
+#                continue
+            ax.annotate(txt+1, (X[close,pair[0]][txt], X[close,pair[1]][txt]))
+#        ax.xaxis.set_major_formatter(NullFormatter())
+#        ax.yaxis.set_major_formatter(NullFormatter())
+        ax.set_title("{1}:{0}".format(magnets[pair[0]], magnets[pair[1]]))
+        plt.axis("tight")
         plot_x += 1
-        if plot_x > 3:
+        if plot_x > 2:
             plot_y+=1
             plot_x=0    
+    
+    for i, perplexity in enumerate(perplexities):
     
         ax = subplots[plot_y][plot_x]
     
@@ -78,94 +88,30 @@ def plot_tsne(filename):
             n_iter=5000,
         )
         Y = tsne.fit_transform(X)
+        Y_compare = tsne.fit_transform(X_compare)
         t1 = time()
         print("circles, perplexity=%d in %.2g sec" % (perplexity, t1 - t0))
         ax.set_title("Perplexity=%d" % perplexity)
         for j in range(number_of_clusters):
-            ax.scatter(Y[clusters[j],0], Y[clusters[j],1], c=(colors[j]))
-#        ax.scatter(Y[red, 0], Y[red, 1], c="c")
-#        ax.scatter(Y[green, 0], Y[green, 1], c="m")
-#        ax.scatter(Y[blue, 0], Y[blue, 1], c="r")
-#        ax.scatter(Y[yellow, 0], Y[yellow, 1], c="y")
-#        ax.scatter(Y[black, 0], Y[black, 1], c="k")
-        ax.scatter(Y[close,0], Y[close,1], marker='x', c='b')
+#            if j < 3:
+#                continue
+            ax.scatter(Y[clusters[j],0], Y[clusters[j],1], c=np.array(colors[j+1]).reshape(1,-1))
+            ax.scatter(Y_compare[clusters_compare[j],0], Y_compare[clusters_compare[j],1], c=np.array(colors[j+5]).reshape(1,-1))
+        for k, txt in enumerate(y[close]):
+#            if k < 3:
+#                continue
+            print(k,txt)
+            ax.annotate(txt+1, (Y[close,0][txt], Y[close,1][txt]))
+            ax.annotate("{}c".format(txt+1), (Y_compare[close_compare,0][txt], Y_compare[close_compare,1][txt]))
         ax.xaxis.set_major_formatter(NullFormatter())
         ax.yaxis.set_major_formatter(NullFormatter())
         ax.axis("tight")
-    
-    # Another example using s-curve
-    #X, color = datasets.make_s_curve(n_samples, random_state=0)
-    #
-    #ax = subplots[1][0]
-    #ax.scatter(X[:, 0], X[:, 2], c=color)
-    #ax.xaxis.set_major_formatter(NullFormatter())
-    #ax.yaxis.set_major_formatter(NullFormatter())
-    #
-    #for i, perplexity in enumerate(perplexities):
-    #    ax = subplots[1][i + 1]
-    #
-    #    t0 = time()
-    #    tsne = manifold.TSNE(
-    #        n_components=n_components,
-    #        init="random",
-    #        random_state=0,
-    #        perplexity=perplexity,
-    #        n_iter=300,
-    #    )
-    #    Y = tsne.fit_transform(X)
-    #    t1 = time()
-    #    print("S-curve, perplexity=%d in %.2g sec" % (perplexity, t1 - t0))
-    #
-    #    ax.set_title("Perplexity=%d" % perplexity)
-    #    ax.scatter(Y[:, 0], Y[:, 1], c=color)
-    #    ax.xaxis.set_major_formatter(NullFormatter())
-    #    ax.yaxis.set_major_formatter(NullFormatter())
-    #    ax.axis("tight")
-    #
-    #
-    ## Another example using a 2D uniform grid
-    #x = np.linspace(0, 1, int(np.sqrt(n_samples)))
-    #xx, yy = np.meshgrid(x, x)
-    #X = np.hstack(
-    #    [
-    #        xx.ravel().reshape(-1, 1),
-    #        yy.ravel().reshape(-1, 1),
-    #    ]
-    #)
-    #color = xx.ravel()
-    #ax = subplots[2][0]
-    #ax.scatter(X[:, 0], X[:, 1], c=color)
-    #ax.xaxis.set_major_formatter(NullFormatter())
-    #ax.yaxis.set_major_formatter(NullFormatter())
-    #
-    #for i, perplexity in enumerate(perplexities):
-    #    ax = subplots[2][i + 1]
-    #
-    #    t0 = time()
-    #    tsne = manifold.TSNE(
-    #        n_components=n_components,
-    #        init="random",
-    #        random_state=0,
-    #        perplexity=perplexity,
-    #        n_iter=400,
-    #    )
-    #    Y = tsne.fit_transform(X)
-    #    t1 = time()
-    #    print("uniform grid, perplexity=%d in %.2g sec" % (perplexity, t1 - t0))
-    #
-    #    ax.set_title("Perplexity=%d" % perplexity)
-    #    ax.scatter(Y[:, 0], Y[:, 1], c=color)
-    #    ax.xaxis.set_major_formatter(NullFormatter())
-    #    ax.yaxis.set_major_formatter(NullFormatter())
-    #    ax.axis("tight")
-    #
-    #
     plt.savefig(filename+'_tsne.png')
     return
 
 
 if __name__=='__main__':
     inputs = sys.argv
-    plot_tsne(inputs[1])
+    plot_tsne(inputs[1],inputs[2])
 
 

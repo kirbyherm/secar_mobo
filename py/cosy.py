@@ -27,7 +27,7 @@ fNom = array([1086.7911810119049, 1258.9642382235916, 1155.6819246495133, 3.4224
 fNom = array([1431.8410759523508, 821.7565325150232, 650.6352599978524, 0.934467870935426, 0.03972091942829642])
 fNom = array([2384.9360856494263, 1058.1013973315412, 1260.5797906816008, 4.129531004594597, 0.32301378801056696])
 fNom = array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
-fNom = array([92.50599131073163, 305.87168609440647, 0.8288598311500905, 0.05816614513474081])
+#fNom = array([92.50599131073163, 305.87168609440647, 0.8288598311500905, 0.05816614513474081])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
 
@@ -37,17 +37,18 @@ qNew = array([1.0371301857113335,1.4897519431921593,0.5402003843384104,0.6080163
 qNew = array([1.0370,1.3988,0.5838,0.6992,0.6577,0.6059,0.6713,0.6439,0.5136,0.5630,0.8576,0.7022,0.5073,1.0006,0.7944,0.5916,1.7621,0.6079,0.5481])
 # set working DIR for PYGMO, FOX, COSY
 qNew = power(zeros(19)+2,array([-4.718300e-01, 2.197192e-01,-7.287368e-01,-1.685577e+00,-1.434873e+00,-2.522156e-01,-2.970157e-01, 1.631719e-01, 8.892526e-01,-2.278044e+00,-1.506612e+00,-7.736163e-01,-9.422170e-01,-1.111204e+00, 1.062845e+00,-1.917745e+00, 7.777601e-01,-1.195297e+00,-9.878368e-01]))
-qNew = array([0.82281,0.83116,0.94706,0.75348,0.64679,1.23591,2.51027,0.80262,0.8017,2.70642,1.20897,0.62487,0.38632,1.11944,0.86569,1.19812,1.64921,1.13609,0.28077])
-
 PYGMO_DIR = '../'
 FOX_DIR = PYGMO_DIR + 'fox/'
 #hpcc servers
 #COSY_DIR = '/mnt/home/herman67/cosy/COSY10.0/'
 #nscl servers
 COSY_DIR = PYGMO_DIR + 'COSY10.0/'
+scale_factor = array([0.916096997902245,1.0682652577138,0.994493371138475,0.93966084500023,1.05275223744803,1.06042964393537,1.00437784795672,0.973641800379054,1.07533403645974,1.06881462007463,1.05902890235334,1.05329541257734,0.998902975441088,1.06217562289834,1.03384085684119,1.00944081324584, 0.944682833032244,0.937425053447303,1.0784587034454])
+scale_factor = zeros(len(scale_factor))+1
 
 # write the qvalue array to a fox file for cosy to run
 def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_14m_v1.fox'):
+    qs = qs * scale_factor
     # how many magnets to set
     input_len = len(qs)
     # if less than qNom, use qNom values (0) for remainder
@@ -127,11 +128,11 @@ def cosyrun(qs=qNom):
     # get output and now convert into the necessary values to return to pygmo
     stripped = output.stdout.strip().decode('utf8','strict')
     split = stripped.split()
-    print(split)
+#    print(split)
     # get output and now convert into the necessary values to return to pygmo
     stripped2 = output2.stdout.strip().decode('utf8','strict')
     split2 = stripped2.split()
-    print(split2)
+#    print(split2)
 
     # initiate all variables to be read, and bools for the reader to check
     xdim, ydim = [], []
@@ -213,7 +214,7 @@ def cosyrun(qs=qNom):
     scale = 1e9 
     max_width = 0
     # setup value to be returned, here 4 different objectives
-    objs = 4
+    objs = 5
     resol = zeros(objs) 
     print(qs)
     for i in range(len(magnet_dims)):
@@ -238,8 +239,8 @@ def cosyrun(qs=qNom):
             break
         # if within constraints, set resol temporarily
         try:
-#            resol = [fp1xdim/fp1res,fp2xdim/fp2res,fp3xdim/fp3res,max_width,beamspotsize]
-            resol = [fp2xdim/fp2res,fp3xdim/fp3res,max_width,beamspotsize]
+            resol = [fp1xdim/fp1res,fp2xdim/fp2res,fp3xdim/fp3res,max_width,beamspotsize]
+#            resol = [fp2xdim/fp2res,fp3xdim/fp3res,max_width,beamspotsize]
         except:
             resol = zeros(objs)+1e9         
     print(resol)
@@ -269,14 +270,18 @@ def cosyrun(qs=qNom):
     
 
 if __name__ == "__main__":
+    import pandas as pd
     # if running from console, just run the nominal setting
     print(cosyrun(qNom))
     # if running from console, just run the assigned setting
-    print(cosyrun(qNew))
+    df = pd.read_csv('results_280/magnet_factors.csv')
+    print(df)
+    for i in range(df.shape[0]):
+        print(cosyrun(array(df.iloc[i,:19])))
     PROFILES_PATH = "./"
     plot_i = 1
-    write_fox(qNew, str(plot_i), PROFILES_PATH , 'SECAR_an_Optics_draw.fox')
-#    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox')
-    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE2.fox')
+#    write_fox(qNew, str(plot_i), PROFILES_PATH , 'SECAR_an_Optics_draw.fox')
+##    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox')
+#    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE2.fox')
 
 

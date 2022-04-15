@@ -15,28 +15,41 @@ import os, sys
 PYGMO_DIR = "../"
 OUTPUT_DIR = PYGMO_DIR + "output/"
 generations = 750
-population_size = 84
+population_size = 70
 batch = 230
 # specify number of magnets
 magnet_dim = 19
+scale_factor = np.array([0.916096997902245,1.0682652577138,0.994493371138475,0.93966084500023,1.05275223744803,1.06042964393537,1.00437784795672,0.973641800379054,1.07533403645974,1.06881462007463,1.05902890235334,1.05329541257734,0.998902975441088,1.06217562289834,1.03384085684119,1.00944081324584, 0.944682833032244,0.937425053447303,1.0784587034454])
+
+def cut_data(df, objectives, max_obj):
+    if type(max_obj) in [int,float]: max_obj = np.zeros(len(objectives))+max_obj
+    query_txt = '' 
+    for i in range(len(objectives)):
+        query_txt += objectives[i] + "<{}".format(max_obj[i])
+        if i < len(objectives)-1:
+            query_txt+="&"
+    df_return = df.query(query_txt)
+    return df_return
 
 def main(gens=generations, batch_id=210):
 
     OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_moead_FP2_FP3_{}_'.format(gens)
+    if batch_id < 100:
+        OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_nsga2_FP2_FP3_{}_'.format(gens)
     # set up columns for dataframe
+    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
     quads = []
     for i in range(magnet_dim):
         quads.append("q{}".format(i+1))
     columns = quads
-    columns.append("FP1_res")
-    columns.append("FP2_res")
-    columns.append("FP3_res")
-    columns.append("MaxBeamWidth")
-    columns.append("FP4_BeamSpot")
+    for i in range(len(objectives)):
+        columns.append(objectives[i])
     
     # i run batches in 10s, so i specify the first id of the batch
     start_i = batch_id 
     end_i = start_i + 10
+    if start_i < 100:
+        end_i = start_i + 1
     # name the output
     db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
     
@@ -58,10 +71,9 @@ def main(gens=generations, batch_id=210):
             converged += 1
             converged_islands.append(i)
         max_obj = 1
-        if len(df_new.loc[(df_new['FP1_res'] < max_obj) & (df_new['FP2_res'] < max_obj) & (df_new['FP3_res'] < max_obj) & (df_new['MaxBeamWidth'] < max_obj) & (df_new['FP4_BeamSpot'] <max_obj)].index) > len(df_new.index)*0.01:
+        if len(cut_data(df_new,objectives,max_obj).index) > len(df_new.index)*0.01:
             better_than_nominal += 1
             better_than_nominal_islands.append(i)
-#        print(df_new)
         # append to existing df
         if i > start_i: # or os.path.exists(db_out):
             df = df.append(df_new,ignore_index=True)
@@ -71,14 +83,19 @@ def main(gens=generations, batch_id=210):
     
     print("percent done: {:.2f}%".format(len(df.index)/((generations+1)*population_size)*10))
     # write df to h5
+    if start_i == 350:
+        for i in range(magnet_dim):
+            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
     df.to_hdf(db_out,key='df')
     max_obj = 1e9
     # check for solutions strictly better than nominal (all objs < 1)
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
+    df = cut_data(df, objectives, max_obj)
+#    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
     converged_points = len(df.index)
     max_obj = 1
     # check for solutions strictly better than nominal (all objs < 1)
-    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
+#    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
+    df = cut_data(df, objectives, max_obj)
     print("converged islands: ", converged_islands, "\nconverged points: ", converged_points, "\nbetter than nominal islands: ", better_than_nominal_islands, "\nbetter than nominal points: ", len(df.index))
     return
 
