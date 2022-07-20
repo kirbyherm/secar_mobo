@@ -814,7 +814,7 @@ CR {Clears all rays}; UM;
 {N1=3 {# of rays: 7} -> -3 -2 -1 0 +1 +2 +3}        
 {N1=4 {# of rays: 9} -> -4 -3 -2 -1 0 +1 +2 +3 +4}  
 
-N1:=1;N2:=3;N3:=1;N4:=1;N5:=2;
+N1:=1;N2:=1;N3:=1;N4:=1;N5:=1;
 {
 LOOP NX 1 2*N1+1;LOOP NA 1 2*N2+1;LOOP NY 1 2*N3+1;LOOP NB 1 2*N4+1;
 LOOP NE 1 2*N5+1;

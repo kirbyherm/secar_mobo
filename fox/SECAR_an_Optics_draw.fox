@@ -433,7 +433,8 @@ DL 0.146731-0.1;                                           {DL10}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WRITE 6 'FP1Xdim' WW(1)-WW(2);
-{WRITE 6 'ME(1,2) AT FP1 =' ME(1,2);}
+WRITE 6 'ME(1,2) AT FP1 =' ME(1,2);
+WRITE 6 'ME(1,6) AT FP1 =' ME(1,6);
 {WRITE 6 'ME(1,1) AT FP1 =' ME(1,1);}
 
 {***** Section 2 *****}
@@ -583,6 +584,8 @@ WRITE 6 'FP2Xdim' WW(1)-WW(2);
 WW(2):= VMIN(RAY(1));
 WV:=(WW(1)-WW(2));
 WRITE 6 'FP2Res' (ABS(ME(1,7))/(WV));}
+WRITE 6 'ME(1,2) AT FP2 =' ME(1,2);
+WRITE 6 'ME(1,6) AT FP2 =' ME(1,6);
 
 PS 0.015;
 {PRINT_XDIM;}
@@ -711,6 +714,8 @@ WRITE 6 'FP3Res' (ABS(ME(1,7))/(WV));}
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));
 WRITE 6 'FP3Xdim' WW(1)-WW(2);
+WRITE 6 'ME(1,2) AT FP3 =' ME(1,2);
+WRITE 6 'ME(1,6) AT FP3 =' ME(1,6);
 
 {PRINT_XDIM;
 PRINT_YDIM;
@@ -882,7 +887,7 @@ CR {Clears all rays}; UM;
 {N1=3 {# of rays: 7} -> -3 -2 -1 0 +1 +2 +3}        
 {N1=4 {# of rays: 9} -> -4 -3 -2 -1 0 +1 +2 +3 +4}  
 
-N1:=1;N2:=3;N3:=1;N4:=1;N5:=2;
+N1:=1;N2:=1;N3:=1;N4:=1;N5:=1;
 
 LOOP NX 1 2*N1+1;LOOP NA 1 2*N2+1;LOOP NY 1 2*N3+1;LOOP NB 1 2*N4+1;
 LOOP NE 1 2*N5+1;
@@ -902,13 +907,13 @@ ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;ENDLOOP;
 {Available Colors: 1=black, 2=blue, 3=red, 4=yellow, 5=green}
 {6=yellowish green, 7=cyan, 8=magenta, 9=navy, 10=white/backgrnd}
 {SR XX AX YY AY DL DE DM DZ Color;}
-
+{
 SR 0 0 0 0 0 0.026265 0 0 3; {89Sr30+ at 208.488 MeV}
 SR 0 0 0 0 0 0 0 0 3; {89Sr30+ at 203.152 MeV}
 SR 0 0 0 0 0 -0.026265 0 0 3; {89Sr30+ at 197.816 MeV}
 
 SR 0 0 0 0 0 0.058320863 -0.033707865 0 2; {86Kr30+ at 215 MeV}
-
+}
 BP;
 RECOIL_BL;
 EP;

@@ -1,3 +1,4 @@
+#!/mnt/simulations/secarml/soft/anaconda3/bin/python
 #!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
@@ -84,9 +85,9 @@ def main(start_i=batch):
     
     # restrict the df to only the points that fit the problem constraints
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
-    max_obj = 2 
-    if start_i == 340:
-        max_obj = 4
+    max_obj = 2
+#    if start_i == 340 or start_i == 380:
+#        max_obj = 5e0
     query_txt = '' 
     for i in range(len(objectives)):
         query_txt += objectives[i] + "<{}".format(max_obj)
@@ -117,9 +118,18 @@ def main(start_i=batch):
         if "q" in quads[q]:
             magnet_dim = q+1
 
+    df_lin = df.copy()
+    if start_i in [280, 350, 360] or start_i > 379 or start_i == 0:
+        for i in range(magnet_dim):
+#            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
+            df_lin.iloc[:,i] = df_lin.iloc[:,i].apply(lambda x: np.power(2,x))
+    
     df = run_kmeans(df, magnet_dim, kclusters)
+    df_lin = run_kmeans(df_lin, magnet_dim, kclusters)
 
+    print(df.loc[df['closest']==True], df_lin.loc[df_lin['closest']==True])
 #    df = replace_cluster(df, 1)
+    df = df_lin
 
     # print objective values for [show_best] number of points, sorted by FP4_BeamSpot
     print(df.loc[:show_best,['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot','closest','ssobjs','kcluster']].sort_values(by=['ssobjs']))
@@ -127,7 +137,8 @@ def main(start_i=batch):
     df = df.sort_values(by='FP4_BeamSpot',ignore_index=True)
     # print the magnet scale factors for the best FP4_BeamSpot points
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','h1','h2','h3','o1']
-    (scale_factor*np.power(2,df.loc[df['closest']==True].iloc[:,:19])).round(5).to_csv('magnet_factors.csv',header=write_qnames,index=False)
+#    (scale_factor*np.power(2,df.loc[df['closest']==True].iloc[:,:19])).round(5).to_csv('magnet_factors.csv',header=write_qnames,index=False)
+    (df.loc[df['closest']==True].iloc[:,:19]).round(5).to_csv('magnet_factors.csv',header=write_qnames,index=False)
     # write only the magnet values and objective values to df
 #    print(df.columns)
     df = df.drop('pareto',1)

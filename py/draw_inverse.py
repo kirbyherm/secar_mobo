@@ -41,9 +41,8 @@ fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"Ma
 fNames = fNames[:optimized_params]
 #print(len(fNames))
 magnet_dim = 19
-objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
-
-fNom = np.array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
+objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','DSSD_BeamSpot']
+fNom1 = np.array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
 
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
@@ -275,75 +274,6 @@ def output_4d_cosy(popi,filename,df):
 #    print(len(sorted_ndf), count_dups)
     return
 
-def plot_2d(popi,filename):
-
-    magnet_dim = len(popi.get_x()[0])
-    hv = pg.hypervolume(popi)
-    ref_point = hv.refpoint()
-    best_point = (popi.get_f()[hv.greatest_contributor(ref_point)])
-    ndf, dl, dc, ndl = pg.fast_non_dominated_sorting(popi.get_f())
-#    print(pg.sort_population_mo(popi.get_f()))
-    ndf_champ = []
-#    for j in range(2,200):
-#    print(pg.select_best_N_mo(popi.get_f(),10))
-    best_10 = (pg.select_best_N_mo(popi.get_f(),10))
-    for i in best_10:
-        print(i, np.power(np.zeros(magnet_dim)+2,popi.get_x()[i]), popi.get_f()[i])
-    x = np.linspace(pg.ideal(popi.get_f())[0],0)
-    y = np.zeros(50)+(1)
-    plot_x, plot_y = 0,0
-    objs = len(popi.get_f()[0])
-    fig, axs = plt.subplots(objs-1,sharex=True)
-    fig.suptitle('ratios to Nom vs Resolution')
-    log_res, log_x = [], []
-    for i in ndf[0]:
-        log_res.append(np.log(popi.get_f()[i][0])/np.log(10))
-        log_x.append(np.log(popi.get_f()[i][1])/np.log(10))
-        if max(popi.get_f()[i]) < 1000000:
-            print(i, np.power(np.zeros(magnet_dim)+2,popi.get_x()[i]), popi.get_f()[i])
-    if objs == 2:
-        j = 1
-        axs.set_xlabel('resolution')
-        axs.axvline(x=fNom[0],linestyle="dashed",color="red")
-        axs.axvline(x=best_point[0],linestyle="dotted",color="blue")
-        axs.axhline(y=1.0,linestyle="dashed",color="red")
-        ndf_champ.append([popi.get_f()[i] for i in ndf[0]])
-        pg.plot_non_dominated_fronts(ndf_champ[0],comp=[0,j],axes=axs)
-#    ax.plot(color="C{}".format(j))
-#        ax = pg.plot_non_dominated_fronts(popi.get_f()[0:j])
-
-        axs.set_ylabel(fNames[2])
-#        axs.set_ylim(0.9,1.1)
-        axs.set_yscale('log')
-#        axs.set_xlim(0.8,1.2)
-        axs.set_xscale('log')
-    else:
-        axs[objs-2].set_xlabel('resolution')
-        for j in range(1,2):
-    #        axs[plot_y].plot(x,y,linestyle="dashed",color="red")
-            axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
-            axs[plot_y].axvline(x=best_point[0],linestyle="dotted",color="blue")
-            axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
-            ndf_champ.append([popi.get_f()[i] for i in ndf[0]])
-            pg.plot_non_dominated_fronts(ndf_champ[0],comp=[0,j],axes=axs[plot_y])
-    #    ax.plot(color="C{}".format(j))
-    #        ax = pg.plot_non_dominated_fronts(popi.get_f()[0:j])
-    
-            axs[plot_y].set_ylabel(fNames[2])
-    #        axs[plot_y].set_ylim(1e-1,1e1)
-            axs[plot_y].set_yscale('log')
-    #        axs[plot_y].set_xlim(0.1,10.0)
-    #        axs[plot_y].set_xscale('log')
-            plot_y += 1
-#    print(ndf_champ, ndf[0])
-#    print(ndf)
-    fig.tight_layout()
-    fig.savefig(filename+"_ndf.png")
-    plt.clf()
-#    plt.plot(log_res, log_x,"o", linestyle="none", )
-#    fig.savefig(filename+"_logndf.png")
-    return
-
 def plot_4d(popi,filename,df):
 
     sort_param = 4
@@ -363,14 +293,20 @@ def plot_4d(popi,filename,df):
 
     for j in range(0,optimized_params-1):
         ndf_champ = []
-        axs[plot_y].axvline(x=fNom[0],linestyle="dashed",color="red")
-        axs[plot_y].axhline(y=1.0,linestyle="dashed",color="red")
+        axs[plot_y].axvline(x=fNom1[sort_param],linestyle="dashed",color="red")
+        axs[plot_y].axhline(y=fNom1[j],linestyle="dashed",color="red")
         for i in ndf[0]:
             check_val=1e9
             if np.all(np.array(popi.get_f()[i]) < check_val) == True:
                 good_results+=1
 #                print(filename[-6:-4], good_results, popi.get_f()[i])
-                ndf_champ.append(popi.get_f()[i])
+                transform_f = popi.get_f()[i]
+                for k in range(len(transform_f)):
+                    if k < 3:
+                        transform_f[k] = fNom1[k] / transform_f[k]
+                    else:
+                        transform_f[k] = transform_f[k] * fNom1[k]
+                ndf_champ.append(transform_f)
                 reduced_ndf.append(i)
         try:
             pg.plot_non_dominated_fronts(ndf_champ,comp=[sort_param,j],axes=axs[plot_y])
@@ -383,28 +319,32 @@ def plot_4d(popi,filename,df):
             df_closest = df.loc[df['closest']==True]
             df_closest = df_closest.reset_index(drop=True)
 #            print(df_closest.iloc[:,15:19])
-            for i_closest in df_closest.index:
-                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
+#            for i_closest in df_closest.index:
+#                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='red')
         axs[plot_y].set_ylabel(fNames[j])
-        axs[plot_y].set_yscale('log')
+#        axs[plot_y].set_yscale('log')
 #        print(axs[plot_y].get_xlim(),axs[plot_y].get_ylim())
-        max_y = max(abs(np.log10(axs[plot_y].get_ylim())))
-        axs[plot_y].set_ylim(np.power(10,-max_y),np.power(10,max_y))
-        axs[plot_y].set_xscale('log')
-        max_x = max(abs(np.log10(axs[plot_y].get_xlim())))
-        axs[plot_y].set_xlim(np.power(10,-max_x),np.power(10,max_x))
+#        max_y = max(abs(np.log10(axs[plot_y].get_ylim())))
+        ndf_champ_array = np.array(ndf_champ)
+        max_lim = max(abs(ndf_champ_array[:,j].min()-fNom1[j]),abs(ndf_champ_array[:,j].max()-fNom1[j]))
+        axs[plot_y].set_ylim(ndf_champ_array[:,j].min()-max_lim,ndf_champ_array[:,j].max()+max_lim)
+#        axs[plot_y].set_xscale('log')
+#        max_x = max(abs(np.log10(axs[plot_y].get_xlim())))
+        max_lim = max(abs(ndf_champ_array[:,sort_param].min()-fNom1[sort_param]),abs(ndf_champ_array[:,sort_param].max()-fNom1[sort_param]))
+        axs[plot_y].set_xlim(ndf_champ_array[:,sort_param].min()-max_lim,ndf_champ_array[:,sort_param].max()+max_lim)
+#        axs[plot_y].set_xlim(np.power(10,-max_x),np.power(10,max_x))
 #        print(math.ceil(max(axs[plot_y].get_ylim())),math.ceil(max(axs[plot_y].get_ylim())))
-        colors = np.zeros((int(math.ceil(max(axs[plot_y].get_ylim()))),int(math.ceil(max(axs[plot_y].get_xlim()))))) + 1
-        for colori in range(1,colors.shape[0]):
-            for colorj in range(1, colors.shape[1]):
-                colors[colori,colorj] = 0
-        colors[0,0] = 2
-#        print(colors)
-        axs[plot_y].pcolormesh(colors, cmap=cmap)
+#        colors = np.zeros((int(math.ceil(max(axs[plot_y].get_ylim()))),int(math.ceil(max(axs[plot_y].get_xlim()))))) + 1
+#        for colori in range(1,colors.shape[0]):
+#            for colorj in range(1, colors.shape[1]):
+#                colors[colori,colorj] = 0
+#        colors[0,0] = 2
+##        print(colors)
+#        axs[plot_y].pcolormesh(colors, cmap=cmap)
         plot_y += 1
 
     fig.tight_layout()
-    fig.savefig(filename+"_paretos.png")
+    fig.savefig(filename+"_paretos_inverse.png")
     plt.cla()
     fig2, axs2 = plt.subplots(5,4)
     plot_x, plot_y = 0,0
@@ -440,7 +380,7 @@ def plot_4d(popi,filename,df):
     axs2[plot_y,plot_x].axis('off')
     axs2[plot_y,plot_x].text(0.3, 0.5, 'x-axis is in log2', horizontalalignment='center', verticalalignment='center', transform=axs2[plot_y,plot_x].transAxes)
     fig2.tight_layout()
-    plt.savefig(filename + "_magnet_hists.png")
+#    plt.savefig(filename + "_magnet_hists.png")
     return
 
 def plot_hists(df, df_reduce, filename):
@@ -498,7 +438,7 @@ def main(filename):
     df = None
     if file_extension == ".h5":
         popi, df = read_pop_df(filename)
-        output_4d_cosy(popi, filename, df)
+#        output_4d_cosy(popi, filename, df)
     else: 
         popi = read_pop(filename)
 #    print(df)

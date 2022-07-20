@@ -1,3 +1,5 @@
+#!/mnt/simulations/secarml/soft/anaconda3/bin/python
+#!/usr/bin/python3.7
 #!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
@@ -34,7 +36,7 @@ seed = 56448180
 
 # MOEAD hyperparameters
 #   default parameters have worked well
-generations = 20
+generations = 1000
 cr_p = 1.0 # crossover parameter, 1.0 by default
 f_p = 0.5 # diff evolution operator parameter, 0.5 by default
 eta_m = 20 # distribution index used by the polynomial mutation, 20 by default
@@ -46,7 +48,7 @@ preserve_diversity=True # activates diversity preservation mechanisms
 # specify number of magnets to tune
 magnet_dim = 19 
 # specify output file
-outputFile = "output_4f_nsga2_FP2_FP3_{}_{}.csv".format(generations, batch_no)
+outputFile = "output_4f_moead_FP2_FP3_{}_{}.csv".format(generations, batch_no)
 
 # main function
 def main(pop_init=None):
@@ -55,12 +57,14 @@ def main(pop_init=None):
     startTime = timeit.default_timer()
 
     # initialize algorithm with hyperparameters
-#    alg = pg.moead(gen=generations,neighbours=neighbors)
-    alg = pg.nsga2(gen=generations)
+    alg = pg.moead(gen=generations,neighbours=neighbors,seed=seed)
+#    alg = pg.nsga2(gen=generations)
 
     # there should be a way to run batch_fitness evaluations, haven't gotten it to work on NSCL
-    b = pg.bfe()
-    alg.set_bfe(b)
+#    b = pg.bfe()
+    NUMBER_OF_PROCESSES=2
+#    b.resize_pool(NUMBER_OF_PROCESSES)
+#    alg.set_bfe(b)
     #alg.set_verbosity(1)
     
     # initialize problem
@@ -74,7 +78,7 @@ def main(pop_init=None):
     #top = pg.topology(pg.fully_connected(n_islands,1.0))
 
     # when running 5 objectives, pop needed to be 70    
-    pop_n = 320 #84 
+    pop_n = 70 #84 
     if p_optimizeRes.get_nobj() == 4:
         # with 4 objs need pop=84
         pop_n = 84 
@@ -83,7 +87,8 @@ def main(pop_init=None):
     pop_new = None
     if (pop_init==None):    
         # randomly create a new population of size pop_n
-        pop_new = pg.population(p_optimizeRes, size=pop_n, b=b) 
+        pop_new = pg.population(p_optimizeRes, size=pop_n) 
+#        pop_new = pg.population(p_optimizeRes, size=pop_n, b=b) 
         print("initialize pop")
     else:
         pop_new = pop_init

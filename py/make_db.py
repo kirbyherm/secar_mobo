@@ -1,3 +1,4 @@
+#!/mnt/simulations/secarml/soft/anaconda3/bin/python
 #!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
@@ -15,7 +16,7 @@ import os, sys
 PYGMO_DIR = "../"
 OUTPUT_DIR = PYGMO_DIR + "output/"
 generations = 750
-population_size = 70
+population_size = 1001
 batch = 230
 # specify number of magnets
 magnet_dim = 19
@@ -34,7 +35,7 @@ def cut_data(df, objectives, max_obj):
 def main(gens=generations, batch_id=210):
 
     OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_moead_FP2_FP3_{}_'.format(gens)
-    if batch_id < 100:
+    if batch_id < 100 and batch_id > 0:
         OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_nsga2_FP2_FP3_{}_'.format(gens)
     # set up columns for dataframe
     objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
@@ -48,8 +49,11 @@ def main(gens=generations, batch_id=210):
     # i run batches in 10s, so i specify the first id of the batch
     start_i = batch_id 
     end_i = start_i + 10
-    if start_i < 100:
+    if start_i > 360 and start_i < 390:
         end_i = start_i + 1
+    elif start_i == 0:
+        start_i = 280
+        end_i = 440
     # name the output
     db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
     
@@ -66,8 +70,11 @@ def main(gens=generations, batch_id=210):
     better_than_nominal = 0
     better_than_nominal_islands = []
     for i in range(start_i, end_i):
+        if start_i == 280 and end_i == 440:
+            if i > 289 and i < 410:
+                continue
         df_new = pd.read_csv('{}{}.csv'.format(OUTPUT_PREFIX,i),names=columns)
-        if np.median(df_new.iloc[-int(len(df_new.index)*0.1):,-4:]) < 1e2:
+        if np.median(df_new.iloc[-int(len(df_new.index)*0.1):,-len(objectives):]) < 1e2:
             converged += 1
             converged_islands.append(i)
         max_obj = 1
@@ -81,11 +88,12 @@ def main(gens=generations, batch_id=210):
         else:
             df = df_new
     
-    print("percent done: {:.2f}%".format(len(df.index)/((generations+1)*population_size)*10))
+    print("completed sims: {:}\npercent done: {:.2f}%".format(len(df.index),len(df.index)/((generations+1)*population_size*(end_i - start_i))*100))
     # write df to h5
-    if start_i == 350:
-        for i in range(magnet_dim):
-            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
+#    if start_i in [280, 350, 360]:
+#        for i in range(magnet_dim):
+##            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
+#            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
     df.to_hdf(db_out,key='df')
     max_obj = 1e9
     # check for solutions strictly better than nominal (all objs < 1)

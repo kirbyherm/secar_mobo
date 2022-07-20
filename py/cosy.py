@@ -1,3 +1,4 @@
+#!/mnt/simulations/secarml/soft/anaconda3/bin/python
 #!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
@@ -184,13 +185,13 @@ def cosyrun(qs=qNom):
             beamspotsize_bool = True
     for i in range(len(split2)):
         if fp2res_bool:
-            fp2res = (float(split2[i]))
+            fp2res = (float(split2[i])*1000)
             fp2res_bool = False
         if fp3res_bool:
-            fp3res = (float(split2[i]))
+            fp3res = (float(split2[i])*1000)
             fp3res_bool = False
         if fp1res_bool:
-            fp1res = (float(split2[i]))
+            fp1res = (float(split2[i])*1000)
             fp1res_bool = False
         if xdim_bool:
             xdim2.append(float(split2[i]))
@@ -247,6 +248,7 @@ def cosyrun(qs=qNom):
     # if within constraints, set resol as a ratio to nominal
     if max(resol)/min(fNom) < 1e9:
         for i in range(len(resol)):
+            print(1/resol[i])
             # make sure we are working with positive numbers
             if resol[i] > 0: 
                 resol[i] = float(resol[i])

@@ -899,7 +899,7 @@ PP -12 0. 0.;
 PP -12 0. 90.;
 
 {READ_RAY;}
-{WW(1):= VMAX(RAY(1));
+WW(1):= VMAX(RAY(1));
 WRITE 6 'VMAX_SIZE=' WW(1);
 WW(2):= VMIN(RAY(1));
 WRITE 6 'VMIN_SIZE=' WW(2);
@@ -915,7 +915,7 @@ WRITE 6 'Mass Res.Power at FP2 or FP3 =' MRESOL_P1;
 
 WRITE 6 'Resol.by max.ray =' ABS(ME(1,7))/(2*WV);
 WRITE 6 'ME(1,1),ME(1,2),ME(1,6), ME(2,6),ME(1,7)=' ME(1,1) ME(1,2) ME(1,6) ME(2,6) ME(1,7);
-WRITE 6 'M11*M22=' ME(1,1)*ME(2,2);}
+WRITE 6 'M11*M22=' ME(1,1)*ME(2,2);
 
 ENDPROCEDURE ;
 RUN ;

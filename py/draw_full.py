@@ -1,3 +1,4 @@
+#!/mnt/simulations/secarml/soft/anaconda3/bin/python
 #!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
 
 # make sure above path points to the version of python where you have pygmo installed 
@@ -425,6 +426,9 @@ def plot_hists(df, df_reduce, filename):
 
     write_qnames = {'q1':'q1','q2':'q2','q3':'q3','q4':'q4','q5':'q5','q6':'q6','q7':'q7','q8':'q8','q9':'q9','q10':'q10','q11':'q11','q12':'q12','q13':'q13','q14':'q14','q15':'q15','q16':'h1','q17':'h2','q18':'h3','q19':'o1'}
     df = df.iloc[:,:19]
+    for i in range(magnet_dim):
+#        df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
+        df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
     df_clos = df_reduce.loc[df_reduce['closest']==True].sort_values(by=['FP4_BeamSpot']).reset_index(drop=True)
     df_best = df_reduce.copy()
     df_reduce = df_reduce.iloc[:,:19]
@@ -435,6 +439,7 @@ def plot_hists(df, df_reduce, filename):
     fig.delaxes(axs[4][3])
     axs = (fig.axes)
     bins = np.linspace(-3,3,100)
+    bins = np.logspace(-3,3,100,base=2.0)
     hists = df.hist(bins=bins,log=True,ax=axs,grid=False)
 #    print(hists[0].bins)
 #    fig.yscale('log')
@@ -449,10 +454,13 @@ def plot_hists(df, df_reduce, filename):
 #        print(axs[i].get_ylim())
         axs[i].set_ylim([100,50000])
         axs[i].set_ylabel('all points')
+        axs[i].set_xscale('log')
         if i != 9:
-            axs[i].set_xlim([-2,2])
+#            axs[i].set_xlim([-2,2])
+            axs[i].set_xlim([0.25,4])
         else:
-            axs[i].set_xlim([-3,3])
+#            axs[i].set_xlim([-3,3])
+            axs[i].set_xlim([0.125,8])
         axs2[i] = axs[i].twinx()
         axs2[i].set_ylim([1,1000])
         axs2[i].set_ylabel('optimized points',rotation=-90)

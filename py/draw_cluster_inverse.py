@@ -32,8 +32,12 @@ os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/
 #    "text.usetex": True,
 #})
 
+# set pandas view options to print everything
+pd.set_option("max_rows", None)
+pd.set_option("max_columns", None)
+
 optimized_params = 5
-fNom = np.zeros(optimized_params)+1
+fNom = np.array([1000/2384.9360856494263, 1000/109.61548781662407, 1000/510.8029152516118, 1.6251646888022029, 0.12574090408565933])
 fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
@@ -148,7 +152,7 @@ def plot_4d(popi,filename,df):
         plot_y += 1
 
     fig.tight_layout()
-    fig.savefig(filename+"_paretos.png")
+#    fig.savefig(filename+"_paretos.png")
     plt.cla()
     fig2, axs2 = plt.subplots(5,4)
     plot_x, plot_y = 0,0
@@ -184,50 +188,53 @@ def plot_4d(popi,filename,df):
     axs2[plot_y,plot_x].axis('off')
     axs2[plot_y,plot_x].text(0.3, 0.5, 'x-axis is in log2', horizontalalignment='center', verticalalignment='center', transform=axs2[plot_y,plot_x].transAxes)
     fig2.tight_layout()
-    plt.savefig(filename + "_magnet_hists.png")
+#    plt.savefig(filename + "_magnet_hists.png")
     return
 
 def main(df, df_compare, filename, PCA_run = False):
 #    df_compare = correct_obj_values(df_compare,filename)
+    sort_param = 4
     number_of_clusters = np.max(df['kcluster']+1)
     colors = np.array(list(plt.get_cmap('tab20').colors)).reshape(-1,3)
     print(colors, colors.shape, np.array(colors[0]).reshape(3))
+    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+    j = 0
+    plot_x, plot_y = 0,0
+    fig, axs = plt.subplots(optimized_params-1,sharex=True)
+    fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at DSSD')
+    axs[3].set_xlabel("DSSD_BeamSpot")
     for obj in ['FP1_res','FP2_res','FP3_res','MaxBeamWidth']:
-        ax = None
-        for i in range(number_of_clusters):
-            color_i = np.array(colors[i+1]).reshape(3)
-            print(df.loc[df['closest']==True])
-            df_clos = df.loc[df['closest']==True].sort_values(by=['FP4_BeamSpot']).reset_index(drop=True)
-            print(df_clos.loc[df_clos['kcluster']==i].index)
-            if i == 0:
-                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=color_i,label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
-#                ax.text(df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot'],df_clos.loc[df_clos['kcluster']==i][obj],str(df_clos.loc[df_clos['kcluster']==i].index[0]),color=colors[i],backgroundcolor='w')
-#                ax.plot([ax.axes.get_xlim()[0],df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot']],[ax.axes.get_ylim()[0],df_clos.loc[df_clos['kcluster']==i][obj]],color=colors[i])
-            else:
-                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=color_i,ax=ax,label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
-#                ax.plot([ax.axes.get_xlim()[0],df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot']],[ax.axes.get_ylim()[0],df_clos.loc[df_clos['kcluster']==i][obj]],color=colors[i])
-#                ax.text(df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot'],df_clos.loc[df_clos['kcluster']==i][obj],str(df_clos.loc[df_clos['kcluster']==i].index[0]),color=colors[i],backgroundcolor='w')
-                ax.axes.set_ylabel(obj)
-                ax.axes.set_xlabel('FP4_BeamSpot')
-                ax.axes.set_yscale('log')
-                ax.axes.set_xscale('log')
-        for i in range(number_of_clusters):
-            color_i = np.array(colors[i+1]).reshape(3)
-            print(color_i)
-            black = np.array([0,0,0]).reshape(3) 
-            blue = np.array([0,0,1]).reshape(3) 
-            print(black,blue)
-            plt.plot(df.loc[(df['kcluster']==i)].mean()['FP4_BeamSpot'],df.loc[(df['kcluster']==i)].mean()[obj],marker='s',fillstyle='none',color=blue,markersize=20.0,label='_nolegend_')
-            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',fillstyle='none',color=blue,ax=ax,markersize=20.0,label='_nolegend_')
-            plt.plot(df.loc[(df['kcluster']==i)].mean()['FP4_BeamSpot'],df.loc[(df['kcluster']==i)].mean()[obj],marker='x',color=color_i,markersize=20.0,label='_nolegend_', markeredgewidth=5.0)
-            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='x',color=color_i,ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=5.0)
-            if __name__=='__main__' and not PCA_run:
-                ax = df_compare.loc[(df_compare['closest']==True) & (df_compare['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=black,fillstyle='none',ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=1.0)
-                plt.plot(df_compare.loc[(df_compare['kcluster']==i)].mean()['FP4_BeamSpot'],df_compare.loc[(df_compare['kcluster']==i)].mean()[obj],marker='s',fillstyle='none',color=black,markersize=20.0,label='_nolegend_')
-            else:
-                ax = df_compare.loc[(df_compare['closest']==True) & (df_compare['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='d',color=color_i,fillstyle='none',ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=1.0)
-        plt.tight_layout()
-        plt.savefig(filename+'_'+obj+'.png')
+        df.plot(x='FP4_BeamSpot',y=obj,style='o',ax=axs[plot_y],markersize=3.0,legend=False)
+        if "closest" in df.columns:
+            df_closest = df.loc[df['closest']==True]
+            df_closest = df_closest.reset_index(drop=True)
+#            print(df_closest.iloc[:,15:19])
+            for i_closest in df_closest.index:
+                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='black')
+        axs[plot_y].axes.set_ylabel(obj)
+        axs[plot_y].axvline(x=fNom[-1],linestyle="dashed",color="red")
+        axs[plot_y].axhline(y=fNom[j],linestyle="dashed",color="red")
+        cmap = matplotlib.colors.ListedColormap(matplotlib.cm.get_cmap("Pastel1").colors[:3])
+        colors_x = np.zeros((2,2)) 
+        print(axs[plot_y].get_xlim(), axs[plot_y].get_ylim())
+        xlims = [axs[plot_y].get_xlim()[0], fNom[-1], axs[plot_y].get_xlim()[1]]
+        ylims = [axs[plot_y].get_ylim()[0], fNom[j], axs[plot_y].get_ylim()[1]]
+        for colori in range(colors_x.shape[0]):
+            for colorj in range(colors_x.shape[1]):
+                colors_x[colori,colorj] = 0
+        if j < 3:
+            colors_x[1,0] = 2
+        else:
+            colors_x[0,0] = 2
+        print(colors_x)
+        axs[plot_y].pcolormesh(xlims, ylims, colors_x, cmap=cmap)
+#        plt.savefig(filename+'_'+obj+'_inverse.png')
+        j += 1
+        plot_y += 1
+
+#    fig.tight_layout()
+    axs[3].set_xlabel("DSSD_BeamSpot")
+    plt.savefig(filename+'_inverse.png')
 
 
 if __name__=='__main__':
@@ -245,8 +252,15 @@ if __name__=='__main__':
     df = pd.read_hdf(filename)
     df_compare = pd.read_hdf(filename_compare)
     PCA_run = False
+    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+    for i in range(len(objectives)):
+        if i < 3:
+            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] / x)
+        else:
+            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] * x)
+    print(df[objectives])
+    
     if 'PCA' in filename_compare:
-        objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
         query_txt = '' 
         max_obj = 2
         for i in range(len(objectives)):
