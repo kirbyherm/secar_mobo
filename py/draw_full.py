@@ -425,10 +425,13 @@ def plot_4d(popi,filename,df):
 def plot_hists(df, df_reduce, filename):
 
     write_qnames = {'q1':'q1','q2':'q2','q3':'q3','q4':'q4','q5':'q5','q6':'q6','q7':'q7','q8':'q8','q9':'q9','q10':'q10','q11':'q11','q12':'q12','q13':'q13','q14':'q14','q15':'q15','q16':'h1','q17':'h2','q18':'h3','q19':'o1'}
-    df = df.iloc[:,:19]
     for i in range(magnet_dim):
 #        df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
         df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
+    df_invalid = df.loc[np.sum(df,axis=1) >= 5e9]
+    print(df_invalid)
+    df_invalid = df_invalid.iloc[:,:19]
+    df = df.iloc[:,:19]
     df_clos = df_reduce.loc[df_reduce['closest']==True].sort_values(by=['FP4_BeamSpot']).reset_index(drop=True)
     df_best = df_reduce.copy()
     df_reduce = df_reduce.iloc[:,:19]
@@ -452,7 +455,7 @@ def plot_hists(df, df_reduce, filename):
     for i in range(len(axs)):
 #    for j in range(len(axs[i])):
 #        print(axs[i].get_ylim())
-        axs[i].set_ylim([100,50000])
+        axs[i].set_ylim([2000,150000])
         axs[i].set_ylabel('all points')
         axs[i].set_xscale('log')
         if i != 9:
@@ -462,26 +465,34 @@ def plot_hists(df, df_reduce, filename):
 #            axs[i].set_xlim([-3,3])
             axs[i].set_xlim([0.125,8])
         axs2[i] = axs[i].twinx()
-        axs2[i].set_ylim([1,1000])
-        axs2[i].set_ylabel('optimized points',rotation=-90)
+        axs2[i].set_ylim([2000,150000])
+#        axs2[i].set_ylim([1,int(1e5)])
+        axs2[i].set_ylabel('invalid points',rotation=-90)
     number_of_clusters = np.max(df_best['kcluster']+1)
     colors = list(plt.get_cmap('tab20').colors)
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
 #    print(df_best,axs2)
     df_clos['yplot'] = 0
-    for i in range(number_of_clusters):
-#                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
-        hist = df_best.loc[df_best['kcluster']==i][write_qnames].hist(bins=bins,log=True,ax=axs2,color=np.array([colors[i+1]]),label=df_clos.loc[(df_clos['kcluster']==i)].index[0]+1,grid=False)
-        for j in range(len(axs)):
-            y_min, y_max = axs2[j].get_ylim()
+#    for i in range(number_of_clusters):
+##                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
+#        hist = df_best.loc[df_best['kcluster']==i][write_qnames].hist(bins=bins,log=True,ax=axs2,color=np.array([colors[i+1]]),label=df_clos.loc[(df_clos['kcluster']==i)].index[0]+1,grid=False)
+#        for j in range(len(axs)):
+#            y_min, y_max = axs2[j].get_ylim()
+##            df_clos['yplot'][i] = df_clos.index*(y_max-y_min)+y_min
+##            print((df_clos['kcluster'][i])*(np.logspace(1.0,3.0,num=10)[i]),(df_clos['kcluster'][i]),(np.logspace(0.0,2.5,num=10)[i]))
+#            axs2[j].text(df_clos["q{0}".format(j+1)][i],(np.logspace(0.0,2.8,num=10)[df_clos['kcluster'][i]]),str(np.max(df_clos.loc[(df_clos['kcluster']==i)]['kcluster'])+1),color='black')
+    hist = df_invalid[write_qnames].hist(bins=bins,log=True,ax=axs2,color='k',label="invalid",grid=False)
+#    for j in range(len(axs)):
+#        y_min, y_max = axs2[j].get_ylim()
 #            df_clos['yplot'][i] = df_clos.index*(y_max-y_min)+y_min
 #            print((df_clos['kcluster'][i])*(np.logspace(1.0,3.0,num=10)[i]),(df_clos['kcluster'][i]),(np.logspace(0.0,2.5,num=10)[i]))
-            axs2[j].text(df_clos["q{0}".format(j+1)][i],(np.logspace(0.0,2.8,num=10)[df_clos['kcluster'][i]]),str(np.max(df_clos.loc[(df_clos['kcluster']==i)]['kcluster'])+1),color='black')
+#        axs2[j].text(df_invalid["q{0}".format(j+1)][i],(np.logspace(0.0,2.8,num=10)[df_clos['kcluster'][i]]),str(np.max(df_clos.loc[(df_clos['kcluster']==i)]['kcluster'])+1),color='black')
     for i in range(len(axs)):
         axs2[i].set_title("")
 
 #    print(hist)
-    plt.savefig(filename+'full_hist.png')
+    plt.savefig(filename+'full_hist_invalid.png')
+#    plt.savefig(filename+'full_hist.png')
     
     return
 
