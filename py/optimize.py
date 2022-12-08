@@ -25,6 +25,11 @@ import pygmo as pg
 from problem import optimizeRes
 import pandas as pd
 
+#set important directories
+WORK_DIR = '../'
+OUTPUT_DIR = WORK_DIR + 'output/' 
+SCRATCH_DIR = '/scratch/hermanse'
+
 # take batch_no as input from command line (this specifies outputFile)
 script, batch_no = sys.argv
 
@@ -48,7 +53,8 @@ preserve_diversity=True # activates diversity preservation mechanisms
 # specify number of magnets to tune
 magnet_dim = 19 
 # specify output file
-outputFile = "output_4f_moead_FP2_FP3_{}_{}.csv".format(generations, batch_no)
+fileName = "output_5f_moead_gen_{}_{}.csv".format(generations, batch_no)
+outputFile = "{}/{}".format(SCRATCH_DIR, fileName)
 
 # main function
 def main(pop_init=None):
@@ -57,14 +63,14 @@ def main(pop_init=None):
     startTime = timeit.default_timer()
 
     # initialize algorithm with hyperparameters
-    alg = pg.moead(gen=generations,neighbours=neighbors,seed=seed)
+    alg = pg.moead_gen(gen=generations,neighbours=neighbors,seed=seed)
 #    alg = pg.nsga2(gen=generations)
 
     # there should be a way to run batch_fitness evaluations, haven't gotten it to work on NSCL
-#    b = pg.bfe()
-    NUMBER_OF_PROCESSES=2
+    b = pg.bfe()
+    NUMBER_OF_PROCESSES=10
 #    b.resize_pool(NUMBER_OF_PROCESSES)
-#    alg.set_bfe(b)
+    alg.set_bfe(b)
     #alg.set_verbosity(1)
     
     # initialize problem
@@ -78,7 +84,7 @@ def main(pop_init=None):
     #top = pg.topology(pg.fully_connected(n_islands,1.0))
 
     # when running 5 objectives, pop needed to be 70    
-    pop_n = 70 #84 
+    pop_n = 1001 #84 
     if p_optimizeRes.get_nobj() == 4:
         # with 4 objs need pop=84
         pop_n = 84 
@@ -87,8 +93,8 @@ def main(pop_init=None):
     pop_new = None
     if (pop_init==None):    
         # randomly create a new population of size pop_n
-        pop_new = pg.population(p_optimizeRes, size=pop_n) 
-#        pop_new = pg.population(p_optimizeRes, size=pop_n, b=b) 
+#        pop_new = pg.population(p_optimizeRes, size=pop_n) 
+        pop_new = pg.population(p_optimizeRes, size=pop_n, b=b) 
         print("initialize pop")
     else:
         pop_new = pop_init
@@ -148,9 +154,17 @@ def read_pop(filename):
 # when called from console (as the batch script will)
 if __name__=='__main__':
 
+
+    isExist = os.path.exists(SCRATCH_DIR)
+    if not isExist:
+        os.makedirs(SCRATCH_DIR)
+
     # if using a preexisting or want to pass an identical population
     #popi = init_pop(magnet_dim,84)
     #popi = read_pop("init_pop.csv")
 
     # else just initialize and evolve random pop
     pop2 = main()
+
+    shutil.move(outputFile, "{}{}".format(OUTPUT_DIR, fileName))
+#    os.rmdir(SCRATCH_DIR)

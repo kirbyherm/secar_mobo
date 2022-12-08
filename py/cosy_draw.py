@@ -30,6 +30,7 @@ fNom = array([1086.7911810119049, 1258.9642382235916, 1155.6819246495133, 3.4224
 fNom = array([1431.8410759523508, 821.7565325150232, 650.6352599978524, 0.934467870935426, 0.03972091942829642])
 fNom = array([2384.9360856494263, 1058.1013973315412, 1260.5797906816008, 4.129531004594597, 0.32301378801056696])
 fNom = array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
+fNom = array([123.09714342469559, 0.14485759961115405, 0.1050839232170788, 1.017425650763311, 0.0502221220191954])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
 
@@ -107,8 +108,8 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_1
 def cosyrun(qs=qNom):
 
     # make fox file and get name
-    cosyFilename, lisFilename = write_fox(qs,fox_file="SECAR_an_Optics.fox")
-    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SECAR_an_Optics_DE.fox")
+    cosyFilename, lisFilename = write_fox(qs,fox_file="SECAR_pg_Optics.fox")
+    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SECAR_pg_Optics_DE.fox")
     
     #Run cmd
     cmd = COSY_DIR + 'cosy'
@@ -184,13 +185,13 @@ def cosyrun(qs=qNom):
             beamspotsize_bool = True
     for i in range(len(split2)):
         if fp2res_bool:
-            fp2res = (float(split2[i]))
+            fp2res = (float(split2[i])*1000)
             fp2res_bool = False
         if fp3res_bool:
-            fp3res = (float(split2[i]))
+            fp3res = (float(split2[i])*1000)
             fp3res_bool = False
         if fp1res_bool:
-            fp1res = (float(split2[i]))
+            fp1res = (float(split2[i])*1000)
             fp1res_bool = False
         if xdim_bool:
             xdim2.append(float(split2[i]))
@@ -275,12 +276,13 @@ if __name__ == "__main__":
     # if running from console, just run the nominal setting
     print(cosyrun(qNom))
     # if running from console, just run the assigned setting
-    qNew = find_point('results_280/best280.h5',52)
-    print(cosyrun(qNew))
+#    qNew = find_point('results_280/best280.h5',52)
+#    print(cosyrun(qNew))
+    qNew = qNom
     PROFILES_PATH = "./"
     plot_i = 1
-    write_fox(qNew, str(plot_i), PROFILES_PATH , 'SECAR_an_Optics_draw.fox')
+    write_fox(qNew, str(plot_i), PROFILES_PATH , 'SECAR_pg_Optics_draw.fox')
 #    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox')
-    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE2.fox')
+#    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_pg_Optics_DE2.fox')
 
 

@@ -250,7 +250,8 @@ if __name__=='__main__':
 #        plot_4d(popi,filename,df)
 
     df = pd.read_hdf(filename)
-    df_compare = pd.read_hdf(filename_compare)
+#    df_compare = pd.read_hdf(filename_compare)
+    df_compare = pd.read_hdf(filename)
     PCA_run = False
     objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
     for i in range(len(objectives)):

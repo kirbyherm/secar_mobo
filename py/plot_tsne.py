@@ -130,7 +130,7 @@ def plot_tsne_linear(filename,filename_compare):
     )
     
     df = pd.read_hdf(filename)
-    df_compare = pd.read_hdf(filename_compare)
+#    df_compare = pd.read_hdf(filename_compare)
 #    df = df.loc[df['kcluster']==3]
 #    print(df)
     magnets = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
@@ -154,23 +154,23 @@ def plot_tsne_linear(filename,filename_compare):
     plot_combos = [[0,1],[2,3],[3,4],[2,4],[4,6],[6,9],[9,14],[12,14]]
 
     X = np.array(df[magnets])
-    X_compare = np.array(df_compare[magnets])
+#    X_compare = np.array(df_compare[magnets])
 #    X_compare = np.array(np.log2(df_compare[magnets]))
 #    print(X)
     y = np.array(df['kcluster'])
-    y_compare = np.array(df_compare['kcluster'])
+#    y_compare = np.array(df_compare['kcluster'])
     z = np.array(df['closest'])
-    z_compare = np.array(df_compare['closest'])
+#    z_compare = np.array(df_compare['closest'])
     number_of_clusters = np.max(y+1)
     colors = list(plt.get_cmap('tab20').colors)
     clusters = []
-    clusters_compare = []
+#    clusters_compare = []
     for i in range(number_of_clusters):
         clusters.append(y == i)
-        clusters_compare.append(y_compare == i)
+#        clusters_compare.append(y_compare == i)
     
     close = z == True
-    close_compare = z_compare == True
+#    close_compare = z_compare == True
     
     
 #    print (X,y[close])
@@ -214,7 +214,7 @@ def plot_tsne_linear(filename,filename_compare):
             n_iter=5000,
         )
         Y = tsne.fit_transform(X)
-        Y_compare = tsne.fit_transform(X_compare)
+#        Y_compare = tsne.fit_transform(X_compare)
         t1 = time()
         print("circles, perplexity=%d in %.2g sec" % (perplexity, t1 - t0))
         ax.set_title("Perplexity=%d" % perplexity)

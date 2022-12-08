@@ -15,6 +15,7 @@ from numpy import array, zeros, multiply, power
 PYGMO_DIR = '../'
 FOX_DIR = PYGMO_DIR + 'fox/'
 OUTPUT_DIR = PYGMO_DIR + 'output/'
+SCRATCH_DIR = '/scratch/hermanse'
 
 # make pygmo problem 
 class optimizeRes:
@@ -24,7 +25,7 @@ class optimizeRes:
     # output file is defined when initiating the problem in optimize.py
     def __init__(self, dim, out="out"):
         self.dim = dim
-        self.out = OUTPUT_DIR + out
+        self.out = out
 
     # fitness function that is called by each iteration
     #   x is between -1 and 1, but cosyrun expects a factor

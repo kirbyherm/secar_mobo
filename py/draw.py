@@ -250,8 +250,8 @@ def output_4d_cosy(popi,filename,df):
     qNew = np.array([1.0371301857113335,1.4897519431921593,0.5402003843384104,0.6080163749223835,0.5965351874518491,0.5279178522813484,0.8474952322221544,0.8290931192132953,0.7350223112146984,0.5049139345530922,0.969681779928563 ,0.8465270119223961,0.7261232553654523,0.6805787940919176,0.6772214286022437,1.6737045402403927,1.3151418622198896,0.8914897696929639,0.6144362243855045])
     qNew = np.zeros(19)+1
 #    qNew = np.array([0.82281,0.83116,0.94706,0.75348,0.64679,1.23591,2.51027,0.80262,0.8017,2.70642,1.20897,0.62487,0.38632,1.11944,0.86569,1.19812,1.64921,1.13609,0.28077])
-    write_fox((qNew), 0, PROFILES_PATH, 'SECAR_an_Optics_draw.fox' )
-    write_fox((qNew), str(0)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox' )
+    write_fox((qNew), 0, PROFILES_PATH, 'SECAR_pg_Optics_draw.fox' )
+    write_fox((qNew), str(0)+"_DE", PROFILES_PATH, 'SECAR_pg_Optics_DE_draw.fox' )
 #    write_fox((qNew), str(0)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):
@@ -268,8 +268,8 @@ def output_4d_cosy(popi,filename,df):
 #                    break
 #        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SECAR_an_Optics_draw.fox')
 #        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox')
-        write_fox(popi.get_x()[j], plot_i, PROFILES_PATH, 'SECAR_an_Optics_draw.fox')
-        write_fox(popi.get_x()[j], str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox')
+        write_fox(popi.get_x()[j], plot_i, PROFILES_PATH, 'SECAR_pg_Optics_draw.fox')
+        write_fox(popi.get_x()[j], str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_pg_Optics_DE_draw.fox')
 #        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox')
         plot_i += 1
 #    print(len(sorted_ndf), count_dups)

@@ -11,20 +11,20 @@
 
 GENS=1000
 #GENS=20
-BATCH=0
+BATCH=510
 #BATCH=8
 
 #mkdir results_"$BATCH"
-#./make_db.py $GENS $BATCH
-#./view_db.py $BATCH
+./make_db.py $GENS $BATCH
+./view_db.py $BATCH
 mv magnet_factors.csv results_"$BATCH"/
 mv best"$BATCH".h5 results_"$BATCH"/
 ./draw.py results_"$BATCH"/best"$BATCH".h5
-./draw_cluster.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
+#./draw_cluster.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
 ./draw_full.py results_"$BATCH"/best"$BATCH".h5 $BATCH
 ./draw_cluster_inverse.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
 ./plot_tsne.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
-./plot_corr.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
+#./plot_corr.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
 cd results_"$BATCH"
 cd profiles
 #

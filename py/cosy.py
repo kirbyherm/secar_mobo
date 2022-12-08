@@ -28,6 +28,7 @@ fNom = array([1086.7911810119049, 1258.9642382235916, 1155.6819246495133, 3.4224
 fNom = array([1431.8410759523508, 821.7565325150232, 650.6352599978524, 0.934467870935426, 0.03972091942829642])
 fNom = array([2384.9360856494263, 1058.1013973315412, 1260.5797906816008, 4.129531004594597, 0.32301378801056696])
 fNom = array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
+fNom = array([123.09714342469559, 0.14485759961115405, 0.1050839232170788, 1.017425650763311, 0.0502221220191954])
 #fNom = array([92.50599131073163, 305.87168609440647, 0.8288598311500905, 0.05816614513474081])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
@@ -108,8 +109,8 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_1
 def cosyrun(qs=qNom):
 
     # make fox file and get name
-    cosyFilename, lisFilename = write_fox(qs,fox_file="SECAR_an_Optics.fox")
-    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SECAR_an_Optics_DE.fox")
+    cosyFilename, lisFilename = write_fox(qs,fox_file="SECAR_pg_Optics.fox")
+    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SECAR_pg_Optics_DE.fox")
     
     #Run cmd
     cmd = COSY_DIR + 'cosy'
@@ -147,6 +148,7 @@ def cosyrun(qs=qNom):
     fp2res_bool, fp2espread_bool, fp2xdim_bool = False, False, False
     fp3res_bool, fp3espread_bool, fp3xdim_bool = False, False, False
     beamspotsize_bool = False
+    objs = 5
 
     # my method could probably be better optimized but this works and is mostly straight-forward
     #   idea is just that keywords are output for each variable, e.g. "Xdim" for the Xdim for a magnet dimension
@@ -160,16 +162,32 @@ def cosyrun(qs=qNom):
             ydim.append(float(split[i]))
             ydim_bool = False
         if fp1xdim_bool:
-            fp1xdim = (float(split[i])*1000)
+            try:
+                fp1xdim = (float(split[i])*1000)
+            except:
+                resol = zeros(objs)+1e9         
+                return resol        
             fp1xdim_bool = False
         if fp2xdim_bool:
-            fp2xdim = (float(split[i])*1000)
+            try:
+                fp2xdim = (float(split[i])*1000)
+            except:
+                resol = zeros(objs)+1e9         
+                return resol        
             fp2xdim_bool = False
         if fp3xdim_bool:
-            fp3xdim = (float(split[i])*1000)
+            try:
+                fp3xdim = (float(split[i])*1000)
+            except:
+                resol = zeros(objs)+1e9         
+                return resol        
             fp3xdim_bool = False
         if beamspotsize_bool:
-            beamspotsize = power(float(split[i]),0.5)
+            try:
+                beamspotsize = power(float(split[i]),0.5)
+            except:
+                resol = zeros(objs)+1e9         
+                return resol        
             beamspotsize_bool = False
         if split[i].strip() == "Xdim":
             xdim_bool = True
@@ -185,13 +203,25 @@ def cosyrun(qs=qNom):
             beamspotsize_bool = True
     for i in range(len(split2)):
         if fp2res_bool:
-            fp2res = (float(split2[i])*1000)
+            try:
+                fp2res = (float(split2[i])*1000)
+            except:
+                resol = zeros(objs)+1e9         
+                return resol        
             fp2res_bool = False
         if fp3res_bool:
-            fp3res = (float(split2[i])*1000)
+            try:
+                fp3res = (float(split2[i])*1000)
+            except:
+                resol = zeros(objs)+1e9         
+                return resol        
             fp3res_bool = False
         if fp1res_bool:
-            fp1res = (float(split2[i])*1000)
+            try:
+                fp1res = (float(split2[i])*1000)
+            except:
+                resol = zeros(objs)+1e9         
+                return resol        
             fp1res_bool = False
         if xdim_bool:
             xdim2.append(float(split2[i]))
@@ -215,7 +245,6 @@ def cosyrun(qs=qNom):
     scale = 1e9 
     max_width = 0
     # setup value to be returned, here 4 different objectives
-    objs = 5
     resol = zeros(objs) 
     print(qs)
     for i in range(len(magnet_dims)):
@@ -276,12 +305,12 @@ if __name__ == "__main__":
     # if running from console, just run the nominal setting
     print(cosyrun(qNom))
     # if running from console, just run the assigned setting
-    df = pd.read_csv('results_280/magnet_factors.csv')
-    print(df)
-    for i in range(df.shape[0]):
-        print(cosyrun(array(df.iloc[i,:19])))
-    PROFILES_PATH = "./"
-    plot_i = 1
+#    df = pd.read_csv('results_280/magnet_factors.csv')
+#    print(df)
+#    for i in range(df.shape[0]):
+#        print(cosyrun(array(df.iloc[i,:19])))
+#    PROFILES_PATH = "./"
+#    plot_i = 1
 #    write_fox(qNew, str(plot_i), PROFILES_PATH , 'SECAR_an_Optics_draw.fox')
 ##    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox')
 #    write_fox(qNew, str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE2.fox')
