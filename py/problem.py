@@ -38,14 +38,14 @@ class optimizeRes:
         # write output to file
         f = open(self.out,"a")
         # write magnet values (as power of 2)
-        for i in range(len(x)):
-            f.write("{0},".format(x[i]))
-        # write objective values (as ratio to nom)
-        for i in range(len(resol)):
-            if i == len(resol)-1:
-                f.write("{0}\n".format(resol[i]))
-            else: 
-                f.write("{0},".format(resol[i]))
+#        for i in range(len(x)):
+#            f.write("{0},".format(x[i]))
+#        # write objective values (as ratio to nom)
+#        for i in range(len(resol)):
+#            if i == len(resol)-1:
+#                f.write("{0}\n".format(resol[i]))
+#            else: 
+#                f.write("{0},".format(resol[i]))
         f.close()
         # return objective values to evolve
         return resol

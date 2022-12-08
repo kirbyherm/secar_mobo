@@ -119,13 +119,13 @@ def cosyrun(qs=qNom):
     # run cosy 
     output = commands.run([cmd ,cosyFilename], capture_output=True)
     # print time
-    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
+#    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
     # timer for diagnostics
     startTime = timeit.default_timer()
     # run cosy2 
     output2 = commands.run([cmd ,cosyFilename2], capture_output=True)
     # print time
-    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
+#    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
 
     # get output and now convert into the necessary values to return to pygmo
     stripped = output.stdout.strip().decode('utf8','strict')
@@ -246,7 +246,7 @@ def cosyrun(qs=qNom):
     max_width = 0
     # setup value to be returned, here 4 different objectives
     resol = zeros(objs) 
-    print(qs)
+#    print(qs)
     for i in range(len(magnet_dims)):
         # if no x-ydim values, just return outside constraints (all 1e9)
         if len(xdim) < len(magnet_dims) or len(ydim) < len(magnet_dims):
@@ -273,11 +273,11 @@ def cosyrun(qs=qNom):
 #            resol = [fp2xdim/fp2res,fp3xdim/fp3res,max_width,beamspotsize]
         except:
             resol = zeros(objs)+1e9         
-    print(resol)
+#    print(resol)
     # if within constraints, set resol as a ratio to nominal
     if max(resol)/min(fNom) < 1e9:
         for i in range(len(resol)):
-            print(1/resol[i])
+#            print(1/resol[i])
             # make sure we are working with positive numbers
             if resol[i] > 0: 
                 resol[i] = float(resol[i])
@@ -288,7 +288,7 @@ def cosyrun(qs=qNom):
             resol[i] = resol[i]/fNom[i]
     else:
         resol = zeros(objs)+1e9         
-    print(resol)            
+#    print(resol)            
 
     # remove old cosy fox and lis file
     commands.run(['rm','-f',cosyFilename])

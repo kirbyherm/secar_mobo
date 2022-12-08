@@ -41,7 +41,7 @@ seed = 56448180
 
 # MOEAD hyperparameters
 #   default parameters have worked well
-generations = 1000
+generations = 2
 cr_p = 1.0 # crossover parameter, 1.0 by default
 f_p = 0.5 # diff evolution operator parameter, 0.5 by default
 eta_m = 20 # distribution index used by the polynomial mutation, 20 by default
@@ -71,7 +71,7 @@ def main(pop_init=None):
     NUMBER_OF_PROCESSES=10
 #    b.resize_pool(NUMBER_OF_PROCESSES)
     alg.set_bfe(b)
-    #alg.set_verbosity(1)
+    alg.set_verbosity(1)
     
     # initialize problem
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim, outputFile))
@@ -84,7 +84,7 @@ def main(pop_init=None):
     #top = pg.topology(pg.fully_connected(n_islands,1.0))
 
     # when running 5 objectives, pop needed to be 70    
-    pop_n = 1001 #84 
+    pop_n = 70 #84 
     if p_optimizeRes.get_nobj() == 4:
         # with 4 objs need pop=84
         pop_n = 84 
@@ -106,12 +106,14 @@ def main(pop_init=None):
     archi.evolve(pop_new)
 
     # check total time    
-    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
+#    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
 
     # when I tried to use multiprocessing I needed this
     #pg.mp_island.shutdown_pool()
     #pg.mp_bfe.shutdown_pool()
-
+    
+    uda = alg.extract(pg.moead_gen)
+    print(uda.get_log)
     return pop_new
 
 # if want to initialize a pop with a single nominal gene and random others
