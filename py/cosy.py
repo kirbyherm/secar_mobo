@@ -27,7 +27,7 @@ fNom = array([0.02285401532682956, 0.04181594290692345, 3.422466427009127, 0.273
 fNom = array([1086.7911810119049, 1258.9642382235916, 1155.6819246495133, 3.422466427009127, 0.27344973981231574])
 fNom = array([1431.8410759523508, 821.7565325150232, 650.6352599978524, 0.934467870935426, 0.03972091942829642])
 fNom = array([2384.9360856494263, 1058.1013973315412, 1260.5797906816008, 4.129531004594597, 0.32301378801056696])
-fNom = array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
+fNom = array([2.3849360856494263, 0.10961548781662407, 0.5108029152516118, 1.6251646888022029, 0.12574090408565933])
 #fNom = array([92.50599131073163, 305.87168609440647, 0.8288598311500905, 0.05816614513474081])
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
@@ -49,13 +49,13 @@ scale_factor = zeros(len(scale_factor))+1
 
 # write the qvalue array to a fox file for cosy to run
 def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_14m_v1.fox'):
-    qs = qs * scale_factor
     # how many magnets to set
     input_len = len(qs)
     # if less than qNom, use qNom values (0) for remainder
     if (len(qNom)-input_len>0):
         for i in range(len(qNom)-input_len):
             qs = append(qs,qNom[i+input_len])
+    qs = qs * scale_factor
     # get rand number for the temporary file
     if name==None:
         rand = rng()
@@ -278,8 +278,8 @@ if __name__ == "__main__":
     # if running from console, just run the assigned setting
     df = pd.read_csv('results_280/magnet_factors.csv')
     print(df)
-    for i in range(df.shape[0]):
-        print(cosyrun(array(df.iloc[i,:19])))
+#    for i in range(df.shape[0]):
+#        print(cosyrun(array(df.iloc[i,:19])))
     PROFILES_PATH = "./"
     plot_i = 1
 #    write_fox(qNew, str(plot_i), PROFILES_PATH , 'SECAR_an_Optics_draw.fox')

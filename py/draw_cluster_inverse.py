@@ -37,7 +37,7 @@ pd.set_option("max_rows", None)
 pd.set_option("max_columns", None)
 
 optimized_params = 5
-fNom = np.array([1000/2384.9360856494263, 1000/109.61548781662407, 1000/510.8029152516118, 1.6251646888022029, 0.12574090408565933])
+fNom = np.array([1000/2384.9360856494263, 1000/109.61548781662407, 1000/510.8029152516118, 1.6251646888022029/1.6251646888022029, 0.12574090408565933 * 100])
 fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
@@ -209,8 +209,9 @@ def main(df, df_compare, filename, PCA_run = False):
             df_closest = df.loc[df['closest']==True]
             df_closest = df_closest.reset_index(drop=True)
 #            print(df_closest.iloc[:,15:19])
-            for i_closest in df_closest.index:
-                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='black')
+            df_closest.plot(x='FP4_BeamSpot',y=obj,style='o',ax=axs[plot_y],markersize=3.0,legend=False)
+#            for i_closest in df_closest.index:
+#                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='black')
         axs[plot_y].axes.set_ylabel(obj)
         axs[plot_y].axvline(x=fNom[-1],linestyle="dashed",color="red")
         axs[plot_y].axhline(y=fNom[j],linestyle="dashed",color="red")
@@ -233,7 +234,10 @@ def main(df, df_compare, filename, PCA_run = False):
         plot_y += 1
 
 #    fig.tight_layout()
-    axs[3].set_xlabel("DSSD_BeamSpot")
+    axs[0].set_ylabel("FP1 Res.")
+    axs[1].set_ylabel("FP2 Res.")
+    axs[2].set_ylabel("FP3 Res.")
+    axs[3].set_xlabel("DSSD Beamspot (cm)")
     plt.savefig(filename+'_inverse.png')
 
 
@@ -257,19 +261,20 @@ if __name__=='__main__':
         if i < 3:
             df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] / x)
         else:
-            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] * x)
+            if i != 3:
+                df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] * x)
     print(df[objectives])
     
-    if 'PCA' in filename_compare:
-        query_txt = '' 
-        max_obj = 2
-        for i in range(len(objectives)):
-            query_txt += objectives[i] + "<{}".format(max_obj)
-            if i < len(objectives)-1:
-                query_txt+="&"
-        df_compare = df_compare.query(query_txt)
-        filename=filename_compare
-        PCA_run = True
+#    if 'PCA' in filename_compare:
+#        query_txt = '' 
+#        max_obj = 1
+#        for i in range(len(objectives)):
+#            query_txt += objectives[i] + "<{}".format(max_obj)
+#            if i < len(objectives)-1:
+#                query_txt+="&"
+#        df_compare = df_compare.query(query_txt)
+#        filename=filename_compare
+#        PCA_run = True
     main(df, df_compare, filename, PCA_run)
 
 

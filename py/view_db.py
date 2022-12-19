@@ -85,7 +85,7 @@ def main(start_i=batch):
     
     # restrict the df to only the points that fit the problem constraints
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
-    max_obj = 2
+    max_obj = 1
 #    if start_i == 340 or start_i == 380:
 #        max_obj = 5e0
     query_txt = '' 

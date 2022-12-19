@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import draw_cluster
+import draw_cluster_inverse
 # set pandas view options to print everything
 pd.set_option("max_rows", None)
 pd.set_option("max_columns", None)
@@ -22,7 +23,7 @@ colormap = matplotlib.cm.get_cmap('PuOr')
 plt.rcParams["figure.figsize"] = [14, 6]
 colors = list(plt.get_cmap('tab20').colors)
 
-results_no = 430
+results_no = 0
 
 def make_db_row( quads, resol, cluster, columns ):
     new_row = {}
@@ -89,8 +90,8 @@ def main():
         # Reverse PCA
         nComp = 5
     
-        samples = 1000
-#        samples = 2 
+        #samples = 1000
+        samples = 2 
         comp_1 = np.zeros(samples)
         comp_2 = np.zeros(samples) 
         m = comp_1
@@ -145,10 +146,11 @@ def main():
 #        ax.set_ylim(0,2.0)
     plt.savefig(filepath+'pca_transformed')
     #    cosyrun(x1.iloc[0,:])
-    dataPCA.to_hdf('results_{}/best{}PCA.h5'.format(results_no,results_no),key='df')
-    draw_cluster.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
+#    dataPCA.to_hdf('results_{}/best{}PCA.h5'.format(results_no,results_no),key='df')
+#    draw_cluster.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
+#    draw_cluster_inverse.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
 #    print(x1.iloc[0,:],X[0,:],Xhat[0,:])
-#    draw_pca(pca, x1)
+    draw_pca(pca, x1)
     return     
 
 def draw_pca(pca, x1):
@@ -204,3 +206,18 @@ def draw_pca(pca, x1):
 
 
 main()
+data = pd.read_hdf('results_{}/best{}PCA.h5'.format(results_no, results_no))
+dataPCA = data
+df = data
+objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+fNom = np.array([1000/2384.9360856494263, 1000/109.61548781662407, 1000/510.8029152516118, 1.6251646888022029/1.6251646888022029, 0.12574090408565933 * 100])
+for i in range(len(objectives)):
+    if i < 3:
+        df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] / x)
+    else:
+        if i != 3:
+            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] * x)
+df['closest']=False
+data = df
+dataPCA = df
+draw_cluster_inverse.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 

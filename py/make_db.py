@@ -19,7 +19,7 @@ generations = 750
 population_size = 1001
 batch = 230
 # specify number of magnets
-magnet_dim = 19
+magnet_dim = 15
 scale_factor = np.array([0.916096997902245,1.0682652577138,0.994493371138475,0.93966084500023,1.05275223744803,1.06042964393537,1.00437784795672,0.973641800379054,1.07533403645974,1.06881462007463,1.05902890235334,1.05329541257734,0.998902975441088,1.06217562289834,1.03384085684119,1.00944081324584, 0.944682833032244,0.937425053447303,1.0784587034454])
 
 def cut_data(df, objectives, max_obj):
@@ -73,7 +73,12 @@ def main(gens=generations, batch_id=210):
         if start_i == 280 and end_i == 440:
             if i > 289 and i < 410:
                 continue
+#        print('||{}{}||.csv'.format(OUTPUT_PREFIX,i))
+#        print(columns)
         df_new = pd.read_csv('{}{}.csv'.format(OUTPUT_PREFIX,i),names=columns)
+        for j in range(16,20):
+            df_new.insert(j-1, "q{}".format(j),np.array(np.zeros(df_new.shape[0])))
+#            print(j, df_new, df_new.shape, df_new.columns)
         if np.median(df_new.iloc[-int(len(df_new.index)*0.1):,-len(objectives):]) < 1e2:
             converged += 1
             converged_islands.append(i)

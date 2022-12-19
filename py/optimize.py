@@ -46,7 +46,7 @@ limit = 2 # max number of copies reinserted in the population if preserve_divers
 preserve_diversity=True # activates diversity preservation mechanisms
 
 # specify number of magnets to tune
-magnet_dim = 19 
+magnet_dim = 15 
 # specify output file
 outputFile = "output_4f_moead_FP2_FP3_{}_{}.csv".format(generations, batch_no)
 

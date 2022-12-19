@@ -34,6 +34,7 @@ os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/
 
 optimized_params = 5
 fNom = np.zeros(optimized_params)+1
+fNom = np.array([1000/2384.9360856494263, 1000/109.61548781662407, 1000/510.8029152516118, 1.6251646888022029/1.6251646888022029, 0.12574090408565933 * 100])
 fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
@@ -209,8 +210,8 @@ def main(df, df_compare, filename, PCA_run = False):
 #                ax.text(df_clos.loc[df_clos['kcluster']==i]['FP4_BeamSpot'],df_clos.loc[df_clos['kcluster']==i][obj],str(df_clos.loc[df_clos['kcluster']==i].index[0]),color=colors[i],backgroundcolor='w')
                 ax.axes.set_ylabel(obj)
                 ax.axes.set_xlabel('FP4_BeamSpot')
-                ax.axes.set_yscale('log')
-                ax.axes.set_xscale('log')
+#                ax.axes.set_yscale('log')
+#                ax.axes.set_xscale('log')
         for i in range(number_of_clusters):
             color_i = np.array(colors[i+1]).reshape(3)
             print(color_i)
@@ -226,6 +227,13 @@ def main(df, df_compare, filename, PCA_run = False):
                 plt.plot(df_compare.loc[(df_compare['kcluster']==i)].mean()['FP4_BeamSpot'],df_compare.loc[(df_compare['kcluster']==i)].mean()[obj],marker='s',fillstyle='none',color=black,markersize=20.0,label='_nolegend_')
             else:
                 ax = df_compare.loc[(df_compare['closest']==True) & (df_compare['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='d',color=color_i,fillstyle='none',ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=1.0)
+        if obj == 'FP1_res':
+            ax.set_ylabel("FP1 Res.")
+        if obj == 'FP2_res':
+            ax.set_ylabel("FP2 Res.")
+        if obj == 'FP3_res':
+            ax.set_ylabel("FP3 Res.")
+        ax.set_xlabel("DSSD Beamspot (cm)")
         plt.tight_layout()
         plt.savefig(filename+'_'+obj+'.png')
 
@@ -248,7 +256,7 @@ if __name__=='__main__':
     if 'PCA' in filename_compare:
         objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
         query_txt = '' 
-        max_obj = 2
+        max_obj = 1
         for i in range(len(objectives)):
             query_txt += objectives[i] + "<{}".format(max_obj)
             if i < len(objectives)-1:
@@ -256,6 +264,15 @@ if __name__=='__main__':
         df_compare = df_compare.query(query_txt)
         filename=filename_compare
         PCA_run = True
+    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+    for i in range(len(objectives)):
+        if i < 3:
+            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] / x)
+            df_compare[objectives[i]] = df_compare[objectives[i]].apply(lambda x: fNom[i] / x)
+        else:
+            if i != 3:
+                df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] * x)
+                df_compare[objectives[i]] = df_compare[objectives[i]].apply(lambda x: fNom[i] * x)
     main(df, df_compare, filename, PCA_run)
 
 
