@@ -17,6 +17,9 @@ FOX_DIR = PYGMO_DIR + 'fox/'
 OUTPUT_DIR = PYGMO_DIR + 'output/'
 SCRATCH_DIR = '/scratch/hermanse'
 
+fox_name = 'SECAR_an_Optics'
+fNom = array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
+
 # make pygmo problem 
 class optimizeRes:
     # define the output file to write solutions
@@ -34,9 +37,9 @@ class optimizeRes:
         # convert to scale factor
         pass_x = power(zeros(self.dim)+2.0,x)
         # run cosy
-        resol = cosyrun(pass_x)
+        resol = cosyrun(pass_x, fNom, fox_name)
         # write output to file
-        f = open(self.out,"a")
+#        f = open(self.out,"a")
         # write magnet values (as power of 2)
 #        for i in range(len(x)):
 #            f.write("{0},".format(x[i]))
@@ -46,7 +49,7 @@ class optimizeRes:
 #                f.write("{0}\n".format(resol[i]))
 #            else: 
 #                f.write("{0},".format(resol[i]))
-        f.close()
+#        f.close()
         # return objective values to evolve
         return resol
 

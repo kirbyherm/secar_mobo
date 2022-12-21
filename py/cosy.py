@@ -106,11 +106,13 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_1
 # idea is that evolve() in optimize.py will call fitness() in problem.py
 #   fitness() will pass a set of magnet factors (between 0.5 and 2.0) to cosyrun
 #   and will return the resulting objectives to the algorithm
-def cosyrun(qs=qNom):
+def cosyrun(qs=qNom, fNom=fNom, fox_name="SECAR_pg_Optics"):
 
     # make fox file and get name
-    cosyFilename, lisFilename = write_fox(qs,fox_file="SECAR_pg_Optics.fox")
-    cosyFilename2, lisFilename2 = write_fox(qs,fox_file="SECAR_pg_Optics_DE.fox")
+    fox_file = "{}.fox".format(fox_name)
+    fox_DE_file = "{}_DE.fox".format(fox_name)
+    cosyFilename, lisFilename = write_fox(qs,fox_file=fox_file)
+    cosyFilename2, lisFilename2 = write_fox(qs,fox_file=fox_DE_file)
     
     #Run cmd
     cmd = COSY_DIR + 'cosy'
@@ -304,6 +306,8 @@ if __name__ == "__main__":
     import pandas as pd
     # if running from console, just run the nominal setting
     print(cosyrun(qNom))
+    fNom = array([2.3849360856494263, .10961548781662407, .5108029152516118, 1.6251646888022029, 0.12574090408565933])
+    print(cosyrun(qNom,fNom,"SECAR_an_Optics"))
     # if running from console, just run the assigned setting
 #    df = pd.read_csv('results_280/magnet_factors.csv')
 #    print(df)

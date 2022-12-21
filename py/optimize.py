@@ -41,7 +41,7 @@ seed = 56448180
 
 # MOEAD hyperparameters
 #   default parameters have worked well
-generations = 2
+generations = 400
 cr_p = 1.0 # crossover parameter, 1.0 by default
 f_p = 0.5 # diff evolution operator parameter, 0.5 by default
 eta_m = 20 # distribution index used by the polynomial mutation, 20 by default
@@ -63,14 +63,14 @@ def main(pop_init=None):
     startTime = timeit.default_timer()
 
     # initialize algorithm with hyperparameters
-    alg = pg.moead_gen(gen=generations,neighbours=neighbors,seed=seed)
-#    alg = pg.nsga2(gen=generations)
+    alg_constructor = pg.moead_gen(gen=generations,neighbours=neighbors,seed=seed)
+    b = pg.bfe()
+    alg_constructor.set_bfe(b)
+    alg = pg.algorithm(alg_constructor)
 
     # there should be a way to run batch_fitness evaluations, haven't gotten it to work on NSCL
-    b = pg.bfe()
     NUMBER_OF_PROCESSES=10
 #    b.resize_pool(NUMBER_OF_PROCESSES)
-    alg.set_bfe(b)
     alg.set_verbosity(1)
     
     # initialize problem
@@ -84,7 +84,7 @@ def main(pop_init=None):
     #top = pg.topology(pg.fully_connected(n_islands,1.0))
 
     # when running 5 objectives, pop needed to be 70    
-    pop_n = 70 #84 
+    pop_n = 1001 #84 
     if p_optimizeRes.get_nobj() == 4:
         # with 4 objs need pop=84
         pop_n = 84 
@@ -101,20 +101,16 @@ def main(pop_init=None):
         print("provided pop")
 
     # create archipelago from algorithm (of a single island)
-    archi = pg.algorithm(alg)
+    #archi = pg.algorithm(alg)
     # evolve archipelago
-    archi.evolve(pop_new)
+    pop_final =alg.evolve(pop_new)
 
     # check total time    
 #    print ('Running time (sec): %f' % (timeit.default_timer() - startTime))
-
-    # when I tried to use multiprocessing I needed this
-    #pg.mp_island.shutdown_pool()
-    #pg.mp_bfe.shutdown_pool()
     
     uda = alg.extract(pg.moead_gen)
-    print(uda.get_log)
-    return pop_new
+    print(uda.get_log())
+    return pop_final
 
 # if want to initialize a pop with a single nominal gene and random others
 #   the evolution will quickly "forget" the nominal though as it prefers to find new solutions
@@ -136,7 +132,8 @@ def init_pop(dim,pop_size):
 #   read in from csv file, with header x0-x10, f0-f3
 #     for a 11 magnet, 4 objective case
 def read_pop(filename):
-    df = pd.read_csv(filename)
+    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+    df = pd.read_hdf(filename)
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim,out=outputFile))
     pop = pg.population(p_optimizeRes)
     nrow, ncol = df.shape
@@ -144,29 +141,46 @@ def read_pop(filename):
     for i in range(nrow):
         xs = []
         for j in range(magnet_dim):
-            xs.append(df["x"+str(j)][i]) 
+            xs.append(df["q"+str(j+1)][i]) 
         xs = np.asarray(xs)
         fs = []
         for j in range(ncol-magnet_dim):
-            fs.append(df["f"+str(j)][i])
+            fs.append(df[objectives[j]][i])
         pop.push_back(xs,f=fs)
     return pop    
+
+def save_pop(pop, db_out):
+    xs = pop.get_x()
+    fs = pop.get_f()
+    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+    quads = []
+    for i in range(magnet_dim):
+        quads.append("q{}".format(i+1))
+    columns = quads
+    for i in range(len(objectives)):
+        columns.append(objectives[i])
+    df = pd.DataFrame(np.hstack((xs, fs)), columns=columns)            
+    df.to_hdf(db_out,key='df')
+    
+    return    
 
 
 # when called from console (as the batch script will)
 if __name__=='__main__':
 
 
-    isExist = os.path.exists(SCRATCH_DIR)
-    if not isExist:
-        os.makedirs(SCRATCH_DIR)
+#    isExist = os.path.exists(SCRATCH_DIR)
+#    if not isExist:
+#        os.makedirs(SCRATCH_DIR)
 
     # if using a preexisting or want to pass an identical population
     #popi = init_pop(magnet_dim,84)
-    #popi = read_pop("init_pop.csv")
+    #popi = read_pop("../output/secar_4d_db_{}s.h5".format(int(batch_no)-1))
 
     # else just initialize and evolve random pop
     pop2 = main()
+    db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(batch_no)
+    save_pop(pop2, db_out)
 
-    shutil.move(outputFile, "{}{}".format(OUTPUT_DIR, fileName))
+#    shutil.move(outputFile, "{}{}".format(OUTPUT_DIR, fileName))
 #    os.rmdir(SCRATCH_DIR)
