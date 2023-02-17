@@ -11,3 +11,4 @@ COSY10.0/cosysh
 *.tar.gz
 *.pdf
 *results_*
+fox/COSY.bin
