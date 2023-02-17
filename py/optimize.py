@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #!/mnt/simulations/secarml/soft/anaconda3/bin/python
 #!/usr/bin/python3.7
 #!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
