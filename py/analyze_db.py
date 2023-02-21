@@ -1,21 +1,12 @@
 #!/usr/bin/env python3
 
-#!/mnt/simulations/secarml/soft/anaconda3/bin/python
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-
-# make sure above path points to the version of python where you have pygmo installed 
-# nscl servers
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-# hpcc servers
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
-
-
 #import commands
 import pandas as pd
 import numpy as np
 import os,sys
-from sklearn.cluster import KMeans
-from sklearn.metrics import pairwise_distances_argmin_min
+import utils
+
+configs = utils.load_configs()
 
 # set pandas view options to print everything
 #pd.set_option("max_rows", None)
@@ -27,67 +18,16 @@ OUTPUT_DIR = PYGMO_DIR + "output/"
 
 # only show best [#] since we get a lot of points
 show_best = 10
-kclusters = 4
+kclusters = configs['clusters']
+n_obj = configs['n_obj']
+objectives = configs['objectives']
 
-# function i found which constructs a pareto front from an input set of points
-def is_pareto_efficient_simple(costs):
-    """
-    Find the pareto-efficient points
-    :param costs: An (n_points, n_costs) array
-    :return: A (n_points, ) boolean array, indicating whether each point is Pareto efficient
-    """
-    is_efficient = np.ones(costs.shape[0], dtype = bool)
-    for i, c in enumerate(costs):
-#        print(i,c,is_efficient[i])
-        if is_efficient[i]:
-            is_efficient[is_efficient] = np.any(costs[is_efficient]<c, axis=1)  # Keep any point with a lower cost
-            is_efficient[i] = True  # And keep self
-    return is_efficient
-
-# kmeans algorithm
-def run_kmeans(df, magnet_dim=magnet_dim, clusters=clusters):
-
-    X = df.iloc[:,:magnet_dim]
-    kmeans = KMeans(n_clusters=clusters,random_state=0).fit(X)
-    closest, _ = pairwise_distances_argmin_min(kmeans.cluster_centers_, X)
-    df['kcluster'] = kmeans.labels_
-    df['closest'] = False
-    df.loc[closest,'closest'] = True
-
-    return df
-
-# expand a cluster into several more clusters
-def replace_cluster(df, replace_cluster_i):
-
-    # identify the cluster to be expanded
-    replace_cluster_i = 1
-    # select only these cluster points, and drop the cluster and closest id info
-    df2 = df.loc[df['kcluster']==replace_cluster_i]
-    df2 = df2.drop('kcluster',1) 
-    df2 = df2.drop('closest',1) 
-    df2 = df2.reset_index(drop=True)
-
-    # rerun a clustering on just this cluster
-    df2 = run_kmeans(df2, magnet_dim, kclusters)
-
-    # add the results back to the original df
-    df2['kcluster'] += 3
-    df = df.loc[df['kcluster'] != replace_cluster_i]
-    for i in range(3-replace_cluster_i):
-        df['kcluster'].mask(df['kcluster'] == (replace_cluster_i+i+1),replace_cluster_i+i,inplace=True) 
-    df = pd.concat([df,df2])
-    df = df.reset_index(drop=True)
-
-    return df
-
-def main(start_i=batch):
+def main(start_i=0):
 
     # specify database for input
-    db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(start_i)
+    db_out = OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj, start_i)
     # initialize empty df
     df = None
-    # list the objective names
-    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
     # read df
     if os.path.exists(db_out):
         print('opening existing db')
@@ -109,7 +49,7 @@ def main(start_i=batch):
     # get costs and pass to pareto function
     costs = df[objectives]
     costs = np.array(costs)
-    pareto = is_pareto_efficient_simple(costs)
+    pareto = utils.is_pareto_efficient_simple(costs)
     # add pareto column to df
     df['pareto'] = pareto
     print("pareto front points: {}".format(np.count_nonzero(pareto) ))
@@ -132,8 +72,8 @@ def main(start_i=batch):
     df_lin = df.copy()
     for i in range(magnet_dim):
         df_lin.iloc[:,i] = df_lin.iloc[:,i].apply(lambda x: np.power(2,x))
-    df = run_kmeans(df, magnet_dim, kclusters)
-    df_lin = run_kmeans(df_lin, magnet_dim, kclusters)
+    df = utils.run_kmeans(df, magnet_dim, kclusters)
+    df_lin = utils.run_kmeans(df_lin, magnet_dim, kclusters)
 
     print(df.loc[df['closest']==True], df_lin.loc[df_lin['closest']==True])
 
@@ -144,20 +84,30 @@ def main(start_i=batch):
     df = df_lin
 
     # print objective values for [show_best] number of points, sorted by FP4_BeamSpot
-    print(df.loc[:show_best,['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot','closest','ssobjs','kcluster']].sort_values(by=['ssobjs']))
+    show_cols = objectives
+    show_cols.append('closest')   
+    show_cols.append('ssobjs')
+    show_cols.append('kcluster')
+    print(df.loc[:show_best,show_cols].sort_values(by=['ssobjs']))
 
     # sort df by FP4_BeamSpot values, and reindex
-    df = df.sort_values(by='FP4_BeamSpot',ignore_index=True)
+    df = df.sort_values(by=objectives[-1],ignore_index=True)
+
+    RESULTS_DIR = "results_{}/".format(start_i)
+    isExist = os.path.exists(RESULTS_DIR)
+    if not isExist:
+        os.makedirs(RESULTS_DIR)
 
     # print the magnet scale factors for the best FP4_BeamSpot points
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','h1','h2','h3','o1']
-    (df.loc[df['closest']==True].iloc[:,:19]).round(5).to_csv('magnet_factors.csv',header=write_qnames,index=False)
+    (df.loc[df['closest']==True].iloc[:,:19]).round(5).to_csv(RESULTS_DIR+'magnet_factors.csv',header=write_qnames,index=False)
 
     # write only the magnet values and objective values to df
     df = df.drop('pareto',1)
-    df.to_hdf('best{}.h5'.format(start_i),key='df')
+    df_out = RESULTS_DIR+"best{}.h5".format(start_i)
+    df.to_hdf(df_out,key='df')
 
-    return
+    return df_out
 
 if __name__=='__main__':
     # input should give the batch number (i.e. the input to optimize.py)

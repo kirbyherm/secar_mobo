@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-#!/mnt/simulations/secarml/soft/anaconda3/bin/python
-
 # Import libraries,
 import numpy as np
 import matplotlib.pyplot as plt

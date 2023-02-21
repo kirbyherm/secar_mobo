@@ -3,15 +3,18 @@
 # import commands
 from cosy import cosyrun
 from numpy import array, zeros, multiply, power
+import utils 
+
+configs = utils.load_configs()
+fox_name = configs['fox_name']
+fNom = configs['fNominal']
+nobj = configs['n_obj']
 
 # set important directories
 PYGMO_DIR = '../'
 FOX_DIR = PYGMO_DIR + 'fox/'
 OUTPUT_DIR = PYGMO_DIR + 'output/'
-SCRATCH_DIR = '/scratch/hermanse'
-
-fox_name = 'SECAR_an_Optics'
-fNom = array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
+SCRATCH_DIR = configs['scratch_dir']
 
 # make pygmo problem 
 class optimizeRes:
@@ -36,7 +39,7 @@ class optimizeRes:
 
     # define number of objectives
     def get_nobj(self):
-        return 5
+        return nobj
 
     # define bounds of x values
     #   i.e. from -1 to 1 (powers of 2)

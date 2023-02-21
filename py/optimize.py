@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 
-#!/mnt/simulations/secarml/soft/anaconda3/bin/python
-#!/usr/bin/python3.7
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-
-# make sure above path points to the version of python where you have pygmo installed 
-# nscl servers
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-# hpcc servers
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
-
 #import commands
 import sys, math
 import os, shutil, signal
@@ -21,18 +11,25 @@ import matplotlib.pyplot as plt
 import time
 import itertools
 import timeit
+import pygmo as pg
+import pandas as pd
 
 from cosy import cosyrun 
-import pygmo as pg
 from problem import optimizeRes
-import pandas as pd
+import utils
+
+configs = utils.load_json()
+fox_name = configs['fox_name']
+fNom = configs['fNominal']
+n_obj = configs['n_obj']
+objectives = configs['objectives']
 
 #set important directories
 WORK_DIR = '../'
 OUTPUT_DIR = WORK_DIR + 'output/' 
-SCRATCH_DIR = '/scratch/hermanse'
+SCRATCH_DIR = configs['scratch_dir'] 
 
-# take batch_no as input from command line (this specifies outputFile)
+# take batch_no as input from command line (this specifies the output db)
 script, batch_no = sys.argv
 
 # set a specific seed for the algorithm
@@ -53,10 +50,7 @@ limit = 2 # max number of copies reinserted in the population if preserve_divers
 preserve_diversity=True # activates diversity preservation mechanisms
 
 # specify number of magnets to tune
-magnet_dim = 19 
-# specify output file
-fileName = "output_5f_moead_gen_{}_{}.csv".format(generations, batch_no)
-outputFile = "{}/{}".format(SCRATCH_DIR, fileName)
+magnet_dim = configs['magnet_dim']
 
 # main function
 def main(pop_init=None):
@@ -69,14 +63,10 @@ def main(pop_init=None):
     b = pg.bfe()
     alg_constructor.set_bfe(b)
     alg = pg.algorithm(alg_constructor)
-
-    # there should be a way to run batch_fitness evaluations, haven't gotten it to work on NSCL
-    NUMBER_OF_PROCESSES=10
-#    b.resize_pool(NUMBER_OF_PROCESSES)
     alg.set_verbosity(1)
     
     # initialize problem
-    p_optimizeRes = pg.problem(optimizeRes(magnet_dim, outputFile))
+    p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
 
     # relic from old evolutions, which launched all islands internally
     #   this can allow for interconnectivity between islands
@@ -95,7 +85,6 @@ def main(pop_init=None):
     pop_new = None
     if (pop_init==None):    
         # randomly create a new population of size pop_n
-#        pop_new = pg.population(p_optimizeRes, size=pop_n) 
         pop_new = pg.population(p_optimizeRes, size=pop_n, b=b) 
         print("initialize pop")
     else:
@@ -114,13 +103,14 @@ def main(pop_init=None):
     print(uda.get_log())
     return pop_final
 
+# deprecated function.....
 # if want to initialize a pop with a single nominal gene and random others
 #   the evolution will quickly "forget" the nominal though as it prefers to find new solutions
 def init_pop(dim,pop_size):
     qNom = np.zeros(dim)
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
-    pop = pg.population(prob=optimizeRes(dim,out=outputFile))
-    pop.push_back(x=qNom,f=np.zeros(p_optimizeRes.get_nobj()))#[0:dim])
+    pop = pg.population(prob=optimizeRes(dim))
+    pop.push_back(x=qNom,f=np.zeros(p_optimizeRes.get_nobj()))
     print(pop)
     print(pop.problem.get_fevals())
     pop.set_x(0,qNom)
@@ -131,12 +121,10 @@ def init_pop(dim,pop_size):
 
 
 # if want to read in a specific population (as from a previous run)
-#   read in from csv file, with header x0-x10, f0-f3
-#     for a 11 magnet, 4 objective case
+#   read in from h5 file, with specified objectives
 def read_pop(filename):
-    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
     df = pd.read_hdf(filename)
-    p_optimizeRes = pg.problem(optimizeRes(magnet_dim,out=outputFile))
+    p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
     pop = pg.population(p_optimizeRes)
     nrow, ncol = df.shape
     print(df)
@@ -151,10 +139,10 @@ def read_pop(filename):
         pop.push_back(xs,f=fs)
     return pop    
 
+# write population to h5 file
 def save_pop(pop, db_out):
     xs = pop.get_x()
     fs = pop.get_f()
-    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
     quads = []
     for i in range(magnet_dim):
         quads.append("q{}".format(i+1))
@@ -166,23 +154,29 @@ def save_pop(pop, db_out):
     
     return    
 
-
 # when called from console (as the batch script will)
 if __name__=='__main__':
 
 
-#    isExist = os.path.exists(SCRATCH_DIR)
-#    if not isExist:
-#        os.makedirs(SCRATCH_DIR)
+    on_fireside = utils.check_fireside()
+
+    if on_fireside:
+        shutil.rmtree(SCRATCH_DIR)
+        isExist = os.path.exists(SCRATCH_DIR)
+        if not isExist:
+            os.makedirs(SCRATCH_DIR)
+        shutil.copytree(FOX_DIR, SCRATCH_DIR+'/fox/')
 
     # if using a preexisting or want to pass an identical population
-    #popi = init_pop(magnet_dim,84)
-    #popi = read_pop("../output/secar_4d_db_{}s.h5".format(int(batch_no)-1))
+    # popi = read_pop(OUTPUT_DIR + "secar_4d_db_{}s.h5".format(int(batch_no)-1))
+    # pop2 = main(popi)
 
     # else just initialize and evolve random pop
     pop2 = main()
-    db_out = OUTPUT_DIR + "secar_4d_db_{}s.h5".format(batch_no)
+    db_out = OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj, batch_no)
     save_pop(pop2, db_out)
 
-#    shutil.move(outputFile, "{}{}".format(OUTPUT_DIR, fileName))
-#    os.rmdir(SCRATCH_DIR)
+    if on_fireside:
+        shutil.rmtree(SCRATCH_DIR)
+
+

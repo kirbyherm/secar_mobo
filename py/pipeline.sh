@@ -14,8 +14,7 @@ GENS=1000
 BATCH=510
 #BATCH=8
 
-#mkdir results_"$BATCH"
-./make_db.py $GENS $BATCH
+mkdir results_"$BATCH"
 ./analyze_db.py $BATCH
 mv magnet_factors.csv results_"$BATCH"/
 mv best"$BATCH".h5 results_"$BATCH"/
@@ -25,9 +24,11 @@ mv best"$BATCH".h5 results_"$BATCH"/
 ./draw_cluster_inverse.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
 ./plot_tsne.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
 #./plot_corr.py results_"$BATCH"/best"$BATCH".h5 results_280/best280.h5
+
 cd results_"$BATCH"
 cd profiles
 #
+
 for TOSSES in $(seq 0 1 4) 
 do
   cosy ./pygmoCosy"$TOSSES".fox > "$TOSSES".txt

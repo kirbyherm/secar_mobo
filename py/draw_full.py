@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 
-#!/mnt/simulations/secarml/soft/anaconda3/bin/python
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-
-# make sure above path points to the version of python where you have pygmo installed 
-# nscl servers
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-# hpcc servers
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
-
-
 #import commands
 import sys, math
 import os, shutil, signal
@@ -22,11 +12,13 @@ import matplotlib
 import time
 import itertools
 import timeit
-from cosy import cosyrun, write_fox
 import pygmo as pg
-from problem import optimizeRes
 import pandas as pd
 
+from cosy import cosyrun, write_fox
+from problem import optimizeRes
+import utils
+configs = utils.load_configs()
 # specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 #os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
@@ -34,7 +26,6 @@ plt.rcParams.update({
     "text.usetex": True,
 })
 
-script, filename, batch = sys.argv
 optimized_params = 5
 fNom = np.zeros(optimized_params)+1
 fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
@@ -508,10 +499,11 @@ def main(filename,batch):
     df = None
     if file_extension == ".h5":
         popi, df = read_pop_df(filename)
-    df_full = pd.read_hdf('../output/secar_4d_db_'+batch+'s.h5')
-    plot_hists(df_full, df, "results_"+batch+"/")
+    df_full = pd.read_hdf('../output/secar_{}d_db_{}s.h5'.format(configs['n_obj'],batch))
+    plot_hists(df_full, df, "results_{}/".format(batch))
 
 if __name__=='__main__':
+    script, filename, batch = sys.argv
     main(filename,batch)
 
 

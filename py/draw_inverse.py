@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 
-#!/mnt/simulations/secarml/soft/anaconda3/bin/python
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-
-# make sure above path points to the version of python where you have pygmo installed 
-# nscl servers
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-# hpcc servers
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
-
-
 #import commands
 import sys, math
 import os, shutil, signal

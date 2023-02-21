@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 
-#!/mnt/simulations/secarml/soft/anaconda3/bin/python
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-
-# make sure above path points to the version of python where you have pygmo installed 
-# nscl servers
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-# hpcc servers
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
-
-
 #import commands
 import sys, math
 import os, shutil, signal
@@ -193,7 +183,7 @@ def plot_4d(popi,filename,df):
 #    plt.savefig(filename + "_magnet_hists.png")
     return
 
-def main(df, df_compare, filename, PCA_run = False):
+def plot_pareto(df, df_compare, filename, PCA_run = False):
 #    df_compare = correct_obj_values(df_compare,filename)
     sort_param = 4
     number_of_clusters = np.max(df['kcluster']+1)
@@ -238,10 +228,7 @@ def main(df, df_compare, filename, PCA_run = False):
     axs[3].set_xlabel("DSSD_BeamSpot")
     plt.savefig(filename+'_inverse.png')
 
-
-if __name__=='__main__':
-
-    script, filename, filename_compare = sys.argv
+def main(filename, filename_compare):
     file_extension = os.path.splitext(filename)[-1]
     print(os.path.split(filename))
     popi = None
@@ -273,6 +260,12 @@ if __name__=='__main__':
         df_compare = df_compare.query(query_txt)
         filename=filename_compare
         PCA_run = True
-    main(df, df_compare, filename, PCA_run)
+    plot_pareto(df, df_compare, filename, PCA_run)
+
+if __name__=='__main__':
+
+    script, filename, filename_compare = sys.argv
+    main(filename, filename_compare)
+
 
 

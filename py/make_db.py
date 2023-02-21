@@ -1,14 +1,5 @@
 #!/usr/bin/env python3
 
-#!/mnt/simulations/secarml/soft/anaconda3/bin/python
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-
-# make sure above path points to the version of python where you have pygmo installed 
-# nscl servers
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-# hpcc servers
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
-
 # import commands
 import numpy as np
 import pandas as pd
@@ -22,7 +13,6 @@ population_size = 1001
 batch = 230
 # specify number of magnets
 magnet_dim = 19
-scale_factor = np.array([0.916096997902245,1.0682652577138,0.994493371138475,0.93966084500023,1.05275223744803,1.06042964393537,1.00437784795672,0.973641800379054,1.07533403645974,1.06881462007463,1.05902890235334,1.05329541257734,0.998902975441088,1.06217562289834,1.03384085684119,1.00944081324584, 0.944682833032244,0.937425053447303,1.0784587034454])
 
 def cut_data(df, objectives, max_obj):
     if type(max_obj) in [int,float]: max_obj = np.zeros(len(objectives))+max_obj

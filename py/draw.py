@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 
-#!/mnt/simulations/secarml/soft/anaconda3/bin/python
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-
-# make sure above path points to the version of python where you have pygmo installed 
-# nscl servers
-#!/mnt/misc/sw/x86_64/all/anaconda/python3.7/bin/python
-# hpcc servers
-#!/mnt/home/herman67/anaconda3/envs/pygmo/bin/python
-
-
 #import commands
 import sys, math
 import os, shutil, signal
@@ -17,17 +7,20 @@ import subprocess as commands
 import re
 import random
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
 import time
 import itertools
 import timeit
-from cosy import cosyrun, write_fox
 import pygmo as pg
+
+
+from cosy import cosyrun, write_fox
 from problem import optimizeRes
-import pandas as pd
-from kmeans_cluster import run_kmeans
-from view_db import is_pareto_efficient_simple
+from utils import run_kmeans, is_pareto_efficient_simple, load_configs
+
+configs = load_configs()
 
 # specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
@@ -36,14 +29,14 @@ plt.rcParams.update({
     "text.usetex": True,
 })
 
-script, filename = sys.argv
-optimized_params = 5
+optimized_params = configs['n_obj']
 fNom = np.zeros(optimized_params)+1
 fNames = [r"{FP1-res}${}^{-1}$",r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 #print(len(fNames))
-magnet_dim = 19
-objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+magnet_dim = configs['magnet_dim']
+objectives = configs['objectives']
+fox_name = configs['fox_name']
 
 fNom = np.array([2384.9360856494263, 109.61548781662407, 510.8029152516118, 1.6251646888022029, 0.12574090408565933])
 
@@ -252,8 +245,8 @@ def output_4d_cosy(popi,filename,df):
     qNew = np.array([1.0371301857113335,1.4897519431921593,0.5402003843384104,0.6080163749223835,0.5965351874518491,0.5279178522813484,0.8474952322221544,0.8290931192132953,0.7350223112146984,0.5049139345530922,0.969681779928563 ,0.8465270119223961,0.7261232553654523,0.6805787940919176,0.6772214286022437,1.6737045402403927,1.3151418622198896,0.8914897696929639,0.6144362243855045])
     qNew = np.zeros(19)+1
 #    qNew = np.array([0.82281,0.83116,0.94706,0.75348,0.64679,1.23591,2.51027,0.80262,0.8017,2.70642,1.20897,0.62487,0.38632,1.11944,0.86569,1.19812,1.64921,1.13609,0.28077])
-    write_fox((qNew), 0, PROFILES_PATH, 'SECAR_pg_Optics_draw.fox' )
-    write_fox((qNew), str(0)+"_DE", PROFILES_PATH, 'SECAR_pg_Optics_DE_draw.fox' )
+    write_fox((qNew), 0, PROFILES_PATH, '{}_draw.fox'.format(fox_name) )
+    write_fox((qNew), str(0)+"_DE", PROFILES_PATH, '{}_DE_draw.fox'.format(fox_name) )
 #    write_fox((qNew), str(0)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox' )
     count_dups = 0
 #    for i in range(1,len(sorted_ndf)+1):
@@ -270,8 +263,8 @@ def output_4d_cosy(popi,filename,df):
 #                    break
 #        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), plot_i, PROFILES_PATH, 'SECAR_an_Optics_draw.fox')
 #        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_an_Optics_DE_draw.fox')
-        write_fox(popi.get_x()[j], plot_i, PROFILES_PATH, 'SECAR_pg_Optics_draw.fox')
-        write_fox(popi.get_x()[j], str(plot_i)+"_DE", PROFILES_PATH, 'SECAR_pg_Optics_DE_draw.fox')
+        write_fox(popi.get_x()[j], plot_i, PROFILES_PATH, '{}_draw.fox'.format(fox_name))
+        write_fox(popi.get_x()[j], str(plot_i)+"_DE", PROFILES_PATH, '{}_DE_draw.fox'.format(fox_name))
 #        write_fox(np.power(np.zeros(magnet_dim)+2,popi.get_x()[j]), str(plot_i)+"_DE_FP1", PROFILES_PATH, 'SEC_neutrons_WF_off_DE_rays_v1_draw_FP1.fox')
         plot_i += 1
 #    print(len(sorted_ndf), count_dups)
@@ -507,6 +500,7 @@ def main(filename):
     plot_4d(popi,filename,df)
 
 if __name__=='__main__':
+    script, filename = sys.argv
     main(filename)
 
 
