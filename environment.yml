@@ -1,0 +1,11 @@
+name: secar_moead
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pandas
+  - numpy
+  - scikit-learn
+  - scipy
+  - matplotlib
+  - pygmo==2.19.0
