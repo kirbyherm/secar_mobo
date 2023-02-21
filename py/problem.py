@@ -40,18 +40,6 @@ class optimizeRes:
         pass_x = power(zeros(self.dim)+2.0,x)
         # run cosy
         resol = cosyrun(pass_x, fNom, fox_name)
-        # write output to file
-#        f = open(self.out,"a")
-        # write magnet values (as power of 2)
-#        for i in range(len(x)):
-#            f.write("{0},".format(x[i]))
-#        # write objective values (as ratio to nom)
-#        for i in range(len(resol)):
-#            if i == len(resol)-1:
-#                f.write("{0}\n".format(resol[i]))
-#            else: 
-#                f.write("{0},".format(resol[i]))
-#        f.close()
         # return objective values to evolve
         return resol
 
