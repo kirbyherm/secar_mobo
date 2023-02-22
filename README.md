@@ -74,17 +74,17 @@ all the interfacing between cosy and python is done here, so be sure to check th
 `./cosy.py` returns values which are == 1 or only off by a precision < 1e-7 or so
 
 
-`optimize.py`
+#### `optimize.py`
 defines main() which implements the pygmo archipelago and runs the optimization evolution
 (note that the archipelago can be a single island) 
 
-`pipeline.py`
+#### `pipeline.py`
 loads in all the necessary python scripts and runs them to generate and plot results
 
-`problem.py`
+#### `problem.py`
 defines a pygmo User-Defined Problem which calls cosyrun in its fitness evaluation 
 
-`utils.py`
+#### `utils.py`
 defines various useful functions, most notably providing the wrapper to read in the `config.json` file    
 
 ### Drawing scripts :
@@ -92,7 +92,7 @@ defines various useful functions, most notably providing the wrapper to read in 
 Several different `draw*.py` scripts exist, in various states of clarity.
 I will continue to try to clean and comment these but they are less important than the analysis scripts
 
-`draw.py`
+#### `draw.py`
 defines a method for plotting the results
 requires an argument of the file to be analyzed 
 e.g. run with:  
@@ -103,13 +103,13 @@ e.g. run with:
     
 all the bash scripts for submitting jobs to fireside are here
 
-`analysis_job.sh`
+#### `analysis_job.sh`
 launches a job for `pca.py`, generating the pca points
 
-slurmfiles/ :
+#### slurmfiles/ :
 try to write out the sbatch logs to this file so they can be easily stored and cleaned as necessary
 
-`submit_job.sh`
+#### `submit_job.sh`
 launches a job for `optimize.py`
         
 
@@ -117,14 +117,14 @@ launches a job for `optimize.py`
 
 results are no longer stored to csv, and so making them into a pandas df is trivial
 
-`make_db.py`  
+#### `make_db.py`  
 defines a method for constructing a pandas hdf5 database from the csv results
 db to be made is specified within the code 
 
 ## Notes:
 
-assuming python3 is installed with conda and 
-$ which python3
-points to the correct version all scripts can simply be made executable and called with:
-$ ./[script name] [args] 
+assuming python3 is installed with conda and  
+`which python3`  
+points to the correct version all scripts can simply be made executable and called with:  
+`./[script name] [args] `
     
