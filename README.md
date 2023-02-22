@@ -53,17 +53,19 @@ see `cosy.py` for specifics
 
 ### py/ : 
 
-`analyze_db.py`
+#### `analyze_db.py`
 
 defines a method to read the hdf5 db and write only values which are on the pareto front and are less than `max_obj` to a separate db
 also runs a kmeans-clustering algorithm on the db to generate clusters of points  
 
-`config.json`
+#### `config.json`
+
 specifies most of the variables needed for running the full process
 comments don't exist in json so additional keys like `fNominalan` and `fNominalpg` are unused 
 they are simply there to hold the values 
 
-`cosy.py`
+#### `cosy.py`
+
 defines cosyrun(input) that runs a COSY simulation given input magnet settings 
 and returns a set of objective values
 assumes cosy is installed and can be run with:
