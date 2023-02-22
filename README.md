@@ -55,73 +55,74 @@ see `cosy.py` for specifics
 
 `analyze_db.py`
 
-defines a method to read the hdf5 db and write only values which are on the pareto front and are less than max_obj to a separate db
-also runs a kmeans_clustering algorithm on the db to generate clusters of points  
+defines a method to read the hdf5 db and write only values which are on the pareto front and are less than `max_obj` to a separate db
+also runs a kmeans-clustering algorithm on the db to generate clusters of points  
 
 `config.json`
-    specifies most of the variables needed for running the full process
-    comments don't exist in json so additional keys like "fNominalan" and "fNominalpg" are unused 
-        they are simply there to hold the values 
+specifies most of the variables needed for running the full process
+comments don't exist in json so additional keys like `fNominalan` and `fNominalpg` are unused 
+they are simply there to hold the values 
 
-cosy.py 
-    defines cosyrun(input) that runs a COSY simulation given input magnet settings 
-        and returns a set of objective values
-    assumes cosy is installed and can be run with:
-        cosy foxFile.fox
-    all the interfacing between cosy and python is done here, so be sure to check that, given a specified reaction type and fNominal values, 
-        ./cosy.py returns values which are == 1 or only off by a precision < 1e-7 or so
+`cosy.py`
+defines cosyrun(input) that runs a COSY simulation given input magnet settings 
+and returns a set of objective values
+assumes cosy is installed and can be run with:
+`cosy foxFile.fox`
+all the interfacing between cosy and python is done here, so be sure to check that, given a specified reaction type and fNominal values, 
+`./cosy.py` returns values which are == 1 or only off by a precision < 1e-7 or so
 
 
-optimize.py
-    defines main() which implements the pygmo archipelago and runs the optimization evolution
-        (note that the archipelago can be a single island) 
+`optimize.py`
+defines main() which implements the pygmo archipelago and runs the optimization evolution
+(note that the archipelago can be a single island) 
 
-pipeline.py
-    loads in all the necessary python scripts and runs them to generate and plot results
+`pipeline.py`
+loads in all the necessary python scripts and runs them to generate and plot results
 
-problem.py 
-    defines a pygmo User-Defined Problem which calls cosyrun in its fitness evaluation 
+`problem.py`
+defines a pygmo User-Defined Problem which calls cosyrun in its fitness evaluation 
 
-utils.py
-    defines various useful functions, most notably providing the wrapper to read in the config.json file    
+`utils.py`
+defines various useful functions, most notably providing the wrapper to read in the `config.json` file    
 
 ### Drawing scripts :
 
-    Several different draw*.py scripts exist, in various states of clarity.
-    I will continue to try to clean and comment these but they are less important than the analysis scripts
- 
-    draw.py
-        defines a method for plotting the results
-        requires an argument of the file to be analyzed 
-        e.g. run with:
-            ./draw.py ../output/outputFileName.csv    
+Several different `draw*.py` scripts exist, in various states of clarity.
+I will continue to try to clean and comment these but they are less important than the analysis scripts
+
+`draw.py`
+defines a method for plotting the results
+requires an argument of the file to be analyzed 
+e.g. run with:  
+`./draw.py ../output/outputFileName.csv`
 
 
 ### sh/ :
     
-    all the bash scripts for submitting jobs to fireside are here
-    
-    analysis_job.sh
-        launches a job for pca.py, generating the pca points
-    
-    slurmfiles/ :
-        try to write out the sbatch logs to this file so they can be easily stored and cleaned as necessary
+all the bash scripts for submitting jobs to fireside are here
 
-    submit_job.sh
-        launches a job for optimize.py
+`analysis_job.sh`
+launches a job for `pca.py`, generating the pca points
+
+slurmfiles/ :
+try to write out the sbatch logs to this file so they can be easily stored and cleaned as necessary
+
+`submit_job.sh`
+launches a job for `optimize.py`
         
 
 ## Deprecated scripts:    
 
-    results are no longer stored to csv, and so making them into a pandas df is trivial
-    make_db.py
-        defines a method for constructing a pandas hdf5 database from the csv results
-        db to be made is specified within the code 
+results are no longer stored to csv, and so making them into a pandas df is trivial
+
+`make_db.py`  
+defines a method for constructing a pandas hdf5 database from the csv results
+db to be made is specified within the code 
 
 ## Notes:
 
-    assuming python3 is installed with conda and 
-    $ which python3 
-    points to the correct version all scripts can simply be made executable and called with:
-    $ ./[script name] [args] 
+assuming python3 is installed with conda and 
+$ which python3
+points to the correct version all scripts can simply be made executable and called with:
+$ ./[script name] [args] 
     
