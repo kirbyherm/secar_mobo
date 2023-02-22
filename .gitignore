@@ -1,7 +1,8 @@
 *__pycache__*
-slurmfiles/
+sh/slurmfiles/*.txt
 fox/pygmoCosy*
-output/
+output/*.h5
+output/*.csv
 *.png
 *RKLOG.DAT
 *.lis

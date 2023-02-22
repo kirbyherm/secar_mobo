@@ -18,7 +18,7 @@ from cosy import cosyrun
 from problem import optimizeRes
 import utils
 
-configs = utils.load_json()
+configs = utils.load_configs()
 fox_name = configs['fox_name']
 fNom = configs['fNominal']
 n_obj = configs['n_obj']
@@ -28,6 +28,7 @@ objectives = configs['objectives']
 WORK_DIR = '../'
 OUTPUT_DIR = WORK_DIR + 'output/' 
 SCRATCH_DIR = configs['scratch_dir'] 
+FOX_DIR = WORK_DIR + 'fox/' 
 
 # take batch_no as input from command line (this specifies the output db)
 script, batch_no = sys.argv
@@ -168,11 +169,11 @@ if __name__=='__main__':
         shutil.copytree(FOX_DIR, SCRATCH_DIR+'/fox/')
 
     # if using a preexisting or want to pass an identical population
-    # popi = read_pop(OUTPUT_DIR + "secar_4d_db_{}s.h5".format(int(batch_no)-1))
-    # pop2 = main(popi)
+    popi = read_pop(OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj, int(batch_no)-1))
+    pop2 = main(popi)
 
     # else just initialize and evolve random pop
-    pop2 = main()
+    #pop2 = main()
     db_out = OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj, batch_no)
     save_pop(pop2, db_out)
 

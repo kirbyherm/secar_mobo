@@ -1,13 +1,16 @@
 {
 
     "scratch_dir": "/scratch/hermanse/",
-    "fox_name": "SECAR_an_Optics",
+    "fox_name": "SECAR_pg_Optics",
     "n_obj": 5,    
     "objectives": ["FP1_res","FP2_res","FP3_res","MaxBeamWidth","FP4_BeamSpot"],
-    "fNominal": [0.41929845, 9.12279843, 1.95770222, 1.6251646888022029, 0.12574090408565933],
-    "fNominalpg": [0.00812366536, 6.90333129, 9.51620352, 1.01742565, 0.0502221220],
+    "fNominal": [0.00812366536, 6.90333129, 9.51620352, 1.01742565, 0.0502221220],
     "magnet_dim": 19,    
-    "clusters": 4     
+    "clusters": 4,
+
+    "additional_values": "unused comments below",
+    "fNominalan": [0.41929845, 9.12279843, 1.95770222, 1.6251646888022029, 0.12574090408565933],
+    "fNominalpg": [0.00812366536, 6.90333129, 9.51620352, 1.01742565, 0.0502221220]
 
 }
 

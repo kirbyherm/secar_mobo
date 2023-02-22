@@ -56,7 +56,7 @@ def main(start_i=0):
 if __name__=='__main__':
     # input should give the batch number (i.e. the input to optimize.py)
     inputs = sys.argv
-    batch = 470
+    batch = 568
     print(inputs)
     if len(inputs) > 1:
         batch = int(inputs[1])

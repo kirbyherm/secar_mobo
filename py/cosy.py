@@ -275,10 +275,10 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
         resol = zeros(objs)+scale         
 
     # remove old cosy fox and lis file
-    commands.run(['rm','-f',cosyFilename])
-    commands.run(['rm','-f',lisFilename])
-    commands.run(['rm','-f',cosyFilename2])
-    commands.run(['rm','-f',lisFilename2])
+    os.remove(cosyFilename)
+    os.remove(lisFilename)
+    os.remove(cosyFilename2)
+    os.remove(lisFilename2)
 
     # return the objective values
     return (resol)
