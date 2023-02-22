@@ -2,63 +2,63 @@
 
 ## Requirements:
 
-    pygmo
-    pandas
-    numpy
-    matplotlib
-    scikit-learn
-    (a variety of other py packages are imported, but most should be preinstalled)
+pygmo  
+pandas  
+numpy  
+matplotlib  
+scikit-learn  
+(a variety of other py packages are imported, but most should be preinstalled)
     
-    the python packages can be easily installed with conda using:
-    $ conda env create -f environment.yml
-    then activate with:
-    $ conda activate secar_moead
+the python packages can be easily installed with conda using: 
+`conda env create -f environment.yml`  
+then activate with:  
+`conda activate secar_moead`
 
-    Additionally, change the INCLUDE path in the header of the fox files in the ./fox/ directory to point to the location of COSY.bin
+Additionally, change the INCLUDE path in the header of the fox files in the `./fox/` directory to point to the location of COSY.bin
 
 ## Files:
 
 ### COSY10.0/ :
     
-directory holding all of the necessary scripts and binaries for executing cosy. 
+directory holding all of the necessary scripts and binaries for executing cosy 
 
 if cosy is already installed on your system you can ignore this and simply use your version
-    presuming you update the fox files to use the correct INCLUDE path and change COSY_DIR in python scripts
+presuming you update the fox files to use the correct `INCLUDE` path and change `COSY_DIR` in python scripts
 
 ### fox/ :
 
 contains all the fox files necessary for running the optimization
 
-files should resemble SECAR_pg_Optics.fox, SECAR_pg_Optics_DE.fox
-or                    SECAR_an_Optics.fox, SECAR_an_Optics_DE.fox
-    SECAR_pg_Optics.fox specifies the optics of just the recoils through SECAR
-        and prints out the dimensions at each element in addition to the dimensions for the objectives
-            in this case that is the X width at each FP1, 2, 3, and the beam spot size on the DSSD
-    SECAR_pg_Optics_DE.fox specifies the optics of the unreacted beam (or whatever contaminant you'd like to separate) through SECAR
-        and prints out the location of the contaminant for each objective
-            in this case the separation at FP1, 2, 3 
+files should resemble `SECAR_pg_Optics.fox`, `SECAR_pg_Optics_DE.fox`,  
+or `SECAR_an_Optics.fox, SECAR_an_Optics_DE.fox`
+`SECAR_pg_Optics.fox` specifies the optics of just the recoils through SECAR
+and prints out the dimensions at each element in addition to the dimensions for the objectives
+in this case that is the X width at each FP1, 2, 3, and the beam spot size on the DSSD
+`SECAR_pg_Optics_DE.fox` specifies the optics of the unreacted beam (or whatever contaminant you'd like to separate) through SECAR
+    and prints out the location of the contaminant for each objective
+        in this case the separation at FP1, 2, 3 
 
-change fox_name in config.json to match the base name of your desired fox file (i.e. SECAR_pg_Optics)
+change `fox_name` in config.json to match the base name of your desired fox file (i.e. ``SECAR_pg_Optics``)
 
 as above, be sure to update the INCLUDE path in the header of the fox files to point to the location of COSY.bin
 
 most importantly, any new fox files need to print out X and Y dimensions at every element of the beamline
-    see cosy.py header, specifically the variables magnet_names and magnet_dims for the elements, or else use SECAR_pg_Optics.fox as a guide
+see `cosy.py` header, specifically the variables `magnet_names` and `magnet_dims` for the elements, or else use `SECAR_pg_Optics.fox` as a guide
 
-both the files must also print out the desired objective values at their locations, for SECAR_pg_Optics.fox and SECAR_pg_Optics_DE.fox
-    that means the recoil widths and contaminant separations at FP1, 2, 3 and the recoil beam spot size at the DSSD
+both the files must also print out the desired objective values at their locations, for `SECAR_pg_Optics.fox` and `SECAR_pg_Optics_DE.fox`
+that means the recoil widths and contaminant separations at FP1, 2, 3 and the recoil beam spot size at the DSSD
 
-the MaxBeamWidth is then calculated by taking the largest width of the recoils relative to the width of each element
-    see cosy.py for specifics
+the `MaxBeamWidth` is then calculated by taking the largest width of the recoils relative to the width of each element
+see `cosy.py` for specifics
 
 ### py/ : 
 
-analyze_db.py
+`analyze_db.py`
 
 defines a method to read the hdf5 db and write only values which are on the pareto front and are less than max_obj to a separate db
 also runs a kmeans_clustering algorithm on the db to generate clusters of points  
 
-config.json
+`config.json`
     specifies most of the variables needed for running the full process
     comments don't exist in json so additional keys like "fNominalan" and "fNominalpg" are unused 
         they are simply there to hold the values 
