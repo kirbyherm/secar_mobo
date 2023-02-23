@@ -147,6 +147,7 @@ def main():
     #    cosyrun(x1.iloc[0,:])
     dataPCA.to_hdf('results_{}/best{}PCA.h5'.format(results_no,results_no),key='df')
     draw_cluster.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
+    dataPCA.to_hdf('../output/secar_4d_db_{}s_PCA.h5'.format(results_no,results_no),key='df')
 #    print(x1.iloc[0,:],X[0,:],Xhat[0,:])
 #    draw_pca(pca, x1)
     return     

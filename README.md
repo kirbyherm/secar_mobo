@@ -78,6 +78,9 @@ all the interfacing between cosy and python is done here, so be sure to check th
 defines main() which implements the pygmo archipelago and runs the optimization evolution
 (note that the archipelago can be a single island) 
 
+#### `pca.py`
+runs a pca on the specified results and then generates a number of random points using those components
+
 #### `pipeline.py`
 loads in all the necessary python scripts and runs them to generate and plot results
 
@@ -120,6 +123,9 @@ results are no longer stored to csv, and so making them into a pandas df is triv
 #### `make_db.py`  
 defines a method for constructing a pandas hdf5 database from the csv results
 db to be made is specified within the code 
+
+#### `pipeline.sh`  
+basic pipelining done in bash, updated to the `pipeline.py` script
 
 ## Notes:
 

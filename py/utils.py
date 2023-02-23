@@ -3,7 +3,7 @@
 #import commands
 import pandas as pd
 import numpy as np
-import os,sys
+import os,sys,copy
 from sklearn.cluster import KMeans
 from sklearn.metrics import pairwise_distances_argmin_min
 import json
@@ -17,11 +17,14 @@ def load_configs(configFile = 'config.json'):
     keys = list(configs.keys())
     for i in range(len(keys)):
         if keys[i]=='fNominal':
-#            tempNom = json.loads(configs['fNominal'])
             tempNom = configs['fNominal']
+            plotNom = copy.deepcopy(tempNom)
             for j in range(len(tempNom)):
                 if j < 3:
                     tempNom[j] = 1/tempNom[j]
+                if j == 4:
+                    plotNom[j] = 100 * plotNom[j]
+            configDict['fNominal_plot'] = plotNom
             configDict['fNominal'] = tempNom
         else:
             configDict[keys[i]] = configs[keys[i]]
