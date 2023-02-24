@@ -16,9 +16,9 @@ import pandas as pd
 
 from cosy import cosyrun 
 from problem import optimizeRes
-import utils
+import secar_utils as secar_utils
 
-configs = utils.load_configs()
+configs = secar_utils.load_configs()
 fox_name = configs['fox_name']
 fNom = configs['fNominal']
 n_obj = configs['n_obj']
@@ -159,7 +159,7 @@ def save_pop(pop, db_out):
 if __name__=='__main__':
 
 
-    on_fireside = utils.check_fireside()
+    on_fireside = secar_utils.check_fireside()
 
     if on_fireside:
         shutil.rmtree(SCRATCH_DIR)

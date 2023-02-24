@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+import secar_utils as secar_utils
+import make_profiles, draw_cluster_inverse
+import draw_full, analyze_db, plot_tsne
+
 #import commands
 import pandas as pd
 import numpy as np
@@ -7,10 +11,7 @@ import os,sys
 import subprocess as commands
 import shutil
 
-import utils, draw, draw_cluster_inverse
-import draw_full, analyze_db, plot_tsne
-
-configs = utils.load_configs()
+configs = secar_utils.load_configs()
 
 # set pandas view options to print everything
 #pd.set_option("max_rows", None)
@@ -30,7 +31,7 @@ objectives = configs['objectives']
 def main(start_i=0):
 
     results_h5 = analyze_db.main(start_i)
-    draw.main(results_h5)
+    make_profiles.main(results_h5)
     draw_full.main(results_h5, start_i)
     draw_cluster_inverse.main(results_h5, results_h5) 
     draw_cluster_inverse.main(results_h5, results_h5) 

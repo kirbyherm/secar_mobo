@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
+from sklearn.cluster import KMeans
+from sklearn.metrics import pairwise_distances_argmin_min
+
 #import commands
 import pandas as pd
 import numpy as np
 import os,sys,copy
-from sklearn.cluster import KMeans
-from sklearn.metrics import pairwise_distances_argmin_min
 import json
 import subprocess as commands
 

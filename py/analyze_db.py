@@ -4,9 +4,9 @@
 import pandas as pd
 import numpy as np
 import os,sys
-import utils
+import secar_utils as secar_utils
 
-configs = utils.load_configs()
+configs = secar_utils.load_configs()
 
 # set pandas view options to print everything
 #pd.set_option("max_rows", None)
@@ -49,7 +49,7 @@ def main(start_i=0):
     # get costs and pass to pareto function
     costs = df[objectives]
     costs = np.array(costs)
-    pareto = utils.is_pareto_efficient_simple(costs)
+    pareto = secar_utils.is_pareto_efficient_simple(costs)
     # add pareto column to df
     df['pareto'] = pareto
     print("pareto front points: {}".format(np.count_nonzero(pareto) ))
@@ -72,8 +72,8 @@ def main(start_i=0):
     df_lin = df.copy()
     for i in range(magnet_dim):
         df_lin.iloc[:,i] = df_lin.iloc[:,i].apply(lambda x: np.power(2,x))
-    df = utils.run_kmeans(df, magnet_dim, kclusters)
-    df_lin = utils.run_kmeans(df_lin, magnet_dim, kclusters)
+    df = secar_utils.run_kmeans(df, magnet_dim, kclusters)
+    df_lin = secar_utils.run_kmeans(df_lin, magnet_dim, kclusters)
 
     print(df.loc[df['closest']==True], df_lin.loc[df_lin['closest']==True])
 
@@ -103,7 +103,7 @@ def main(start_i=0):
     (df.loc[df['closest']==True].iloc[:,:19]).round(5).to_csv(RESULTS_DIR+'magnet_factors.csv',header=write_qnames,index=False)
 
     # write only the magnet values and objective values to df
-    df = df.drop('pareto',1)
+    df = df.drop('pareto',axis=1)
     df_out = RESULTS_DIR+"best{}.h5".format(start_i)
     df.to_hdf(df_out,key='df')
 

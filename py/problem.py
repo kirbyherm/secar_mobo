@@ -3,9 +3,9 @@
 # import commands
 from cosy import cosyrun
 from numpy import array, zeros, multiply, power
-import utils 
+import secar_utils as secar_utils 
 
-configs = utils.load_configs()
+configs = secar_utils.load_configs()
 fox_name = configs['fox_name']
 fNom = configs['fNominal']
 nobj = configs['n_obj']

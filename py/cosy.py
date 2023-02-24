@@ -9,8 +9,8 @@ from numpy.random import random as rng
 from numpy import array, append, zeros, power, isnan
 import timeit
 
-import utils
-configs = utils.load_configs()
+import secar_utils as secar_utils
+configs = secar_utils.load_configs()
 
 magnet_names = array(["Q1", "Q2", "B1", "B2", "HEX1", "Q3", "Q4", "Q5", "B3", "B4", "HEX2", "Q6", "Q7", "HEX3", "OCT1", "Q8", "Q9", "B5", "B6", "Q10", "Q11", "Q12", "Q13", "B7", "B8", "Q14", "Q15", "UMCP", "Viewer"])
 # define the dimensions of the magnet chambers
@@ -25,7 +25,7 @@ FOX_DIR = PYGMO_DIR + 'fox/'
 COSY_DIR = PYGMO_DIR + 'COSY10.0/'
 SCRATCH_DIR = configs['scratch_dir']
 
-on_fireside = utils.check_fireside()
+on_fireside = secar_utils.check_fireside()
 if on_fireside:
     FOX_DIR = SCRATCH_DIR + 'fox/'
     isExist = os.path.exists(FOX_DIR)

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import secar_utils as secar_utils
+
 #import commands
 import sys, math
 import os, shutil, signal
@@ -12,14 +14,12 @@ import matplotlib
 import time
 import itertools
 import timeit
-
-from cosy import cosyrun, write_fox
-import pygmo as pg
-from problem import optimizeRes
 import pandas as pd
-import utils 
+import pygmo as pg
 
-configs = utils.load_configs()
+from problem import optimizeRes
+
+configs = secar_utils.load_configs()
 
 kclusters = configs['clusters']
 optimized_params = configs['n_obj']
@@ -35,15 +35,16 @@ os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/
 #})
 
 # set pandas view options to print everything
-pd.set_option("max_rows", None)
-pd.set_option("max_columns", None)
+#pd.set_option("max_rows", None)
+#pd.set_option("max_columns", None)
 
+# deprecated function that was used to scale the obj values for different batches
 def correct_obj_values(df, filename):
 
     
     df = df.loc[df['closest']==True]
-    objs =  ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
-    nclusters = max(df['kcluster']+1) 
+    objs = objectives
+    nclusters = kclusters
     x1 = np.array([0.4149030189991541, 1.024219663615905, 0.32276368444381337, 0.28454926622496207, 0.13051896098280003])
     x2 = np.append(x1,[0.40651582802980557, 0.9107875198036088, 0.24913824216441277, 3.9806676668358776, 3.808775729951597])
     x3 = np.append(x2,[0.4162521335795522, 0.9444542701708413, 0.5153166810864698, 0.19393722897375568, 0.1705774768981977])
@@ -78,8 +79,6 @@ def read_pop_df(filename, pop=None):
         xs = np.asarray(xs)
         fs = []
         for j in range(magnet_dim,magnet_dim+nobj):
-#            if i == 0:
-#                print(df.iloc[i,magnet_dim:magnet_dim+p_optimizeRes.get_nobj()])
             fs.append(df.iloc[i,j])
         if append:
             pop.push_back(xs,f=fs)
@@ -91,21 +90,17 @@ def plot_pareto(df, df_compare, filename, PCA_run = False):
     number_of_clusters = np.max(df['kcluster']+1)
     colors = np.array(list(plt.get_cmap('tab20').colors)).reshape(-1,3)
     print(colors, colors.shape, np.array(colors[0]).reshape(3))
-    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
     j = 0
     plot_x, plot_y = 0,0
     fig, axs = plt.subplots(optimized_params-1,sharex=True)
     fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at DSSD')
     axs[3].set_xlabel("DSSD_BeamSpot")
-    for obj in ['FP1_res','FP2_res','FP3_res','MaxBeamWidth']:
+    for obj in objectives[:-1]:
         df.plot(x='FP4_BeamSpot',y=obj,style='o',ax=axs[plot_y],markersize=3.0,legend=False)
         if "closest" in df.columns:
             df_closest = df.loc[df['closest']==True]
             df_closest = df_closest.reset_index(drop=True)
-#            print(df_closest.iloc[:,15:19])
-            df_closest.plot(x='FP4_BeamSpot',y=obj,style='o',ax=axs[plot_y],markersize=3.0,legend=False)
-#            for i_closest in df_closest.index:
-#                axs[plot_y].text(df_closest.iloc[:,magnet_dim+sort_param][i_closest],df_closest.iloc[:,magnet_dim+j][i_closest],str(i_closest+1),color='black')
+            df_closest.plot(x=objectives[-1],y=obj,style='o',ax=axs[plot_y],markersize=3.0,legend=False)
         axs[plot_y].axes.set_ylabel(obj)
         axs[plot_y].axvline(x=fNom[-1],linestyle="dashed",color="red")
         axs[plot_y].axhline(y=fNom[j],linestyle="dashed",color="red")
@@ -123,40 +118,29 @@ def plot_pareto(df, df_compare, filename, PCA_run = False):
             colors_x[0,0] = 2
         print(colors_x)
         axs[plot_y].pcolormesh(xlims, ylims, colors_x, cmap=cmap)
-#        plt.savefig(filename+'_'+obj+'_inverse.png')
         j += 1
         plot_y += 1
 
-#    fig.tight_layout()
     axs[0].set_ylabel("FP1 Res.")
     axs[1].set_ylabel("FP2 Res.")
     axs[2].set_ylabel("FP3 Res.")
     axs[3].set_xlabel("DSSD Beamspot (cm)")
-    plt.savefig(filename+'_inverse.png')
+    plt.savefig(filename+'_pareto.png')
 
 def main(filename, filename_compare):
     file_extension = os.path.splitext(filename)[-1]
     print(os.path.split(filename))
     popi = None
     print("reading {} file".format(file_extension))
-#    if file_extension == ".h5":
-#        popi, df_list = read_pop_df(filename)
-#    for df in df_list:
-#        plot_4d(popi,filename,df)
-
     df = pd.read_hdf(filename)
 #    df_compare = pd.read_hdf(filename_compare)
     df_compare = pd.read_hdf(filename)
     PCA_run = False
-    print(fNom)
     for i in range(len(objectives)):
         if i < 3:
             df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] / x)
-        elif i == 3:
-            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] * x)
         else:
             df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] * x)
-    print(df[objectives])
     
     if 'PCA' in filename_compare:
         query_txt = '' 
