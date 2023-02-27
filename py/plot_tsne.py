@@ -9,6 +9,11 @@ from matplotlib.ticker import NullFormatter
 from sklearn import manifold, datasets
 from time import time
 
+from secar_utils import load_configs
+
+configs = load_configs('config.json')
+kclusters = configs['clusters']
+
 n_samples = 150
 n_components = 2
 
@@ -118,6 +123,7 @@ def plot_tsne(filename,filename_compare):
 
 def plot_tsne_linear(filename,filename_compare):
 
+    print("\nRunning a tsne analysis to see how well the points can be separated into the {} clusters\n".format(kclusters))
     (fig, subplots) = plt.subplots(3, 3, figsize=(8, 8))
     perplexity = 30
     perplexities = [perplexity]
@@ -220,10 +226,10 @@ def plot_tsne_linear(filename,filename_compare):
 #                continue
             ax.scatter(Y[clusters[j],0], Y[clusters[j],1], c=np.array(colors[j+1]).reshape(1,-1))
 #            ax.scatter(Y_compare[clusters_compare[j],0], Y_compare[clusters_compare[j],1], c=np.array(colors[j+5]).reshape(1,-1))
-        for k, txt in enumerate(y[close]):
+#        for k, txt in enumerate(y[close]):
 #            if k < 3:
 #                continue
-            print(k,txt)
+#            print(k,txt)
 #            ax.annotate(txt+1, (Y[close,0][txt], Y[close,1][txt]))
 #            ax.annotate("{}c".format(txt+1), (Y_compare[close_compare,0][txt], Y_compare[close_compare,1][txt]))
         ax.xaxis.set_major_formatter(NullFormatter())

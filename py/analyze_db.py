@@ -10,7 +10,11 @@ configs = secar_utils.load_configs()
 
 # set pandas view options to print everything
 #pd.set_option("max_rows", None)
-#pd.set_option("max_columns", None)
+pd.set_option("max_columns", None)
+
+# i spent an hour trying to debug `SettingWithCopyError` warnings and nothing worked despite me using proper df.loc[:, colname] syntax so i'm suppressing it
+# read here if you want: https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas
+pd.options.mode.chained_assignment = None
 
 # set important directories and files
 PYGMO_DIR = "../"
@@ -24,8 +28,11 @@ objectives = configs['objectives']
 
 def main(start_i=0):
 
+    max_obj = 10.5
     # specify database for input
     db_out = OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj, start_i)
+
+    print("\nReading in database from {}, running kmeans for {} clusters, filtering results < {}\n".format(db_out,kclusters, max_obj))
     # initialize empty df
     df = None
     # read df
@@ -38,9 +45,11 @@ def main(start_i=0):
     
     # restrict the df to only the points that fit the problem constraints
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
-    max_obj = 3
     query_txt = '' 
+    df = (df.loc[(df[objectives[0]]<=100.0)])
     for i in range(len(objectives)):
+        if i == 0:
+            continue
         query_txt += objectives[i] + "<{}".format(max_obj)
         if i < len(objectives)-1:
             query_txt+="&"
@@ -49,23 +58,24 @@ def main(start_i=0):
     # get costs and pass to pareto function
     costs = df[objectives]
     costs = np.array(costs)
-    pareto = secar_utils.is_pareto_efficient_simple(costs)
+    pareto_val = pd.Series(secar_utils.is_pareto_efficient_simple(costs))
     # add pareto column to df
-    df['pareto'] = pareto
-    print("pareto front points: {}".format(np.count_nonzero(pareto) ))
+    df.reset_index(drop=True, inplace=True)
+    df.loc[:, ['pareto']]=pareto_val
+    print("pareto front points: {}".format(np.count_nonzero(pareto_val) ))
     # restrict df to only those points on the pareto front
     df = (df.loc[(df['pareto']==True)])
-    df = df.reset_index(drop=True)
+    df.reset_index(drop=True, inplace=True)
 
     # additional code which provides an alternate way of sorting/filtering df, based on sum-squares of objs
     df_objs = df[objectives]
-    df_objs['ssobjs'] = (df_objs**2).sum(axis=1)
-    df['ssobjs'] = df_objs['ssobjs']
+    df_objs.loc[:, 'ssobjs'] = (df_objs**2).sum(axis=1)
+    df.loc[:, 'ssobjs'] = df_objs['ssobjs']
     df = df.sort_values(by='ssobjs',ignore_index=True)
 
     quads = df.columns
     for q in range(len(quads)):
-        print(q, quads[q])
+#        print(q, quads[q])
         if "q" in quads[q]:
             magnet_dim = q+1
 
@@ -75,20 +85,20 @@ def main(start_i=0):
     df = secar_utils.run_kmeans(df, magnet_dim, kclusters)
     df_lin = secar_utils.run_kmeans(df_lin, magnet_dim, kclusters)
 
-    print(df.loc[df['closest']==True], df_lin.loc[df_lin['closest']==True])
-
     # use the replace_cluster function if want to subdivide a cluster
 #    df = replace_cluster(df, 1)
     
     # only use the linear q values
     df = df_lin
 
+    print("cluster centroids:\n", df.loc[df['closest']==True]) #, df_lin.loc[df_lin['closest']==True])
+
     # print objective values for [show_best] number of points, sorted by FP4_BeamSpot
     show_cols = objectives
     show_cols.append('closest')   
     show_cols.append('ssobjs')
     show_cols.append('kcluster')
-    print(df.loc[:show_best,show_cols].sort_values(by=['ssobjs']))
+    print("top {} best points in terms of ssobj\n".format(show_best), df.loc[:show_best,show_cols].sort_values(by=['ssobjs']))
 
     # sort df by FP4_BeamSpot values, and reindex
     df = df.sort_values(by=objectives[-1],ignore_index=True)
@@ -106,6 +116,10 @@ def main(start_i=0):
     df = df.drop('pareto',axis=1)
     df_out = RESULTS_DIR+"best{}.h5".format(start_i)
     df.to_hdf(df_out,key='df')
+
+    print("size of each cluster:")
+    for i in range(kclusters):
+        print(i, df.loc[df['kcluster']==i].shape)
 
     return df_out
 

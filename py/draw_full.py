@@ -174,6 +174,7 @@ def plot_hists(df, df_reduce, filename):
 
 def main(filename,batch):
 
+    print("\nDrawing full histogram of invalid points\n")
     file_extension = os.path.splitext(filename)[-1]
     print(os.path.split(filename))
     popi = None

@@ -21,6 +21,7 @@ from problem import optimizeRes
 from secar_utils import run_kmeans, is_pareto_efficient_simple, load_configs
 
 configs = load_configs()
+kclusters = configs['clusters']
 
 # specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
@@ -127,7 +128,7 @@ def output_4d_cosy(popi,filename,df):
 #    print(ndf[0], sorted_ndf)
     
     df_closest = df.loc[df['closest']==True]
-    print(df_closest, len(ndf[0]), len(sorted_ndf))
+#    print(df_closest, len(ndf[0]), len(sorted_ndf))
     results_path = os.path.split(filename)[0]
     PROFILES_PATH = results_path+'/profiles/'
     if os.path.exists(PROFILES_PATH) and os.path.isdir(PROFILES_PATH):
@@ -157,6 +158,7 @@ def output_4d_cosy(popi,filename,df):
 
 def main(filename):
 
+    print("\nWriting cosy fox files for the {} identified cluster centroids\n".format(kclusters))
     file_extension = os.path.splitext(filename)[-1]
     print(os.path.split(filename))
     popi = None

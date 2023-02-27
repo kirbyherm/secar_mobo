@@ -14,8 +14,8 @@
 ### mem: amount of memory that the job will need
 #SBATCH --mem-per-cpu=5G
 ### you can give your job a name for easier identification
-#SBATCH -J pygmo_test 
-#SBATCH --array=569
+#SBATCH -J pygmo_optimize
+#SBATCH --array=571
 
 ### error/output file specifications
 #SBATCH -o /mnt/simulations/secarml/secar_mobo/sh/slurmfiles/moead_gen_5f_%a.txt

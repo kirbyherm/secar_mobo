@@ -61,7 +61,7 @@ def is_pareto_efficient_simple(costs):
 def run_kmeans(df, magnet_dim=configs['magnet_dim'], clusters=configs['clusters']):
 
     X = df.iloc[:,:magnet_dim]
-    kmeans = KMeans(n_clusters=clusters,random_state=0).fit(X)
+    kmeans = KMeans(n_clusters=clusters,random_state=0,n_init=10).fit(X)
     closest, _ = pairwise_distances_argmin_min(kmeans.cluster_centers_, X)
     df['kcluster'] = kmeans.labels_
     df['closest'] = False

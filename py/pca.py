@@ -1,33 +1,42 @@
 #!/usr/bin/env python3
 
+import secar_utils as secar_utils
+import make_profiles, draw_cluster_inverse
+import draw_cluster
+import draw_full, analyze_db, plot_tsne
+from cosy import cosyrun
+
 # Import libraries,
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import draw_cluster
-# set pandas view options to print everything
-pd.set_option("max_rows", None)
-pd.set_option("max_columns", None)
-
-
 import matplotlib
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import warnings
-warnings.filterwarnings( "ignore", module = "matplotlib*" )
 
-from cosy import cosyrun
+warnings.filterwarnings( "ignore", module = "matplotlib*" )
 
 colormap = matplotlib.cm.get_cmap('PuOr')
 plt.rcParams["figure.figsize"] = [14, 6]
 colors = list(plt.get_cmap('tab20').colors)
 
-results_no = 430
+configs = secar_utils.load_configs()
+
+kclusters = configs['clusters']
+n_obj = configs['n_obj']
+objectives = configs['objectives']
+fNom = configs['fNominal']
+
+# set pandas view options to print everything
+#pd.set_option("max_rows", None)
+#pd.set_option("max_columns", None)
 
 def make_db_row( quads, resol, cluster, columns ):
     new_row = {}
     new_row['kcluster'] = cluster
-    new_row['closest'] = True
+    new_row['closest'] = False
     new_row['ssobjs'] = 10
     for j in range(len(columns)):
         if j < 19:
@@ -38,7 +47,7 @@ def make_db_row( quads, resol, cluster, columns ):
             break
     return new_row
 
-def main():
+def main(results_no=0, samples=2):
 
 
     magnets = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
@@ -62,7 +71,7 @@ def main():
     
     dataPCA = pd.DataFrame(columns = data.columns)
     dataPCAT = pd.DataFrame(columns = data.columns)
-    n_clusters = 4
+    n_clusters = kclusters
 #    fig, ax = plt.subplots(2,1)
     plot_combos = [[0,1],[2,3],[3,4],[2,4],[4,6],[6,9],[9,14],[12,14]]
     (fig, subplots) = plt.subplots(3, 3, figsize=(8, 8))
@@ -89,7 +98,7 @@ def main():
         # Reverse PCA
         nComp = 5
     
-        samples = 1000
+#        samples = 1000
 #        samples = 2 
         comp_1 = np.zeros(samples)
         comp_2 = np.zeros(samples) 
@@ -111,7 +120,7 @@ def main():
         #    Xhat = x1.iloc[0,:]
             
             resol = np.zeros(5)
-            resol = cosyrun(Xhat)
+            resol = cosyrun(Xhat, fNom)
 #            print(new_row)
             new_row = make_db_row( Xhat, resol, cluster, data.columns )
             dataPCAtemp = pd.DataFrame(data=new_row,index=[0])
@@ -145,9 +154,11 @@ def main():
 #        ax.set_ylim(0,2.0)
     plt.savefig(filepath+'pca_transformed')
     #    cosyrun(x1.iloc[0,:])
-    dataPCA.to_hdf('results_{}/best{}PCA.h5'.format(results_no,results_no),key='df')
+    db_out = 'results_{}/best{}PCA.h5'.format(results_no,results_no)
+    dataPCA.to_hdf(db_out,key='df')
     draw_cluster.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
-    dataPCA.to_hdf('../output/secar_4d_db_{}s_PCA.h5'.format(results_no,results_no),key='df')
+    draw_cluster_inverse.main(db_out, db_out) 
+    dataPCA.to_hdf('../output/secar_{}d_db_{}s_PCA.h5'.format(n_obj, results_no),key='df')
 #    print(x1.iloc[0,:],X[0,:],Xhat[0,:])
 #    draw_pca(pca, x1)
     return     
@@ -203,5 +214,10 @@ def draw_pca(pca, x1):
     plt.show()
     return
 
+if __name__=='__main__':
 
-main()
+    import sys
+    script, first = sys.argv
+    results_no = int(first) 
+
+    main(results_no)

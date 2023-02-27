@@ -34,8 +34,9 @@ def main(start_i=0):
     make_profiles.main(results_h5)
     draw_full.main(results_h5, start_i)
     draw_cluster_inverse.main(results_h5, results_h5) 
-    draw_cluster_inverse.main(results_h5, results_h5) 
     plot_tsne.plot_tsne_linear(results_h5, results_h5) 
+
+    print("\npython analysis complete, now drawing the optics profiles with cosy\n")
     os.chdir('results_{}/profiles/'.format(start_i))
     for i in range(kclusters+1):
         cmd = '../../' + COSY_DIR + 'cosy'

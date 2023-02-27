@@ -128,6 +128,8 @@ def plot_pareto(df, df_compare, filename, PCA_run = False):
     plt.savefig(filename+'_pareto.png')
 
 def main(filename, filename_compare):
+
+    print("\nDrawing the pareto front of the points\n")
     file_extension = os.path.splitext(filename)[-1]
     print(os.path.split(filename))
     popi = None
