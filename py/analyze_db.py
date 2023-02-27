@@ -46,10 +46,10 @@ def main(start_i=0):
     # restrict the df to only the points that fit the problem constraints
     #   (can also change this to any value, e.g. 1 to show only better than nominal)
     query_txt = '' 
-    df = (df.loc[(df[objectives[0]]<=100.0)])
+#    df = (df.loc[(df[objectives[0]]<=100.0)])
     for i in range(len(objectives)):
-        if i == 0:
-            continue
+#        if i == 0:
+#            continue
         query_txt += objectives[i] + "<{}".format(max_obj)
         if i < len(objectives)-1:
             query_txt+="&"

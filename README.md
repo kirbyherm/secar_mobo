@@ -38,9 +38,9 @@ in this case that is the X width at each FP1, 2, 3, and the beam spot size on th
     and prints out the location of the contaminant for each objective
         in this case the separation at FP1, 2, 3 
 
-change `fox_name` in config.json to match the base name of your desired fox file (i.e. ``SECAR_pg_Optics``)
+change `fox_name` in `config.json` to match the base name of your desired fox file (i.e. ``SECAR_pg_Optics``)
 
-as above, be sure to update the INCLUDE path in the header of the fox files to point to the location of COSY.bin
+as above, be sure to update the INCLUDE path in the header of the fox files to point to the location of `COSY.bin`
 
 most importantly, any new fox files need to print out X and Y dimensions at every element of the beamline
 see `cosy.py` header, specifically the variables `magnet_names` and `magnet_dims` for the elements, or else use `SECAR_pg_Optics.fox` as a guide
@@ -70,7 +70,7 @@ defines cosyrun(input) that runs a COSY simulation given input magnet settings
 and returns a set of objective values
 assumes cosy is installed and can be run with:
 `cosy foxFile.fox`
-all the interfacing between cosy and python is done here, so be sure to check that, given a specified reaction type and fNominal values, 
+all the interfacing between cosy and python is done here, so be sure to check that, given a specified reaction type and `fNominal` values, 
 `./cosy.py` returns values which are == 1 or only off by a precision < 1e-7 or so
 
 
