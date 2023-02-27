@@ -25,10 +25,10 @@ show_best = 10
 kclusters = configs['clusters']
 n_obj = configs['n_obj']
 objectives = configs['objectives']
+max_obj = configs['max_obj']
 
 def main(start_i=0):
 
-    max_obj = 10.5
     # specify database for input
     db_out = OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj, start_i)
 

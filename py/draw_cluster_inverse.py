@@ -26,6 +26,7 @@ optimized_params = configs['n_obj']
 objectives = configs['objectives']
 fNom = configs['fNominal_plot']
 magnet_dim = configs['magnet_dim']
+max_obj = configs['max_obj']
 
 # specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
@@ -146,7 +147,6 @@ def main(filename, filename_compare):
     
     if 'PCA' in filename_compare:
         query_txt = '' 
-        max_obj = 2
         for i in range(len(objectives)):
             query_txt += objectives[i] + "<{}".format(max_obj)
             if i < len(objectives)-1:
