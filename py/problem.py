@@ -33,7 +33,9 @@ class optimizeRes:
         # convert to scale factor
         pass_x = power(zeros(self.dim)+2.0,x)
         # run cosy
-        resol = cosyrun(pass_x, fNom, fox_name)
+        resol = cosyrun(pass_x, fNom, fox_name)[1:]
+        #if resol[2] < 1e8:
+        #    resol[2] *= 10
         # return objective values to evolve
         return resol
 
@@ -44,8 +46,8 @@ class optimizeRes:
     # define bounds of x values
     #   i.e. from -1 to 1 (powers of 2)
     def get_bounds(self):
-        qLower =zeros(self.dim) - 2.
-        qUpper =zeros(self.dim) + 2.
+        qLower =zeros(self.dim) - 2
+        qUpper =zeros(self.dim) + 2
         qLower[9] *= 1.5 
         qUpper[9] *= 1.5 
         return (qLower, qUpper)

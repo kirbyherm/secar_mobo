@@ -92,10 +92,12 @@ def plot_pareto(df, df_compare, filename, PCA_run = False):
     colors = np.array(list(plt.get_cmap('tab20').colors)).reshape(-1,3)
     print(colors, colors.shape, np.array(colors[0]).reshape(3))
     j = 0
+    if optimized_params < 5:
+        j+=1
     plot_x, plot_y = 0,0
     fig, axs = plt.subplots(optimized_params-1,sharex=True)
     fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at DSSD')
-    axs[3].set_xlabel("DSSD_BeamSpot")
+    axs[optimized_params-2].set_xlabel("DSSD_BeamSpot")
     for obj in objectives[:-1]:
         df.plot(x='FP4_BeamSpot',y=obj,style='o',ax=axs[plot_y],markersize=3.0,legend=False)
         if "closest" in df.columns:
@@ -122,10 +124,17 @@ def plot_pareto(df, df_compare, filename, PCA_run = False):
         j += 1
         plot_y += 1
 
-    axs[0].set_ylabel("FP1 Res.")
-    axs[1].set_ylabel("FP2 Res.")
-    axs[2].set_ylabel("FP3 Res.")
-    axs[3].set_xlabel("DSSD Beamspot (cm)")
+    axis_index = 0
+    if optimized_params==5:
+        axs[axis_index].set_ylabel("FP1 Res.")
+        axis_index += 1
+    else:
+        axis_index=0
+    axs[axis_index].set_ylabel("FP2 Res.")
+    axis_index += 1
+    axs[axis_index].set_ylabel("FP3 Res.")
+    axis_index += 1
+    axs[axis_index].set_xlabel("DSSD Beamspot (cm)")
     plt.savefig(filename+'_pareto.png')
 
 def main(filename, filename_compare):
@@ -139,12 +148,6 @@ def main(filename, filename_compare):
 #    df_compare = pd.read_hdf(filename_compare)
     df_compare = pd.read_hdf(filename)
     PCA_run = False
-    for i in range(len(objectives)):
-        if i < 3:
-            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] / x)
-        else:
-            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[i] * x)
-    
     if 'PCA' in filename_compare:
         query_txt = '' 
         for i in range(len(objectives)):
@@ -152,8 +155,19 @@ def main(filename, filename_compare):
             if i < len(objectives)-1:
                 query_txt+="&"
         df_compare = df_compare.query(query_txt)
+        df = df_compare
         filename=filename_compare
         PCA_run = True
+        print(PCA_run)
+    for i in range(len(objectives)):
+        fNom_i = i
+        if optimized_params < 5:
+            fNom_i += 1
+        if fNom_i < 3:
+            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[fNom_i] / x)
+        else:
+            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[fNom_i] * x)
+    
     plot_pareto(df, df_compare, filename, PCA_run)
 
 if __name__=='__main__':

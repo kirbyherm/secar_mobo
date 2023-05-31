@@ -10,7 +10,7 @@ configs = secar_utils.load_configs()
 
 # set pandas view options to print everything
 #pd.set_option("max_rows", None)
-pd.set_option("max_columns", None)
+#pd.set_option("max_columns", None)
 
 # i spent an hour trying to debug `SettingWithCopyError` warnings and nothing worked despite me using proper df.loc[:, colname] syntax so i'm suppressing it
 # read here if you want: https://stackoverflow.com/questions/20625582/how-to-deal-with-settingwithcopywarning-in-pandas

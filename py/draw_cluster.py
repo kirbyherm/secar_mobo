@@ -16,6 +16,10 @@ from cosy import cosyrun, write_fox
 import pygmo as pg
 from problem import optimizeRes
 import pandas as pd
+from secar_utils import run_kmeans, is_pareto_efficient_simple, load_configs
+
+configs = load_configs()
+
 
 # specify Tex details for pretty plots
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
@@ -184,7 +188,8 @@ def main(df, df_compare, filename, PCA_run = False):
     number_of_clusters = np.max(df['kcluster']+1)
     colors = np.array(list(plt.get_cmap('tab20').colors)).reshape(-1,3)
     print(colors, colors.shape, np.array(colors[0]).reshape(3))
-    for obj in ['FP1_res','FP2_res','FP3_res','MaxBeamWidth']:
+    objectives = configs['objectives']
+    for obj in objectives[:-1]:
         ax = None
         for i in range(number_of_clusters):
             color_i = np.array(colors[i+1]).reshape(3)
@@ -210,11 +215,11 @@ def main(df, df_compare, filename, PCA_run = False):
             blue = np.array([0,0,1]).reshape(3) 
             print(black,blue)
             plt.plot(df.loc[(df['kcluster']==i)].mean()['FP4_BeamSpot'],df.loc[(df['kcluster']==i)].mean()[obj],marker='s',fillstyle='none',color=blue,markersize=20.0,label='_nolegend_')
-            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',fillstyle='none',color=blue,ax=ax,markersize=20.0,label='_nolegend_')
+            ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',fillstyle='none',color='blue',ax=ax,markersize=20.0,label='_nolegend_')
             plt.plot(df.loc[(df['kcluster']==i)].mean()['FP4_BeamSpot'],df.loc[(df['kcluster']==i)].mean()[obj],marker='x',color=color_i,markersize=20.0,label='_nolegend_', markeredgewidth=5.0)
             ax = df.loc[(df['closest']==True) & (df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='x',color=color_i,ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=5.0)
             if __name__=='__main__' and not PCA_run:
-                ax = df_compare.loc[(df_compare['closest']==True) & (df_compare['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=black,fillstyle='none',ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=1.0)
+                ax = df_compare.loc[(df_compare['closest']==True) & (df_compare['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color='black',fillstyle='none',ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=1.0)
                 plt.plot(df_compare.loc[(df_compare['kcluster']==i)].mean()['FP4_BeamSpot'],df_compare.loc[(df_compare['kcluster']==i)].mean()[obj],marker='s',fillstyle='none',color=black,markersize=20.0,label='_nolegend_')
             else:
                 ax = df_compare.loc[(df_compare['closest']==True) & (df_compare['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='d',color=color_i,fillstyle='none',ax=ax,markersize=20.0,label='_nolegend_', markeredgewidth=1.0)
@@ -238,9 +243,14 @@ if __name__=='__main__':
     df_compare = pd.read_hdf(filename_compare)
     PCA_run = False
     if 'PCA' in filename_compare:
-        objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+        objectives = configs['objectives']
+        df['kcluster'] = 0
+        df['closest'] = True
+        df_compare['kcluster'] = 0
+        df_compare['closest'] = True
+#        objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
         query_txt = '' 
-        max_obj = 2
+        max_obj = configs['max_obj']
         for i in range(len(objectives)):
             query_txt += objectives[i] + "<{}".format(max_obj)
             if i < len(objectives)-1:

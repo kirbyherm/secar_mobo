@@ -18,9 +18,9 @@ import warnings
 
 warnings.filterwarnings( "ignore", module = "matplotlib*" )
 
-colormap = matplotlib.cm.get_cmap('PuOr')
+colormap = matplotlib.colormaps['PuOr']
 plt.rcParams["figure.figsize"] = [14, 6]
-colors = list(plt.get_cmap('tab20').colors)
+colors = list(plt.colormaps['tab20'].colors)
 
 configs = secar_utils.load_configs()
 
@@ -41,7 +41,7 @@ def make_db_row( quads, resol, cluster, columns ):
     for j in range(len(columns)):
         if j < 19:
             new_row[columns[j]] = quads[j]
-        elif j < 19+5:
+        elif j < 19+n_obj:
             new_row[columns[j]] = resol[j-19]
         else:
             break
@@ -120,11 +120,14 @@ def main(results_no=0, samples=2):
         #    Xhat = x1.iloc[0,:]
             
             resol = np.zeros(5)
-            resol = cosyrun(Xhat, fNom)
+            if n_obj < 5:
+                resol = cosyrun(Xhat, fNom)[1:]
+            else:
+                resol = cosyrun(Xhat, fNom)
 #            print(new_row)
             new_row = make_db_row( Xhat, resol, cluster, data.columns )
             dataPCAtemp = pd.DataFrame(data=new_row,index=[0])
-            dataPCA = dataPCA.append(dataPCAtemp,ignore_index=True)
+            dataPCA = pd.concat([dataPCA, dataPCAtemp],ignore_index=True)
 #            new_row = make_db_row( xrand.reshape((5,)), resol, cluster, data.columns )
 #            dataPCAtemp = pd.DataFrame(data=new_row,index=[0])
 #            dataPCAT = dataPCAT.append(dataPCAtemp,ignore_index=True)
@@ -160,10 +163,10 @@ def main(results_no=0, samples=2):
     draw_cluster_inverse.main(db_out, db_out) 
     dataPCA.to_hdf('../output/secar_{}d_db_{}s_PCA.h5'.format(n_obj, results_no),key='df')
 #    print(x1.iloc[0,:],X[0,:],Xhat[0,:])
-#    draw_pca(pca, x1)
+    draw_pca(pca, x1, results_no)
     return     
 
-def draw_pca(pca, x1):
+def draw_pca(pca, x1, results_no):
     
     # Singular values and cumulative energy
     S = pca.singular_values_
@@ -180,8 +183,9 @@ def draw_pca(pca, x1):
     ticks = np.arange(0, 20, 1)
     ax[1].set_xticks(ticks)
     plt.grid(True, which = 'both')
-    plt.show()
-    
+#    plt.show()
+    plt.savefig('results_{}/best{}PCA.h5_Comps.png'.format(results_no, results_no) )
+
     # Plot PCA components # Remember to include the mean if using these components!!!
     for i in range(5):
         plt.plot(np.arange(1,20,1), pca.components_[i], label = str(i+1), linewidth=5-5*sumS[i])
@@ -191,7 +195,8 @@ def draw_pca(pca, x1):
     plt.grid(True, which = 'both')
     plt.ylabel('Coefficient')
     plt.xlabel('Magnet')
-    plt.show()
+    plt.savefig('results_{}/best{}PCA.h5_Mags.png'.format(results_no, results_no) )
+#    plt.show()
     
     # Plot correlation matrix
     #print(x1.corr() )
@@ -211,13 +216,14 @@ def draw_pca(pca, x1):
     
     ax.set_title('correlation matrix for q1-q19')
     plt.colorbar()
-    plt.show()
+    plt.savefig('results_{}/best{}PCA.h5_Corrs.png'.format(results_no, results_no) )
+#    plt.show()
     return
 
 if __name__=='__main__':
 
     import sys
-    script, first = sys.argv
+    script, first, second = sys.argv
     results_no = int(first) 
-
-    main(results_no)
+    samples = int(second)
+    main(results_no, samples)

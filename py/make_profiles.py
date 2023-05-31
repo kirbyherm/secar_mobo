@@ -88,7 +88,7 @@ def output_4d_cosy(popi,filename,df):
     sorted_ndf = []
     sorted_pop = []
     sorted_xs = []
-    sort_param = 4
+    sort_param = optimized_params -1
     for i in ndf[0]:
         if np.all(np.array(popi.get_f()[i]) < 1) == True or True:
             ndf_champ.append(i)

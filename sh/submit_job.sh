@@ -15,7 +15,7 @@
 #SBATCH --mem-per-cpu=5G
 ### you can give your job a name for easier identification
 #SBATCH -J pygmo_optimize
-#SBATCH --array=571
+#SBATCH --array=803
 
 ### error/output file specifications
 #SBATCH -o /mnt/simulations/secarml/secar_mobo/sh/slurmfiles/moead_gen_5f_%a.txt
@@ -24,7 +24,8 @@
 ###SBATCH --mail-user=herman67@msu.edu
 ###SBATCH --mail-type=FAIL
 ###module restore gpflow
+conda activate secar_moead
 cd /mnt/simulations/secarml/secar_mobo/py
-./optimize.py ${SLURM_ARRAY_TASK_ID}
+./optimize.py ${SLURM_ARRAY_TASK_ID} 1
 scontrol show job ${SLURM_JOB_ID}
 

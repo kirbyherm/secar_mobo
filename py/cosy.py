@@ -6,7 +6,9 @@ import os, shutil
 import subprocess as commands
 import re
 from numpy.random import random as rng
-from numpy import array, append, zeros, power, isnan
+from numpy import array, append, zeros, power, isnan, divide
+import numpy as np
+import pandas as pd
 import timeit
 
 import secar_utils as secar_utils
@@ -18,6 +20,25 @@ magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[14
 
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
+qNew = array([0.9995845752046637,
+1.2220848121694863,
+0.7288452110421395,
+0.5452658512360776,
+0.25893655117638975,
+0.8480128005770239,
+0.5387917381151589,
+0.9130364420922832,
+0.987050172031228,
+0.41523318638126994,
+0.9503558977890336,
+0.9020902091901309,
+0.7972568272495952,
+0.9012788345387545,
+0.6349413818999178,
+0.8762447428324577,
+0.3558285257840111,
+0.4032267640375105,
+0.2894016712233756])
 
 # set working DIR for PYGMO, FOX, COSY
 PYGMO_DIR = '../'
@@ -141,7 +162,8 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
     #   even the nominal setting is outside the bounds...
     scale = 1e9 
     # setup value to be returned, here 4 different objectives
-    objs = configs['n_obj']
+    #objs = configs['n_obj']
+    objs = 5
     resol = zeros(objs) 
 
     # my method could probably be better optimized but this works and is mostly straight-forward
@@ -260,8 +282,12 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
             resol = zeros(objs)+scale         
             return resol 
 
+    scale = 1e9
+#    print(divide(resol, fNom))
+#    print(divide(resol, fNom)[1:])
+#    print(np.all(divide(resol, fNom)[1:] < scale))
     # if within constraints, set resol as a ratio to nominal
-    if max(resol)/min(fNom) < scale:
+    if np.all(divide(resol, fNom)[1:] < scale):
         for i in range(len(resol)):
             # make sure we are working with positive numbers
             if resol[i] > 0: 
@@ -285,10 +311,10 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
     
 
 if __name__ == "__main__":
-    import pandas as pd
     # if running from console, just run the nominal setting
     fNom = configs['fNominal']
     print(cosyrun(qNom,fNom,configs['fox_name']))
+    print(cosyrun(qNew,fNom,configs['fox_name']))
 
     fNom = array([2.3849360856494263, .10961548781662407, .5108029152516118, 1.6251646888022029, 0.12574090408565933])
     print(cosyrun(qNom,fNom,"SECAR_an_Optics"))
