@@ -26,11 +26,11 @@ def cut_data(df, objectives, max_obj):
 
 def main(gens=generations, batch_id=210):
 
-    OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_moead_FP2_FP3_{}_'.format(gens)
+    OUTPUT_PREFIX = OUTPUT_DIR + 'output'
     if batch_id < 100 and batch_id > 0:
         OUTPUT_PREFIX = OUTPUT_DIR + 'output_4f_nsga2_FP2_FP3_{}_'.format(gens)
     # set up columns for dataframe
-    objectives = ['FP1_res','FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
+    objectives = ['FP2_res','FP3_res','MaxBeamWidth','FP4_BeamSpot']
     quads = []
     for i in range(magnet_dim):
         quads.append("q{}".format(i+1))
@@ -40,7 +40,7 @@ def main(gens=generations, batch_id=210):
     
     # i run batches in 10s, so i specify the first id of the batch
     start_i = batch_id 
-    end_i = start_i + 10
+    end_i = start_i + 1
     if start_i > 360 and start_i < 390:
         end_i = start_i + 1
     elif start_i == 0:
@@ -86,6 +86,7 @@ def main(gens=generations, batch_id=210):
 #        for i in range(magnet_dim):
 ##            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
 #            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
+    df.loc[:,'MaxBeamWidth'] = df.loc[:,'MaxBeamWidth'].apply(lambda x: np.power(x, 1/2.0))
     df.to_hdf(db_out,key='df')
     max_obj = 1e9
     # check for solutions strictly better than nominal (all objs < 1)

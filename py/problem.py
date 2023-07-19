@@ -8,7 +8,7 @@ import secar_utils as secar_utils
 configs = secar_utils.load_configs()
 fox_name = configs['fox_name']
 fNom = configs['fNominal']
-nobj = configs['n_obj']
+nobj = configs['n_obj'] + configs['n_con']
 
 # set important directories
 PYGMO_DIR = '../'
@@ -22,9 +22,10 @@ class optimizeRes:
     #   this is how we see all the attempted solutions
     #   and check how the algorithm performs
     # output file is defined when initiating the problem in optimize.py
-    def __init__(self, dim, out="out"):
+    def __init__(self, dim, out=FOX_DIR):
         self.dim = dim
         self.out = out
+        print(self.out)
 
     # fitness function that is called by each iteration
     #   x is between -1 and 1, but cosyrun expects a factor
@@ -33,7 +34,7 @@ class optimizeRes:
         # convert to scale factor
         pass_x = power(zeros(self.dim)+2.0,x)
         # run cosy
-        resol = cosyrun(pass_x, fNom, fox_name)[1:]
+        resol = cosyrun(pass_x, fNom, fox_name, self.out)
         #if resol[2] < 1e8:
         #    resol[2] *= 10
         # return objective values to evolve

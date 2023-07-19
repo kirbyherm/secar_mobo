@@ -10,6 +10,7 @@ import numpy as np
 import os,sys
 import subprocess as commands
 import shutil
+import tarfile
 
 configs = secar_utils.load_configs()
 
@@ -53,6 +54,12 @@ def main(start_i=0):
         os.remove("{}.lis".format(cosyFilename))
         os.remove("pic002.pdf")
         os.remove("RKLOG.DAT")
+    os.chdir("../../")
+    with tarfile.open("results_{}.tar.gz".format(start_i), "w:gz") as tar:
+        filelist = [os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser("results_{}".format(start_i))) for f in fn]
+        for each in filelist:
+            tar.add(each)
+
     return
 
 if __name__=='__main__':

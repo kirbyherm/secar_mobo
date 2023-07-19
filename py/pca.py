@@ -159,7 +159,7 @@ def main(results_no=0, samples=2):
     #    cosyrun(x1.iloc[0,:])
     db_out = 'results_{}/best{}PCA.h5'.format(results_no,results_no)
     dataPCA.to_hdf(db_out,key='df')
-    draw_cluster.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
+#    draw_cluster.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
     draw_cluster_inverse.main(db_out, db_out) 
     dataPCA.to_hdf('../output/secar_{}d_db_{}s_PCA.h5'.format(n_obj, results_no),key='df')
 #    print(x1.iloc[0,:],X[0,:],Xhat[0,:])

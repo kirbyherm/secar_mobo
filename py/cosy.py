@@ -14,10 +14,6 @@ import timeit
 import secar_utils as secar_utils
 configs = secar_utils.load_configs()
 
-magnet_names = array(["Q1", "Q2", "B1", "B2", "HEX1", "Q3", "Q4", "Q5", "B3", "B4", "HEX2", "Q6", "Q7", "HEX3", "OCT1", "Q8", "Q9", "B5", "B6", "Q10", "Q11", "Q12", "Q13", "B7", "B8", "Q14", "Q15", "UMCP", "Viewer"])
-# define the dimensions of the magnet chambers
-magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[146,126],[102,102],[156,104],[156,104],[240,102],[280,110],[280,110],[165,115],[102,102],[100,100],[120,90],[148,66],[148,66],[180,96],[240,91],[140,140],[100,100],[130,60],[130,60],[100,100],[100,100],[75/1.41,75/1.41],[70,70]])
-
 # define the nominal qvalue array (array is sent to cosy as a power of 2, i.e. 0 => 2^0 = 1 * nominal value)
 qNom = zeros(19)+1
 qNew = array([0.9995845752046637,
@@ -40,6 +36,14 @@ qNew = array([0.9995845752046637,
 0.4032267640375105,
 0.2894016712233756])
 
+qNew = array([0.30961,1.0464,1.71728,0.70975,0.41581,0.51202,0.26017,1.30771,1.55515,0.22818,0.39962,0.30686,0.31115,0.72737,0.54035,1.22764,0.80459,3.90926,3.46931])
+qNew = array([0.283413424223053,1.058069943743000,1.467197412744679,0.584709930968694,0.274509693545302,0.473285293926786,0.254461623764208,0.402837250182905,0.252802563833367, 0.21680981887451, 0.35877567899768, 0.42672424886372, 0.52992533228021, 0.49236325403560, 0.38959174127019,0.251246952092431,3.987305095918524,3.969383625652894,0.367206626871934])
+qNew = array([0.2651,0.99709,1.69439,0.72239,0.44316,0.53659,0.26321,0.6078,0.28921,0.9526,0.27656,0.35334,0.30253,1.06311,0.75223,0.72,3.07214,3.83866,3.94119])
+qNew = array([0.29933,1.13503,1.36588,0.55368,0.26,0.73098,0.28063,0.32898,0.75059,0.61074,0.57724,0.25125,0.43583,0.69772,0.6391,0.32272,3.99534,3.83737,0.72064])
+
+#qNew = array([-1.691493, 0.065433, 0.780122, -0.494614, -1.266011, -0.965742, -1.942487, 0.387044, 0.637050, -2.131748, -1.323307, -1.704343, -1.684295, -0.459238, -0.888028, 0.295885, -0.313672, 1.966895, 1.794648])
+#qNew = power(2, qNew)
+#qNew = array([0.29484,1.04943,0.25012,1.52012,0.60846,0.29305,3.99557,0.50338,0.25181,3.99858,0.75819,0.65293,0.28756,0.2302,0.34915,0.30065,0.31636,0.7858,0.35506])
 # set working DIR for PYGMO, FOX, COSY
 PYGMO_DIR = '../'
 FOX_DIR = PYGMO_DIR + 'fox/'
@@ -47,11 +51,23 @@ COSY_DIR = PYGMO_DIR + 'COSY10.0/'
 SCRATCH_DIR = configs['scratch_dir']
 
 on_fireside = secar_utils.check_fireside()
-if on_fireside:
-    FOX_DIR = SCRATCH_DIR + 'fox/'
-    isExist = os.path.exists(FOX_DIR)
-    if not isExist:
-       os.makedirs(FOX_DIR)
+#if on_fireside:
+#    FOX_DIR = SCRATCH_DIR + 'fox/'
+#    isExist = os.path.exists(FOX_DIR)
+#    if not isExist:
+#       os.makedirs(FOX_DIR)
+
+def cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2):
+    # remove old cosy fox and lis file
+    if os.path.exists(cosyFilename):
+        os.remove(cosyFilename)
+    if os.path.exists(lisFilename):
+        os.remove(lisFilename)
+    if os.path.exists(cosyFilename2):
+        os.remove(cosyFilename2)
+    if os.path.exists(lisFilename2):
+        os.remove(lisFilename2)
+    return 
 
 # write the qvalue array to a fox file for cosy to run
 def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_14m_v1.fox'):
@@ -67,7 +83,7 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_1
     else:
         rand = name
     # get the fox file for the simulation and change the qvalues
-    cosy_input = FOX_DIR + fox_file
+    cosy_input = directory + fox_file
     text = None
     with open(cosy_input, 'r') as f:
         text = f.readlines()
@@ -113,13 +129,21 @@ def write_fox(qs=qNom, name=None, directory=FOX_DIR, fox_file='SEC_neutrons_WF_1
 # idea is that evolve() in optimize.py will call fitness() in problem.py
 #   fitness() will pass a set of magnet factors (between 0.5 and 2.0) to cosyrun
 #   and will return the resulting objectives to the algorithm
-def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
+def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics", directory_name=FOX_DIR):
+    
+    magnet_names = array(["Q1", "Q2", "B1", "B2", "HEX1", "Q3", "Q4", "Q5", "B3", "B4", "HEX2", "Q6", "Q7", "HEX3", "OCT1", "Q8", "Q9", "B5", "B6", "Q10", "Q11", "Q12", "Q13", "B7", "B8", "Q14", "Q15", "UMCP", "Viewer","DSSD"])
+    # define the dimensions of the magnet chambers
+    magnet_dims = array([[90,80],[140,102],[240,60],[240,60],[240,142],[220,142],[146,126],[102,102],[156,104],[156,104],[240,102],[280,110],[280,110],[165,115],[102,102],[100,100],[120,90],[148,66],[148,66],[180,96],[240,91],[140,140],[100,100],[130,60],[130,60],[100,100],[100,100],[75/1.41,75/1.41],[70,70],[64,64]])
+    
+    last_element = 'UMCP'
+    last_element_index = np.where(magnet_names == last_element)[0][0]
+#    print(last_element_index)
 
     # make fox file and get name
     fox_file = "{}.fox".format(fox_name)
     fox_DE_file = "{}_DE.fox".format(fox_name)
-    cosyFilename, lisFilename = write_fox(qs,fox_file=fox_file)
-    cosyFilename2, lisFilename2 = write_fox(qs,fox_file=fox_DE_file)
+    cosyFilename, lisFilename = write_fox(qs,fox_file=fox_file, directory=directory_name)
+    cosyFilename2, lisFilename2 = write_fox(qs,fox_file=fox_DE_file, directory=directory_name)
     
     #Run cmd
     cmd = COSY_DIR + 'cosy'
@@ -162,9 +186,10 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
     #   even the nominal setting is outside the bounds...
     scale = 1e9 
     # setup value to be returned, here 4 different objectives
-    #objs = configs['n_obj']
-    objs = 5
-    resol = zeros(objs) 
+    n_objs = configs['n_obj'] + configs['n_con']
+    objectives_constraints = []
+    objectives_constraints = configs['objectives'] + configs['constraints']
+    resol = zeros(n_objs) 
 
     # my method could probably be better optimized but this works and is mostly straight-forward
     #   idea is just that keywords are output for each variable, e.g. "Xdim" for the Xdim for a magnet dimension
@@ -181,28 +206,32 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
             try:
                 fp1xdim = (float(split[i])*1000)
             except:
-                resol = zeros(objs)+scale         
+                resol = zeros(n_objs)+scale         
+                cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
                 return resol        
             fp1xdim_bool = False
         if fp2xdim_bool:
             try:
                 fp2xdim = (float(split[i])*1000)
             except:
-                resol = zeros(objs)+scale         
+                resol = zeros(n_objs)+scale         
+                cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
                 return resol        
             fp2xdim_bool = False
         if fp3xdim_bool:
             try:
                 fp3xdim = (float(split[i])*1000)
             except:
-                resol = zeros(objs)+scale         
+                resol = zeros(n_objs)+scale         
+                cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
                 return resol        
             fp3xdim_bool = False
         if beamspotsize_bool:
             try:
                 beamspotsize = power(float(split[i]),0.5)
             except:
-                resol = zeros(objs)+scale         
+                resol = zeros(n_objs)+scale         
+                cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
                 return resol        
             beamspotsize_bool = False
         if split[i].strip() == "Xdim":
@@ -222,21 +251,24 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
             try:
                 fp2res = (float(split2[i])*1000)
             except:
-                resol = zeros(objs)+scale         
+                resol = zeros(n_objs)+scale         
+                cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
                 return resol        
             fp2res_bool = False
         if fp3res_bool:
             try:
                 fp3res = (float(split2[i])*1000)
             except:
-                resol = zeros(objs)+scale         
+                resol = zeros(n_objs)+scale         
+                cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
                 return resol        
             fp3res_bool = False
         if fp1res_bool:
             try:
                 fp1res = (float(split2[i])*1000)
             except:
-                resol = zeros(objs)+scale         
+                resol = zeros(n_objs)+scale         
+                cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
                 return resol        
             fp1res_bool = False
         if xdim_bool:
@@ -256,15 +288,32 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
         if split2[i].strip() == "Ydim":
             ydim_bool = True
 
+    # if no x-ydim values, just return outside constraints (all scale)
+    if len(xdim) < len(magnet_dims) or len(ydim) < len(magnet_dims):
+        resol = zeros(n_objs)+scale         
+        cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
+        return resol     
+    dssd_x = abs(xdim[len(xdim)-1] * 1000)
+    dssd_y = abs(ydim[len(ydim)-1] * 1000)
+    beamspotsize = min(power(max(dssd_x/magnet_dims[np.where(magnet_names=='DSSD')][0][0], dssd_y/magnet_dims[np.where(magnet_names=='DSSD')][0][1],1),4), scale*10)
+#    print(dssd_x, dssd_y, beamspotsize)
+    if beamspotsize > scale:
+        resol = zeros(n_objs)+scale         
+        cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
+        return resol 
+
+    # cut off the dimensions at the UMCP
+    xdim = xdim[:last_element_index+1]
+    ydim = ydim[:last_element_index+1]
+    magnet_dims = magnet_dims[:last_element_index+1]
+
     max_width = 0
+    dict_resol = {}
 
     for i in range(len(magnet_dims)):
-        # if no x-ydim values, just return outside constraints (all scale)
-        if len(xdim) < len(magnet_dims) or len(ydim) < len(magnet_dims):
-            resol = zeros(objs)+scale         
-            return resol     
         if fp2xdim == 0 or fp3xdim == 0 or isnan(fp2xdim) or isnan(fp3xdim) or xdim2[i]==0 or ydim2[i]==0:
-            resol = zeros(objs)+scale         
+            resol = zeros(n_objs)+scale         
+            cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
             return resol            
         # find xbound, ybound
         xbound = (abs(xdim[i])*1000)
@@ -273,38 +322,44 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
         max_width = max(xbound/magnet_dims[i][0],ybound/magnet_dims[i][1],max_width)
         # if *bound more than 4x magnet_dim, or is nan, return outside constraints
         if xbound > magnet_dims[i][0] * scale or ybound > magnet_dims[i][1] * scale or isnan(xbound) or isnan(ybound):
-            resol = zeros(objs)+scale         
+            resol = zeros(n_objs)+scale         
+            cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
             return resol
-        # if within constraints, set resol temporarily
-        try:
-            resol = [fp1xdim/fp1res,fp2xdim/fp2res,fp3xdim/fp3res,max_width,beamspotsize]
-        except:
-            resol = zeros(objs)+scale         
+
+    max_width = min(power(max_width, 2), scale*10)
+    if max_width > scale:
+        resol = zeros(n_objs)+scale         
+        cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
+        return resol 
+
+    # if within constraints, set resol temporarily
+    try:
+        for i in configs['fixed_cosy_objs']:
+            if i == 'FP1_res':
+                dict_resol[i] = fp1xdim/fp1res
+            if i == 'FP2_res':
+                dict_resol[i] = fp2xdim/fp2res
+            if i == 'FP3_res':
+                dict_resol[i] = fp3xdim/fp3res
+            if i == 'MaxBeamWidth':
+                dict_resol[i] = max_width 
+            if i == 'FP4_BeamSpot':
+                dict_resol[i] = beamspotsize 
+    except:
+        resol = zeros(n_objs)+scale         
+        cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
+        return resol 
+
+    for i in range(len(objectives_constraints)):
+        if dict_resol[objectives_constraints[i]] < scale and dict_resol[objectives_constraints[i]] > 0:
+#            print(objectives_constraints[i],dict_resol[objectives_constraints[i]])
+            resol[i] = dict_resol[objectives_constraints[i]] / fNom[objectives_constraints[i]]
+        else:
+            resol = zeros(n_objs)+scale         
+            cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
             return resol 
 
-    scale = 1e9
-#    print(divide(resol, fNom))
-#    print(divide(resol, fNom)[1:])
-#    print(np.all(divide(resol, fNom)[1:] < scale))
-    # if within constraints, set resol as a ratio to nominal
-    if np.all(divide(resol, fNom)[1:] < scale):
-        for i in range(len(resol)):
-            # make sure we are working with positive numbers
-            if resol[i] > 0: 
-                resol[i] = float(resol[i])
-            else:
-                resol = zeros(objs)+scale         
-                return resol
-            # we want to minimize max_width and beamspotsize, so just take resol/fNom
-            resol[i] = resol[i]/fNom[i]
-    else:
-        resol = zeros(objs)+scale         
-
-    # remove old cosy fox and lis file
-    os.remove(cosyFilename)
-    os.remove(lisFilename)
-    os.remove(cosyFilename2)
-    os.remove(lisFilename2)
+    cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
 
     # return the objective values
     return (resol)
@@ -313,10 +368,15 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics"):
 if __name__ == "__main__":
     # if running from console, just run the nominal setting
     fNom = configs['fNominal']
-    print(cosyrun(qNom,fNom,configs['fox_name']))
+    print(fNom)
     print(cosyrun(qNew,fNom,configs['fox_name']))
+    print(cosyrun(qNom,fNom,configs['fox_name']))
 
-    fNom = array([2.3849360856494263, .10961548781662407, .5108029152516118, 1.6251646888022029, 0.12574090408565933])
+    fNom_keys = ["FP1_res","FP2_res","FP3_res","MaxBeamWidth","FP4_BeamSpot"]
+    fNom_values = array([2.3849360856494263, .10961548781662407, .5108029152516118, 1.6251646888022029, 1.0])
+    fNom = {}
+    for i in range(len(fNom_keys)):
+        fNom[fNom_keys[i]] = fNom_values[i]
     print(cosyrun(qNom,fNom,"SECAR_an_Optics"))
     # if running from console, just run the assigned setting
 #    df = pd.read_csv('results_280/magnet_factors.csv')

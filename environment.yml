@@ -1,4 +1,4 @@
-name: secar_moead
+name: secar_moead_custom
 channels:
   - conda-forge
   - defaults
@@ -9,5 +9,4 @@ dependencies:
   - scikit-learn
   - scipy
   - matplotlib
-  - pygmo==2.19.0
   - pytables

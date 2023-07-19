@@ -770,6 +770,8 @@ PRINT_XDIM;
 PRINT_YDIM;
 DL 0.3302;                                                 {from viewer to dssd}
 PS (0.064)/2;                                              {DSSD}
+PRINT_XDIM;
+PRINT_YDIM;
 
 WW(1):= VMAX(RAY(1));
 WW(2):= VMIN(RAY(1));

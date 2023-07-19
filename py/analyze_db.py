@@ -30,7 +30,7 @@ max_obj = configs['max_obj']
 def main(start_i=0):
 
     # specify database for input
-    db_out = OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj, start_i)
+    db_out = OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj+1, start_i)
 
     print("\nReading in database from {}, running kmeans for {} clusters, filtering results < {}\n".format(db_out,kclusters, max_obj))
     # initialize empty df
@@ -54,7 +54,10 @@ def main(start_i=0):
         if i < len(objectives)-1:
             query_txt+="&"
     df = df.query(query_txt)
-    
+    df = df.query("FP4_BeamSpot < 1.01") 
+    print(df)
+    df = df.drop("FP4_BeamSpot", axis=1)
+
     # get costs and pass to pareto function
     costs = df[objectives]
     costs = np.array(costs)

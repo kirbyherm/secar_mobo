@@ -14,7 +14,7 @@
 #SBATCH --mem-per-cpu=5G
 ### you can give your job a name for easier identification
 #SBATCH -J pca 
-#SBATCH --array=607
+#SBATCH --array=903
 
 ### error/output file specifications
 #SBATCH -o /mnt/simulations/secarml/secar_mobo/sh/slurmfiles/moead_analysis%a.txt
@@ -24,6 +24,6 @@
 ###SBATCH --mail-type=FAIL
 ###module restore gpflow
 cd /mnt/simulations/secarml/secar_mobo/py
-./pca.py ${SLURM_ARRAY_TASK_ID} 1000
+./pca.py ${SLURM_ARRAY_TASK_ID} 1000 1
 scontrol show job ${SLURM_JOB_ID}
 

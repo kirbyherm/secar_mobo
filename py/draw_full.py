@@ -102,12 +102,12 @@ def plot_hists(df, df_reduce, filename):
     for i in range(magnet_dim):
 #        df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
         df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
-#    df_invalid = df.loc[np.sum(df,axis=1) >= 5e9]
-    df_invalid = df
+    df_invalid = df.loc[np.sum(df,axis=1) <= 3e9]
+#    df_invalid = df
     print(df_invalid)
     df_invalid = df_invalid.iloc[:,:19]
     df = df.iloc[:,:19]
-    df_clos = df_reduce.loc[df_reduce['closest']==True].sort_values(by=['FP4_BeamSpot']).reset_index(drop=True)
+    df_clos = df_reduce.loc[df_reduce['closest']==True].reset_index(drop=True)
     df_best = df_reduce.copy()
     df_reduce = df_reduce.iloc[:,:19]
     df = df.rename(columns=write_qnames)
@@ -118,6 +118,7 @@ def plot_hists(df, df_reduce, filename):
     axs = np.array(fig.axes)
     bins = np.linspace(-3,3,100)
     bins = np.logspace(-3,3,100,base=2.0)
+    print(min(bins), max(bins))
     hists = df.hist(bins=bins,log=True,ax=axs,grid=False)
 #    print(hists[0].bins)
 #    fig.yscale('log')
@@ -130,19 +131,20 @@ def plot_hists(df, df_reduce, filename):
     for i in range(len(axs)):
 #    for j in range(len(axs[i])):
 #        print(axs[i].get_ylim())
-        axs[i].set_ylim([2000,150000])
+        axs[i].set_ylim([2,150000])
         axs[i].set_ylabel('all points')
         axs[i].set_xscale('log')
-        if i != 9:
-#            axs[i].set_xlim([-2,2])
-            axs[i].set_xlim([0.25,4])
-        else:
-#            axs[i].set_xlim([-3,3])
-            axs[i].set_xlim([0.125,8])
+        axs[i].set_xlim([0.1,10])
+#        if i != 9:
+##            axs[i].set_xlim([-2,2])
+#            axs[i].set_xlim([0.25,4])
+#        else:
+##            axs[i].set_xlim([-3,3])
+#            axs[i].set_xlim([0.125,8])
         axs2[i] = axs[i].twinx()
-        axs2[i].set_ylim([2000,150000])
+        axs2[i].set_ylim([2,150000])
 #        axs2[i].set_ylim([1,int(1e5)])
-        axs2[i].set_ylabel('invalid points',rotation=-90)
+        axs2[i].set_ylabel('valid points',rotation=-90)
     number_of_clusters = np.max(df_best['kcluster']+1)
     colors = list(plt.get_cmap('tab20').colors)
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
@@ -182,7 +184,7 @@ def main(filename,batch):
     df = None
     if file_extension == ".h5":
         popi, df = read_pop_df(filename)
-    df_full = pd.read_hdf('../output/secar_{}d_db_{}s.h5'.format(configs['n_obj'],batch))
+    df_full = pd.read_hdf('../output/secar_{}d_db_{}s.h5'.format(configs['n_obj']+configs['n_con'],batch))
     plot_hists(df_full, df, "results_{}/".format(batch))
 
 if __name__=='__main__':

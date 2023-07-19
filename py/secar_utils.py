@@ -20,11 +20,11 @@ def load_configs(configFile = 'config.json'):
         if keys[i]=='fNominal':
             tempNom = configs['fNominal']
             plotNom = copy.deepcopy(tempNom)
-            for j in range(len(tempNom)):
-                if j < 3:
+            for j in tempNom.keys():
+                if "_res" in j:
                     tempNom[j] = 1/tempNom[j]
-                if j == 4:
-                    plotNom[j] = 100 * plotNom[j]
+#                elif j == 4:
+#                    plotNom[j] = 1 * plotNom[j]
             configDict['fNominal_plot'] = plotNom
             configDict['fNominal'] = tempNom
         else:
