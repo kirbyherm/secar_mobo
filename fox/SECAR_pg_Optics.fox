@@ -807,8 +807,8 @@ SETEFB; {SET THE DIPOLES EFB's and WF E- and B-FIELDS INHOMOGENEITIES}
 {YOU DEFINE THE INITIAL RAY PARAMETERS HERE}
 XX:=0.00075;
 YY:=0.00075;
-AX:=0.024;
-AY:=0.024;
+AX:=0.025;
+AY:=0.025;
 DE:= 0.031;
 {******************************************}
 
@@ -915,8 +915,8 @@ CR {Clears all rays}; UM;
 {N1=3 {# of rays: 7} -> -3 -2 -1 0 +1 +2 +3}        
 {N1=4 {# of rays: 9} -> -4 -3 -2 -1 0 +1 +2 +3 +4}  
 
-{N1:=1;N2:=3;N3:=1;N4:=1;N5:=2;}
-N1:=1;N2:=1;N3:=1;N4:=1;N5:=1;
+N1:=1;N2:=3;N3:=1;N4:=1;N5:=2;
+{N1:=1;N2:=1;N3:=1;N4:=1;N5:=1;}
 
 LOOP NX 1 2*N1+1;LOOP NA 1 2*N2+1;LOOP NY 1 2*N3+1;LOOP NB 1 2*N4+1;
 LOOP NE 1 2*N5+1;
