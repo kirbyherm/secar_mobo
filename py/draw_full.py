@@ -21,11 +21,11 @@ import secar_utils as secar_utils
 
 configs = secar_utils.load_configs()
 # specify Tex details for pretty plots
-os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
-#os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
-plt.rcParams.update({
-    "text.usetex": True,
-})
+#os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
+##os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
+#plt.rcParams.update({
+#    "text.usetex": True,
+#})
 
 kclusters = configs['clusters']
 optimized_params = configs['n_obj']
@@ -102,7 +102,10 @@ def plot_hists(df, df_reduce, filename):
     for i in range(magnet_dim):
 #        df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
         df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
-    df_invalid = df.loc[np.sum(df,axis=1) <= 3e9]
+#    df_invalid = df.loc[np.sum(df,axis=1) <= 3e9]
+    df_invalid = df.loc[df['FP2_res'] <= 1.00e0]
+#    df_invalid = df_invalid.loc[df_invalid['FP3_res'] <= 1.00e0]
+#    df_invalid = df_invalid.loc[df_invalid['MaxBeamWidth'] <= 1.00e0]
 #    df_invalid = df
     print(df_invalid)
     df_invalid = df_invalid.iloc[:,:19]
@@ -134,7 +137,7 @@ def plot_hists(df, df_reduce, filename):
         axs[i].set_ylim([2,150000])
         axs[i].set_ylabel('all points')
         axs[i].set_xscale('log')
-        axs[i].set_xlim([0.1,10])
+        axs[i].set_xlim([1/3.0,3])
 #        if i != 9:
 ##            axs[i].set_xlim([-2,2])
 #            axs[i].set_xlim([0.25,4])
@@ -166,7 +169,10 @@ def plot_hists(df, df_reduce, filename):
 #        axs2[j].text(df_invalid["q{0}".format(j+1)][i],(np.logspace(0.0,2.8,num=10)[df_clos['kcluster'][i]]),str(np.max(df_clos.loc[(df_clos['kcluster']==i)]['kcluster'])+1),color='black')
     for i in range(len(axs)):
         axs2[i].set_title("")
-
+        axs2[i].axvline(x=2**-0.1,color='red',linestyle='dashed')
+        axs2[i].axvline(x=2**0.1,color='red',linestyle='dashed')
+        if df_invalid.size>0:
+            print(np.log2(min(df_invalid.iloc[:,i])),np.log2(max(df_invalid.iloc[:,i])))
 #    print(hist)
     plt.savefig(filename+'full_hist_invalid.png')
 #    plt.savefig(filename+'full_hist.png')

@@ -24,7 +24,7 @@ def cut_data(df, objectives, max_obj):
     df_return = df.query(query_txt)
     return df_return
 
-def main(gens=generations, batch_id=210):
+def main(batch_id=210, gens=generations ):
 
     OUTPUT_PREFIX = OUTPUT_DIR + 'output'
     if batch_id < 100 and batch_id > 0:
@@ -69,9 +69,9 @@ def main(gens=generations, batch_id=210):
         if np.median(df_new.iloc[-int(len(df_new.index)*0.1):,-len(objectives):]) < 1e2:
             converged += 1
             converged_islands.append(i)
-        max_obj = 1
-        if len(cut_data(df_new,objectives,max_obj).index) > len(df_new.index)*0.01:
-            better_than_nominal += 1
+        max_obj = 1.01
+        if len(cut_data(df_new,objectives,max_obj).index) > 0:
+            better_than_nominal += len(cut_data(df_new,objectives,max_obj).index)
             better_than_nominal_islands.append(i)
         # append to existing df
         if i > start_i: # or os.path.exists(db_out):
@@ -86,14 +86,14 @@ def main(gens=generations, batch_id=210):
 #        for i in range(magnet_dim):
 ##            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
 #            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
-    df.loc[:,'MaxBeamWidth'] = df.loc[:,'MaxBeamWidth'].apply(lambda x: np.power(x, 1/2.0))
+    df.loc[:,'MaxBeamWidth'] = df.loc[:,'MaxBeamWidth'].apply(lambda x: np.power(x, 1/4.0))
     df.to_hdf(db_out,key='df')
     max_obj = 1e9
     # check for solutions strictly better than nominal (all objs < 1)
     df = cut_data(df, objectives, max_obj)
 #    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
     converged_points = len(df.index)
-    max_obj = 1
+    max_obj = 1.01
     # check for solutions strictly better than nominal (all objs < 1)
 #    df = df.loc[(df['FP1_res'] < max_obj) & (df['FP2_res'] < max_obj) & (df['FP3_res'] < max_obj) & (df['MaxBeamWidth'] < max_obj) & (df['FP4_BeamSpot'] <max_obj)]
     df = cut_data(df, objectives, max_obj)
@@ -104,7 +104,5 @@ if __name__=='__main__':
     inputs = sys.argv
     print(inputs)
     if len(inputs) > 1:
-        generations = int(inputs[1])
-    if len(inputs) > 2:
-        batch = int(inputs[2])
-    main(generations,batch)
+        batch = int(inputs[1])
+    main(batch)

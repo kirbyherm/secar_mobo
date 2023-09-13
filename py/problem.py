@@ -47,10 +47,8 @@ class optimizeRes:
     # define bounds of x values
     #   i.e. from -1 to 1 (powers of 2)
     def get_bounds(self):
-        qLower =zeros(self.dim) - 2
-        qUpper =zeros(self.dim) + 2
-        qLower[9] *= 1.5 
-        qUpper[9] *= 1.5 
+        qLower = array(configs['lower_bounds'])
+        qUpper = array(configs['upper_bounds'])
         return (qLower, qUpper)
 
     # define problem name

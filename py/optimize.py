@@ -21,6 +21,7 @@ import secar_utils as secar_utils
 configs = secar_utils.load_configs()
 fox_name = configs['fox_name']
 n_obj = configs['n_obj']
+n_con = configs['n_con']
 objectives_constraints = configs['objectives'] + configs['constraints']
 
 # take batch_no as input from command line (this specifies the output db)
@@ -45,15 +46,16 @@ seed = 56448180
 
 # MOEAD hyperparameters
 #   default parameters have worked well
-generations = 900
+generations = 320
 cr_p = 1.0 # crossover parameter, 1.0 by default
 f_p = 0.5 # diff evolution operator parameter, 0.5 by default
-eta_m = 5 # distribution index used by the polynomial mutation, 20 by default, lower value = higher variation, see sigma in eq. 7 of the moead/nsga2 paper
+eta_m = 1 # distribution index used by the polynomial mutation, 20 by default, lower value = higher variation, see sigma in eq. 7 of the moead/nsga2 paper
 realb = 0.9 # chance that the neighborhood is considered at each generation, rather than the whole population, 0.9 by default
 neighbors = 20 # size of the weight's neighborhood, 20 by default
 limit = 2 # max number of copies reinserted in the population if preserve_diversity=True, 2 by default
 preserve_diversity=True # activates diversity preservation mechanisms
 weight_generation='low discrepancy'
+pop_n = 1000
 
 # specify number of magnets to tune
 magnet_dim = configs['magnet_dim']
@@ -90,7 +92,7 @@ def main(db_out, pop_init=None ):
     # initialize problem
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim, TEMP_FOX_DIR))
 
-    pop_n = 1001
+#    pop_n = 1001
 
     save_freq = int(generations *0.10)
     save_freq = int(generations)
@@ -105,7 +107,7 @@ def main(db_out, pop_init=None ):
     # initialize algorithm with hyperparameters
     alg_constructor = None
     if 'secar_moead_custom' in sys.executable:
-        alg_constructor = pg.moead_gen(gen=save_freq,neighbours=neighbors,weight_generation=weight_generation,seed=seed,outfile=SCRATCH_DIR+"output{}.csv".format(batch_no))
+        alg_constructor = pg.moead_gen(gen=save_freq,neighbours=neighbors,weight_generation=weight_generation,eta_m=eta_m,seed=seed,outfile=SCRATCH_DIR+"output{}.csv".format(batch_no))
     else:
         alg_constructor = pg.moead_gen(gen=save_freq,neighbours=neighbors,weight_generation=weight_generation,seed=seed)
     b = pg.bfe()
@@ -155,13 +157,13 @@ def init_pop(dim,pop_size):
 
 # if want to read in a specific population (as from a previous run)
 #   read in from h5 file, with specified objectives
-def read_pop(filename, fox_dir=TEMP_FOX_DIR):
+def read_pop(filename, fox_dir=TEMP_FOX_DIR,pop_n=100):
     df = pd.read_hdf(filename)
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim, fox_dir))
     pop = pg.population(p_optimizeRes)
     nrow, ncol = df.shape
     print(df)
-    for i in range(nrow):
+    for i in range(nrow-pop_n,nrow):
         xs = []
         for j in range(magnet_dim):
             xs.append(df["q"+str(j+1)][i]) 
@@ -204,7 +206,7 @@ if __name__=='__main__':
     # if using a preexisting or want to pass an identical population
     pop2 = None
     if int(use_prev) > 0:
-        popi = read_pop(OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj, int(batch_no)-1), TEMP_FOX_DIR)
+        popi = read_pop(OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj+n_con, int(batch_no)-1), TEMP_FOX_DIR, pop_n)
         pop2 = main(TEMP_DIR + db_out, popi)
     # else just initialize and evolve random pop
     else:

@@ -13,6 +13,7 @@ from secar_utils import load_configs
 
 configs = load_configs('config.json')
 kclusters = configs['clusters']
+bounds = np.max((np.abs(configs['lower_bounds']),np.abs(configs['upper_bounds'])),axis=0)
 
 n_samples = 150
 n_components = 2
@@ -35,10 +36,11 @@ def plot_tsne(filename,filename_compare):
     magnets = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
     magnet_scale_factors = []
     for i in range(len(magnets)):
-        if magnets[i] == 'q10':
-            magnet_scale_factors.append([-3,3])
-        else: 
-            magnet_scale_factors.append([-2,2])
+#        if magnets[i] == 'q10':
+#            magnet_scale_factors.append([-3,3])
+#        else: 
+#            magnet_scale_factors.append([-2,2])
+        magnet_scale_factors.append([-bounds[i],bounds[i]])
     plot_combos = [[0,1],[2,3],[3,4],[2,4],[4,6],[6,9],[9,14],[12,14]]
 
     X = np.array(df[magnets])
@@ -141,18 +143,19 @@ def plot_tsne_linear(filename,filename_compare):
     for i in range(len(magnets)):
 #        df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
 #        df_compare.iloc[:,i] = df_compare.iloc[:,i].apply(lambda x: np.power(2,x))
-        if magnets[i] == 'q10':
-            magnet_scale_factors.append([0.125,8])
-        elif magnets[i] == 'q7':
-            magnet_scale_factors.append([0.25,3])
-        elif magnets[i] == 'q15':
-            magnet_scale_factors.append([0.25,2])
-#        elif magnets[i] == 'q2':
+#        if magnets[i] == 'q10':
+#            magnet_scale_factors.append([0.125,8])
+#        elif magnets[i] == 'q7':
+#            magnet_scale_factors.append([0.25,3])
+#        elif magnets[i] == 'q15':
 #            magnet_scale_factors.append([0.25,2])
-#        elif magnets[i] == 'q3':
-#            magnet_scale_factors.append([0.5,1])
-        else: 
-            magnet_scale_factors.append([0.25,2])
+##        elif magnets[i] == 'q2':
+##            magnet_scale_factors.append([0.25,2])
+##        elif magnets[i] == 'q3':
+##            magnet_scale_factors.append([0.5,1])
+#        else: 
+#            magnet_scale_factors.append([0.25,2])
+        magnet_scale_factors.append([2**(-bounds[i]),2**bounds[i]])
 #        magnet_scale_factors.append([0.125,8])
     plot_combos = [[0,1],[2,3],[3,4],[2,4],[4,6],[6,9],[9,14],[12,14]]
 

@@ -30,7 +30,7 @@ magnet_dim = configs['magnet_dim']
 max_obj = configs['max_obj']
 
 # specify Tex details for pretty plots
-os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
+#os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 #os.environ['PATH'] = os.environ['PATH'] + ':/usr/bin/tex'
 #plt.rcParams.update({
 #    "text.usetex": True,
@@ -97,7 +97,7 @@ def plot_pareto(df, df_compare, filename, PCA_run = False):
 #        j+=5-optimized_params
     plot_x, plot_y = 0,0
     fig, axs = plt.subplots(optimized_params-1,sharex=True)
-    fig.suptitle('Pareto Fronts of each parameter vs. BeamSpotSize at DSSD')
+    fig.suptitle('Pareto Fronts of each parameter vs. MaxBeamWidth')
     axs[optimized_params-2].set_xlabel("DSSD_BeamSpot")
 #    for obj in objectives[:-1]:
     for j in range(len(objectives[:-1])):

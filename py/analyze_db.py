@@ -54,9 +54,12 @@ def main(start_i=0):
         if i < len(objectives)-1:
             query_txt+="&"
     df = df.query(query_txt)
+#    df = df.query("FP2_res < 1.25")
     df = df.query("FP4_BeamSpot < 1.01") 
+    df = df.query("MaxBeamWidth < 1.01") 
     print(df)
     df = df.drop("FP4_BeamSpot", axis=1)
+#    df = df.drop("MaxBeamWidth", axis=1)
 
     # get costs and pass to pareto function
     costs = df[objectives]

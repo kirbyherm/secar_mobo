@@ -326,11 +326,13 @@ def cosyrun(qs, fNom, fox_name="SECAR_pg_Optics", directory_name=FOX_DIR):
             cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
             return resol
 
-    max_width = min(power(max_width, 2), scale*10)
-    if max_width > scale:
+    max_width = min(power(max_width, 4), scale*10)
+    if max_width > scale*0.01:
         resol = zeros(n_objs)+scale         
         cleanup_fox(cosyFilename, lisFilename, cosyFilename2, lisFilename2)
         return resol 
+    elif max_width > power(4.4,4):
+        max_width *= 100
 
     # if within constraints, set resol temporarily
     try:
