@@ -112,6 +112,12 @@ def plot_pareto(df, df_compare, filename, PCA_run = False):
         axs[plot_y].axhline(y=fNom[objectives[j]],linestyle="dashed",color="red")
         cmap = matplotlib.colors.ListedColormap(matplotlib.cm.get_cmap("Pastel1").colors[:3])
         colors_x = np.zeros((2,2)) 
+#        if PCA_run:
+#        axs[plot_y].axes.set_xlim([0.85,1.03])
+        if plot_y==0:
+            axs[plot_y].axes.set_ylim([1,9])
+        elif plot_y==1:
+            axs[plot_y].axes.set_ylim([1.5,12.5])
         print(axs[plot_y].get_xlim(), axs[plot_y].get_ylim())
         xlims = [axs[plot_y].get_xlim()[0], fNom[objectives[sort_param]], axs[plot_y].get_xlim()[1]]
         ylims = [axs[plot_y].get_ylim()[0], fNom[objectives[j]], axs[plot_y].get_ylim()[1]]
@@ -164,8 +170,12 @@ def main(filename, filename_compare):
             query_txt += objectives[i] + "<{}".format(max_obj)
             if i < len(objectives)-1:
                 query_txt+="&"
+        df_compare = df_compare.query("MaxBeamWidth < 1.01") 
+        df_compare = df_compare.query("FP4_BeamSpot < 1.01") 
         df_compare = df_compare.query(query_txt)
         df = df_compare
+#        df_compare = df_compare.query("FP4_BeamSpot==1.0")
+#        df = df_compare
         filename=filename_compare
         PCA_run = True
         print(PCA_run)

@@ -2,12 +2,13 @@
 
 #import commands
 import sys, math
-import os, shutil, signal
+import os, shutil, signal 
 import subprocess as commands
 import re
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 import time
 import itertools
 import timeit
@@ -15,6 +16,7 @@ import timeit
 import pygmo as pg
 from problem import optimizeRes
 import pandas as pd
+import secar_utils as secar_utils
 
 os.environ['PATH'] = os.environ['PATH'] + ':/mnt/misc/sw/indep/all/texlive/2013/bin/x86_64-linux/latex'
 
@@ -33,6 +35,16 @@ fNom = [1,1,1,1]
 fNames = [r"{FP2-res}${}^{-1}$",r"{FP3-res}${}^{-1}$",r"MaxBeamWidth",r"BeamSpotSize"]
 fNames = fNames[:optimized_params]
 
+configs = secar_utils.load_configs()
+
+kclusters = configs['clusters']
+optimized_params = configs['n_obj'] + configs['n_con']
+objectives = configs['objectives']
+fNom = configs['fNominal_plot']
+fNom_keys = list(fNom.keys())
+magnet_dim = configs['magnet_dim']
+max_obj = configs['max_obj']
+
 
 def is_pareto_efficient_simple(costs):
     """
@@ -48,11 +60,10 @@ def is_pareto_efficient_simple(costs):
             is_efficient[i] = True  # And keep self
     return is_efficient
 
-def read_pop_df(filename, pop=None):
-    df = pd.read_hdf(filename)
-    max_val = 1e9
-    df = df.loc[(df['FP2_res'] < max_val) & (df['FP3_res'] < max_val) & (df['MaxBeamWidth'] < max_val) & (df['FP4_BeamSpot'] <max_val)]
-    df = df.reindex()
+def read_pop_df(df, pop=None):
+#    max_val = 1e9
+#    df = df.loc[(df['FP2_res'] < max_val) & (df['FP3_res'] < max_val) & (df['MaxBeamWidth'] < max_val) & (df['FP4_BeamSpot'] <max_val)]
+#    df = df.reindex()
     magnet_dim = len(df.columns)-optimized_params
 #    df = df.loc[(df['FP2_res'] < 1.0) & (df['FP2_e_xangle'] < 1.0) & (df['FP3_res'] < 1.0) & (df['FP3_e_xangle'] <1.0)]
 #    costs = df[['FP2_res','FP2_e_xangle','FP3_res','FP3_e_xangle']]
@@ -73,7 +84,7 @@ def read_pop_df(filename, pop=None):
     nrow, ncol = df.shape
 #    print(df.index)
     for i in df.index:
-        if i >26000:
+        if i >90000:
             break
 #        print(i)
         append=True
@@ -146,7 +157,6 @@ def plot_2d_evo(popi):
 #    print(pg.sort_population_mo(popi.get_f()))
     ndf_champ = []
 
-#    for j in range(2,200):
 #    print(pg.ideal(popi.get_f())[0])
     print(ndf)
 #    x = np.linspace(pg.ideal(popi.get_f())[0],0)
@@ -154,6 +164,7 @@ def plot_2d_evo(popi):
     old_ndf, new_ndf = np.zeros(1), np.zeros(1) 
     n_plots = 0
     for j in range(2,len(popi.get_f())):
+#    for j in range(2,200):
 #        print(x,y)
 #        plt.plot(x,y,linestyle="dashed",color="red")
 #        print(ndf)
@@ -167,17 +178,31 @@ def plot_2d_evo(popi):
             if len(ndf[0]) <=1:
                 continue
             n_plots += 1
-            plt.cla()
+            plt.clf()
             ax = pg.plot_non_dominated_fronts(popi.get_f()[ndf[0]],comp=[0,1])
             ax.set_ylabel(fNames[1])
             ax.set_xlabel(fNames[0])
+            ax.set_title("Two Objective Minimization")
+            ax.set_ylabel(r"$f_1$")
+            ax.set_xlabel(r"$f_2$")
             ax.set_ylim(1e-1,1e1)
             ax.set_yscale('log')
             ax.set_xlim(0.1,10.0)
             ax.set_xscale('log')
-            ax.axvline(x=fNom[0],linestyle="dashed",color="red")
+#            ax.axvline(x=fNom[fNom_keys[0]],linestyle="dashed",color="red")
+            ax.axvline(x=1.0,linestyle="dashed",color="red")
 #            axs[plot_y].axvline(x=best_point[0],linestyle="dotted",color="blue")
+#            ax.axhline(y=fNom[fNom_keys[1]],linestyle="dashed",color="red")
             ax.axhline(y=1.0,linestyle="dashed",color="red")
+            cmap = matplotlib.colors.ListedColormap(matplotlib.cm.get_cmap("Pastel1").colors[:3])
+            colors_x = np.zeros((2,2)) 
+            for colori in range(colors_x.shape[0]):
+                for colorj in range(colors_x.shape[1]):
+                    colors_x[colori,colorj] = 0
+            colors_x[0,0] = 2
+            xlims = [ax.get_xlim()[0], 1, ax.get_xlim()[1]]
+            ylims = [ax.get_ylim()[0], 1, ax.get_ylim()[1]]
+            ax.pcolormesh(xlims, ylims, colors_x, cmap=cmap)
 #            ax.set_xlabel('resolution')
 #            ax.set_ylabel('xangle_e_min')
 #            ax.set_ylim(1e-3,1000)
@@ -189,11 +214,32 @@ def plot_2d_evo(popi):
     return
 
 def main(filename):
-    popi = read_pop_df(filename)
-    hv = pg.hypervolume(popi)
-    ref_point = (1e10,1e10,1e10,1e10) 
-    hv.compute(ref_point = ref_point)
-    print(hv.compute(ref_point = ref_point))
+    print("\nDrawing the pareto front of the points\n")
+    file_extension = os.path.splitext(filename)[-1]
+    print(os.path.split(filename))
+    popi = None
+    print("reading {} file".format(file_extension))
+    df = pd.read_hdf(filename)
+    i = 0
+    max_val = 1e9
+    df = df.loc[(df['FP2_res'] < max_val) & (df['FP3_res'] < max_val) & (df['MaxBeamWidth'] < max_val) & (df['FP4_BeamSpot'] <max_val)]
+    df = df.query("FP4_BeamSpot < 1.01") 
+    
+    for fNom_i in range(len(fNom)):
+#        if fNom_i in [0,4]:
+#            continue
+        if i < len(objectives):    
+            if fNom_keys[fNom_i] not in df.columns: 
+                continue
+        else:
+            break
+        print(i, objectives[i], fNom_i, fNom[fNom_keys[fNom_i]])
+#        if "_res" in objectives[i]:
+#            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[objectives[i]] / x)
+#        else:
+#            df[objectives[i]] = df[objectives[i]].apply(lambda x: fNom[objectives[i]] * x)
+        i += 1
+    popi = read_pop_df(df)
     plot_2d_evo(popi)
 
 if __name__=='__main__':

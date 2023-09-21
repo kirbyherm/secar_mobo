@@ -15,6 +15,9 @@ import matplotlib
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import warnings
+from itertools import repeat
+
+from multiprocessing import Pool, Process, Queue, current_process, freeze_support
 
 warnings.filterwarnings( "ignore", module = "matplotlib*" )
 
@@ -26,6 +29,8 @@ configs = secar_utils.load_configs()
 
 kclusters = configs['clusters']
 n_obj = configs['n_obj']
+n_con = configs['n_con']
+magnet_dim = configs['magnet_dim']
 objectives = configs['objectives']
 fNom = configs['fNominal']
 
@@ -39,24 +44,60 @@ def make_db_row( quads, resol, cluster, columns ):
     new_row['closest'] = False
     new_row['ssobjs'] = 10
     for j in range(len(columns)):
-        if j < 19:
+        if j < magnet_dim:
             new_row[columns[j]] = quads[j]
-        elif j < 19+n_obj:
-            new_row[columns[j]] = resol[j-19]
+        elif j < magnet_dim+n_obj+n_con:
+            new_row[columns[j]] = resol[j-magnet_dim]
         else:
             break
     return new_row
 
-def main(results_no=0, samples=2):
+def make_array_row( quads, resol, cluster, columns ):
+    new_row = []
+    for j in range(len(columns)):
+        if j < magnet_dim:
+            new_row.append(quads[j])
+        elif j < magnet_dim+n_obj+n_con:
+            new_row.append(resol[j-magnet_dim])
+        else:
+            break
+    new_row.append(np.sum(np.power(new_row[magnet_dim:magnet_dim+n_obj+n_con],2)))
+    new_row.append(cluster)
+    new_row.append(0)
+    return new_row
+
+def parallel_eval(i,data, pca, mu, nComp, cluster):
+
+    scale_check = False
+    xrand = np.zeros(shape=(1,magnet_dim))
+    while not scale_check:
+        xrand = np.random.normal(scale=np.sqrt(pca.explained_variance_), size=(1, magnet_dim))
+        Xhat = np.dot(xrand[:,:nComp], pca.components_[:nComp,:])
+        Xhat += mu
+        Xhat = Xhat.reshape((magnet_dim,))
+        if min(Xhat) >= 0:
+            scale_check = True
+        if not scale_check:
+            print("magnet factors outside bounds, re randomizing \n")        
+    
+    resol = np.zeros(configs['n_obj']+configs['n_con'])
+    resol = cosyrun(Xhat, fNom)
+    new_row = make_array_row( Xhat, resol, cluster, data.columns.insert(magnet_dim+n_obj,"FP4_BeamSpot") )
+#    dataPCAtemp = pd.DataFrame(data=new_row,index=[0])
+#    dataPCA = pd.concat([dataPCA, dataPCAtemp],ignore_index=True)
+    return new_row
+
+def main(results_no=0, samples=2, n_threads=1):
 
 
     magnets = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
     magnet_scale_factors = []
     for i in range(len(magnets)):
-        if magnets[i] == 'q10':
-            magnet_scale_factors.append([0.125,8])
-        else: 
-            magnet_scale_factors.append([0.25,4])
+#        if magnets[i] == 'q10':
+#            magnet_scale_factors.append([0.125,8])
+#        else: 
+#            magnet_scale_factors.append([0.25,4])
+        magnet_scale_factors.append([np.power(2,configs['lower_bounds'][i]),np.power(2,configs['upper_bounds'][i])])
     filepath = './results_{}/'.format(results_no)
     filename = filepath + 'best{}.h5'.format(results_no)
     data = pd.read_hdf(filename)
@@ -69,8 +110,8 @@ def main(results_no=0, samples=2):
     mu = None
     nComp = 5
     
-    dataPCA = pd.DataFrame(columns = data.columns)
-    dataPCAT = pd.DataFrame(columns = data.columns)
+    dataPCA = pd.DataFrame(columns = data.columns.insert(magnet_dim+n_obj,"FP4_BeamSpot"))
+    dataPCAT = pd.DataFrame(columns = data.columns.insert(magnet_dim+n_obj,"FP4_BeamSpot"))
     n_clusters = kclusters
 #    fig, ax = plt.subplots(2,1)
     plot_combos = [[0,1],[2,3],[3,4],[2,4],[4,6],[6,9],[9,14],[12,14]]
@@ -88,50 +129,25 @@ def main(results_no=0, samples=2):
         X = X.transform(x1)
         
         # Compute PCA
-        pca = PCA(n_components = 19).fit(X)
-        print(pca.components_)
-        print(pca.explained_variance_)
-        print(np.var(X, axis=0))
-        #print(pca.singular_values_)
-        print(np.dot(pca.components_[0], pca.components_[1]))
-    
-        # Reverse PCA
-        nComp = 5
-    
-#        samples = 1000
-#        samples = 2 
-        comp_1 = np.zeros(samples)
-        comp_2 = np.zeros(samples) 
-        m = comp_1
-        for i in range(samples):
-            scale_check = False
-            xrand = np.zeros(shape=(1,19))
-            while not scale_check:
-                xrand = np.random.normal(scale=np.sqrt(pca.explained_variance_), size=(1, 19))
-                Xhat = np.dot(xrand[:,:nComp], pca.components_[:nComp,:])
-                Xhat += mu
-                Xhat = Xhat.reshape((19,))
-#                print(Xhat, x1.iloc[0,:], Xhat - x1.iloc[0,:])
-                if min(Xhat) >= 0:
-                    scale_check = True
-                if not scale_check:
-                    print("magnet factors outside bounds, re randomizing \n")        
-        #    Xhat = np.zeros(19)+1
-        #    Xhat = x1.iloc[0,:]
-            
-            resol = np.zeros(5)
-            if n_obj < 5:
-                resol = cosyrun(Xhat, fNom)[1:]
-            else:
-                resol = cosyrun(Xhat, fNom)
-#            print(new_row)
-            new_row = make_db_row( Xhat, resol, cluster, data.columns )
+        pca = PCA(n_components = magnet_dim).fit(X)
+        # set up and run parallel minimization for n_sims samples
+#        dataPCA = pd.read_hdf('results_2011/best2011PCA.h5')
+        NUMBER_OF_PROCESSES = n_threads
+        pool = Pool(processes = NUMBER_OF_PROCESSES)
+        r = pool.starmap_async(parallel_eval, zip(range(samples), repeat(data), repeat(pca), repeat(mu), repeat(nComp), repeat(cluster)))
+        #r = pool.apply_async(parallel_eval, args=( range(samples), data, cluster))
+        r.wait()
+#        r_return = np.array(r.get())
+        for i in r.get():
+            print(i)
+            cols = dataPCA.columns
+            new_row = {}
+            for j in range(len(i)):
+                new_row[dataPCA.columns[j]]=i[j]
             dataPCAtemp = pd.DataFrame(data=new_row,index=[0])
             dataPCA = pd.concat([dataPCA, dataPCAtemp],ignore_index=True)
-#            new_row = make_db_row( xrand.reshape((5,)), resol, cluster, data.columns )
-#            dataPCAtemp = pd.DataFrame(data=new_row,index=[0])
-#            dataPCAT = dataPCAT.append(dataPCAtemp,ignore_index=True)
         plot_x, plot_y = 0, 0
+        pca = PCA(n_components = magnet_dim).fit(X)
         for pair in plot_combos:
         
             ax = subplots[plot_y][plot_x]
@@ -159,6 +175,17 @@ def main(results_no=0, samples=2):
     #    cosyrun(x1.iloc[0,:])
     db_out = 'results_{}/best{}PCA.h5'.format(results_no,results_no)
     dataPCA.to_hdf(db_out,key='df')
+    query_txt= ''
+    max_obj=configs['max_obj']
+    for i in range(len(objectives)):
+        query_txt += objectives[i] + "<{}".format(max_obj)
+        if i < len(objectives)-1:
+            query_txt+="&"
+    query_txt+="&FP4_BeamSpot==1.0"
+    print(dataPCA)
+    dataPCA = dataPCA.query(query_txt)
+    dataPCA = dataPCA.drop("FP4_BeamSpot",axis=1)
+    print(dataPCA)
 #    draw_cluster.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
     draw_cluster_inverse.main(db_out, db_out) 
     dataPCA.to_hdf('../output/secar_{}d_db_{}s_PCA.h5'.format(n_obj, results_no),key='df')
@@ -186,6 +213,8 @@ def draw_pca(pca, x1, results_no):
 #    plt.show()
     plt.savefig('results_{}/best{}PCA.h5_Comps.png'.format(results_no, results_no) )
 
+    plt.cla()
+    fig, ax = plt.subplots(1, 1)
     # Plot PCA components # Remember to include the mean if using these components!!!
     for i in range(5):
         plt.plot(np.arange(1,20,1), pca.components_[i], label = str(i+1), linewidth=5-5*sumS[i])
@@ -223,7 +252,8 @@ def draw_pca(pca, x1, results_no):
 if __name__=='__main__':
 
     import sys
-    script, first, second = sys.argv
+    script, first, second, third = sys.argv
     results_no = int(first) 
     samples = int(second)
-    main(results_no, samples)
+    n_threads = int(third)
+    main(results_no, samples, n_threads)

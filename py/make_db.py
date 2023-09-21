@@ -86,7 +86,7 @@ def main(batch_id=210, gens=generations ):
 #        for i in range(magnet_dim):
 ##            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
 #            df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
-    df.loc[:,'MaxBeamWidth'] = df.loc[:,'MaxBeamWidth'].apply(lambda x: np.power(x, 1/4.0))
+#    df.loc[:,'MaxBeamWidth'] = df.loc[:,'MaxBeamWidth'].apply(lambda x: np.power(x, 1/4.0))
     df.to_hdf(db_out,key='df')
     max_obj = 1e9
     # check for solutions strictly better than nominal (all objs < 1)
