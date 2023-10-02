@@ -27,7 +27,7 @@ n_obj = configs['n_obj']
 objectives = configs['objectives']
 max_obj = configs['max_obj']
 
-def main(start_i=0):
+def main(start_i=0, pca_bool=False):
 
     # specify database for input
     db_out = OUTPUT_DIR + "secar_{}d_db_{}s.h5".format(n_obj+1, start_i)
@@ -56,7 +56,7 @@ def main(start_i=0):
     df = df.query(query_txt)
 #    df = df.query("FP2_res < 1.25")
     df = df.query("FP4_BeamSpot < 1.01") 
-    df = df.query("MaxBeamWidth < 1.01") 
+#    df = df.query("MaxBeamWidth < 1.01") 
     print(df)
     df = df.drop("FP4_BeamSpot", axis=1)
 #    df = df.drop("MaxBeamWidth", axis=1)
@@ -86,8 +86,9 @@ def main(start_i=0):
             magnet_dim = q+1
 
     df_lin = df.copy()
-    for i in range(magnet_dim):
-        df_lin.iloc[:,i] = df_lin.iloc[:,i].apply(lambda x: np.power(2,x))
+    if not pca_bool:
+        for i in range(magnet_dim):
+            df_lin.iloc[:,i] = df_lin.iloc[:,i].apply(lambda x: np.power(2,x))
     df = secar_utils.run_kmeans(df, magnet_dim, kclusters)
     df_lin = secar_utils.run_kmeans(df_lin, magnet_dim, kclusters)
 
@@ -116,7 +117,8 @@ def main(start_i=0):
 
     # print the magnet scale factors for the best FP4_BeamSpot points
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','h1','h2','h3','o1']
-    (df.loc[df['closest']==True].iloc[:,:19]).round(5).to_csv(RESULTS_DIR+'magnet_factors.csv',header=write_qnames,index=False)
+    write_qnames = write_qnames[:configs['magnet_dim']]
+    (df.loc[df['closest']==True].iloc[:,:configs['magnet_dim']]).round(5).to_csv(RESULTS_DIR+'magnet_factors.csv',header=write_qnames,index=False)
 
     # write only the magnet values and objective values to df
     df = df.drop('pareto',axis=1)

@@ -14,7 +14,7 @@
 #SBATCH --mem-per-cpu=5G
 ### you can give your job a name for easier identification
 #SBATCH -J pca 
-#SBATCH --array=11
+#SBATCH --array=14
 
 ### error/output file specifications
 #SBATCH -o /mnt/simulations/secarml/secar_mobo/sh/slurmfiles/moead_analysis%a.txt

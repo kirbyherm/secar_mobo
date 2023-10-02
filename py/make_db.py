@@ -3,7 +3,9 @@
 # import commands
 import numpy as np
 import pandas as pd
+import secar_utils as secar_utils
 import os, sys
+configs = secar_utils.load_configs()
 
 # specify important directories and names
 PYGMO_DIR = "../"
@@ -12,7 +14,7 @@ generations = 750
 population_size = 1001
 batch = 230
 # specify number of magnets
-magnet_dim = 19
+magnet_dim = configs['magnet_dim']
 
 def cut_data(df, objectives, max_obj):
     if type(max_obj) in [int,float]: max_obj = np.zeros(len(objectives))+max_obj

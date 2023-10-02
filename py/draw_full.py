@@ -36,7 +36,6 @@ magnet_dim = configs['magnet_dim']
 # read pop from h5 file (i.e. after running view_db.py)
 def read_pop_df(filename, pop=None):
     df = pd.read_hdf(filename)
-    magnet_dim = 19
     p_optimizeRes = pg.problem(optimizeRes(magnet_dim))
     nobj = p_optimizeRes.get_nobj()
     if pop == None:
@@ -98,8 +97,10 @@ def read_pop(filename,pop=None):
 
 def plot_hists(df, df_reduce, filename):
 
-    write_qnames = {'q1':'q1','q2':'q2','q3':'q3','q4':'q4','q5':'q5','q6':'q6','q7':'q7','q8':'q8','q9':'q9','q10':'q10','q11':'q11','q12':'q12','q13':'q13','q14':'q14','q15':'q15','q16':'h1','q17':'h2','q18':'h3','q19':'o1'}
+    write_qnames_temp = {'q1':'q1','q2':'q2','q3':'q3','q4':'q4','q5':'q5','q6':'q6','q7':'q7','q8':'q8','q9':'q9','q10':'q10','q11':'q11','q12':'q12','q13':'q13','q14':'q14','q15':'q15','q16':'h1','q17':'h2','q18':'h3','q19':'o1'}
+    write_qnames={}
     for i in range(magnet_dim):
+        write_qnames[list(write_qnames_temp.keys())[i]] = write_qnames_temp[list(write_qnames_temp.keys())[i]]
 #        df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.log2(np.power(2,x)*scale_factor[i]))
         df.iloc[:,i] = df.iloc[:,i].apply(lambda x: np.power(2,x))
 #    df_invalid = df.loc[np.sum(df,axis=1) <= 3e9]
@@ -108,19 +109,24 @@ def plot_hists(df, df_reduce, filename):
 #    df_invalid = df_invalid.loc[df_invalid['MaxBeamWidth'] <= 1.00e0]
 #    df_invalid = df
     print(df_invalid)
-    df_invalid = df_invalid.iloc[:,:19]
-    df = df.iloc[:,:19]
+    df_invalid = df_invalid.iloc[:,:magnet_dim]
+    df = df.iloc[:,:magnet_dim]
     df_clos = df_reduce.loc[df_reduce['closest']==True].reset_index(drop=True)
     df_best = df_reduce.copy()
-    df_reduce = df_reduce.iloc[:,:19]
+    df_reduce = df_reduce.iloc[:,:magnet_dim]
     df = df.rename(columns=write_qnames)
 #    fig = plt.figure(1)
-    fig, axs = plt.subplots(5,4)
-#    print(axs)
-    fig.delaxes(axs[4][3])
+    x_plots = 5
+    y_plots = math.ceil(magnet_dim / x_plots)
+    fig, axs = plt.subplots(x_plots,y_plots)
+    print(axs)
+    if y_plots > 1:
+        for i in range(x_plots-1,magnet_dim % x_plots + 1):
+            fig.delaxes(axs[i][y_plots-1])
+    print(axs)
     axs = np.array(fig.axes)
     bins = np.linspace(-3,3,100)
-    bins = np.logspace(-3,3,100,base=2.0)
+    bins = np.logspace(-2,2,100,base=2.0)
     print(min(bins), max(bins))
     hists = df.hist(bins=bins,log=True,ax=axs,grid=False)
 #    print(hists[0].bins)
@@ -145,37 +151,38 @@ def plot_hists(df, df_reduce, filename):
 ##            axs[i].set_xlim([-3,3])
 #            axs[i].set_xlim([0.125,8])
         axs2[i] = axs[i].twinx()
-        axs2[i].set_ylim([2,150000])
+        axs2[i].set_ylim([2,1000])
 #        axs2[i].set_ylim([1,int(1e5)])
         axs2[i].set_ylabel('valid points',rotation=-90)
     number_of_clusters = np.max(df_best['kcluster']+1)
     colors = list(plt.get_cmap('tab20').colors)
     write_qnames = ['q1','q2','q3','q4','q5','q6','q7','q8','q9','q10','q11','q12','q13','q14','q15','q16','q17','q18','q19']
 #    print(df_best,axs2)
+    write_qnames = write_qnames[:magnet_dim]
     df_clos['yplot'] = 0
-#    for i in range(number_of_clusters):
+    for i in range(number_of_clusters):
 ##                ax = df.loc[(df['kcluster']==i)].plot(x='FP4_BeamSpot',y=obj,style='o',color=colors[i],label=df_clos.loc[df_clos['kcluster']==i].index[0]+1,markersize=3.0)
-#        hist = df_best.loc[df_best['kcluster']==i][write_qnames].hist(bins=bins,log=True,ax=axs2,color=np.array([colors[i+1]]),label=df_clos.loc[(df_clos['kcluster']==i)].index[0]+1,grid=False)
-#        for j in range(len(axs)):
-#            y_min, y_max = axs2[j].get_ylim()
-##            df_clos['yplot'][i] = df_clos.index*(y_max-y_min)+y_min
+        hist = df_best.loc[df_best['kcluster']==i][write_qnames].hist(bins=bins,log=True,ax=axs2,color=np.array([colors[i+1]]),label=df_clos.loc[(df_clos['kcluster']==i)].index[0]+1,grid=False)
+        for j in range(len(axs)):
+            y_min, y_max = axs2[j].get_ylim()
+            df_clos.loc[df_clos['kcluster']==i,'yplot'] = df_clos.loc[df_clos['kcluster']==i,'yplot'].index*(y_max-y_min)/number_of_clusters+y_min
 ##            print((df_clos['kcluster'][i])*(np.logspace(1.0,3.0,num=10)[i]),(df_clos['kcluster'][i]),(np.logspace(0.0,2.5,num=10)[i]))
-#            axs2[j].text(df_clos["q{0}".format(j+1)][i],(np.logspace(0.0,2.8,num=10)[df_clos['kcluster'][i]]),str(np.max(df_clos.loc[(df_clos['kcluster']==i)]['kcluster'])+1),color='black')
-    hist = df_invalid[write_qnames].hist(bins=bins,log=True,ax=axs2,color='k',label="invalid",grid=False)
+#            axs2[j].text(df_clos.loc[df_clos['kcluster']==i,"q{0}".format(j+1)],(np.logspace(1.0,3,num=10)[df_clos.loc[df_clos['kcluster']==i,'kcluster']]),str(np.max(df_clos.loc[(df_clos['kcluster']==i),'kcluster'])+1),color='black')
+#    hist = df_invalid[write_qnames].hist(bins=bins,log=True,ax=axs2,color='k',label="invalid",grid=False)
 #    for j in range(len(axs)):
 #        y_min, y_max = axs2[j].get_ylim()
 #            df_clos['yplot'][i] = df_clos.index*(y_max-y_min)+y_min
 #            print((df_clos['kcluster'][i])*(np.logspace(1.0,3.0,num=10)[i]),(df_clos['kcluster'][i]),(np.logspace(0.0,2.5,num=10)[i]))
 #        axs2[j].text(df_invalid["q{0}".format(j+1)][i],(np.logspace(0.0,2.8,num=10)[df_clos['kcluster'][i]]),str(np.max(df_clos.loc[(df_clos['kcluster']==i)]['kcluster'])+1),color='black')
-    for i in range(len(axs)):
-        axs2[i].set_title("")
-        axs2[i].axvline(x=2**-0.1,color='red',linestyle='dashed')
-        axs2[i].axvline(x=2**0.1,color='red',linestyle='dashed')
-        if df_invalid.size>0:
-            print(np.log2(min(df_invalid.iloc[:,i])),np.log2(max(df_invalid.iloc[:,i])))
+#    for i in range(len(axs)):
+#        axs2[i].set_title("")
+#        axs2[i].axvline(x=2**-0.1,color='red',linestyle='dashed')
+#        axs2[i].axvline(x=2**0.1,color='red',linestyle='dashed')
+#        if df_invalid.size>0:
+#            print(np.log2(min(df_invalid.iloc[:,i])),np.log2(max(df_invalid.iloc[:,i])))
 #    print(hist)
-    plt.savefig(filename+'full_hist_invalid.png')
-#    plt.savefig(filename+'full_hist.png')
+#    plt.savefig(filename+'full_hist_invalid.png')
+    plt.savefig(filename+'full_hist.png')
     
     return
 

@@ -129,23 +129,23 @@ def main(results_no=0, samples=2, n_threads=1):
         X = X.transform(x1)
         
         # Compute PCA
-        pca = PCA(n_components = magnet_dim).fit(X)
-        # set up and run parallel minimization for n_sims samples
-#        dataPCA = pd.read_hdf('results_2011/best2011PCA.h5')
-        NUMBER_OF_PROCESSES = n_threads
-        pool = Pool(processes = NUMBER_OF_PROCESSES)
-        r = pool.starmap_async(parallel_eval, zip(range(samples), repeat(data), repeat(pca), repeat(mu), repeat(nComp), repeat(cluster)))
-        #r = pool.apply_async(parallel_eval, args=( range(samples), data, cluster))
-        r.wait()
-#        r_return = np.array(r.get())
-        for i in r.get():
-            print(i)
-            cols = dataPCA.columns
-            new_row = {}
-            for j in range(len(i)):
-                new_row[dataPCA.columns[j]]=i[j]
-            dataPCAtemp = pd.DataFrame(data=new_row,index=[0])
-            dataPCA = pd.concat([dataPCA, dataPCAtemp],ignore_index=True)
+#        pca = PCA(n_components = magnet_dim).fit(X)
+#        # set up and run parallel minimization for n_sims samples
+        dataPCA = pd.read_hdf('results_2011/best2011PCA.h5')
+#        NUMBER_OF_PROCESSES = n_threads
+#        pool = Pool(processes = NUMBER_OF_PROCESSES)
+#        r = pool.starmap_async(parallel_eval, zip(range(samples), repeat(data), repeat(pca), repeat(mu), repeat(nComp), repeat(cluster)))
+#        #r = pool.apply_async(parallel_eval, args=( range(samples), data, cluster))
+#        r.wait()
+##        r_return = np.array(r.get())
+#        for i in r.get():
+#            print(i)
+#            cols = dataPCA.columns
+#            new_row = {}
+#            for j in range(len(i)):
+#                new_row[dataPCA.columns[j]]=i[j]
+#            dataPCAtemp = pd.DataFrame(data=new_row,index=[0])
+#            dataPCA = pd.concat([dataPCA, dataPCAtemp],ignore_index=True)
         plot_x, plot_y = 0, 0
         pca = PCA(n_components = magnet_dim).fit(X)
         for pair in plot_combos:
@@ -174,7 +174,7 @@ def main(results_no=0, samples=2, n_threads=1):
     plt.savefig(filepath+'pca_transformed')
     #    cosyrun(x1.iloc[0,:])
     db_out = 'results_{}/best{}PCA.h5'.format(results_no,results_no)
-    dataPCA.to_hdf(db_out,key='df')
+#    dataPCA.to_hdf(db_out,key='df')
     query_txt= ''
     max_obj=configs['max_obj']
     for i in range(len(objectives)):
@@ -188,12 +188,27 @@ def main(results_no=0, samples=2, n_threads=1):
     print(dataPCA)
 #    draw_cluster.main(data, dataPCA, 'results_{}/best{}PCA.h5'.format(results_no, results_no)) 
     draw_cluster_inverse.main(db_out, db_out) 
-    dataPCA.to_hdf('../output/secar_{}d_db_{}s_PCA.h5'.format(n_obj, results_no),key='df')
+#    dataPCA.to_hdf('../output/secar_{}d_db_{}s_PCA.h5'.format(n_obj, results_no),key='df')
 #    print(x1.iloc[0,:],X[0,:],Xhat[0,:])
-    draw_pca(pca, x1, results_no)
+    for cluster in data.loc[data['ssobjs']==data['ssobjs'].min(),'kcluster']:
+        x1 = data[data.kcluster == cluster].iloc[:,:19]
+        #x1 = data.iloc[:,:19]
+        
+        # Compute mean
+        X = StandardScaler(with_std = False) 
+        X = X.fit(x1)
+        mu = X.mean_
+    #    print(X.mean_, X.var_)
+        X = X.transform(x1)
+        
+        # Compute PCA
+        pca = PCA(n_components = magnet_dim).fit(X)
+        
+
+    draw_pca(pca, x1, mu, results_no)
     return     
 
-def draw_pca(pca, x1, results_no):
+def draw_pca(pca, x1, mu, results_no):
     
     # Singular values and cumulative energy
     S = pca.singular_values_
@@ -215,9 +230,14 @@ def draw_pca(pca, x1, results_no):
 
     plt.cla()
     fig, ax = plt.subplots(1, 1)
+    with open('results_{}/components.csv'.format(results_no), 'w') as f:
     # Plot PCA components # Remember to include the mean if using these components!!!
-    for i in range(5):
-        plt.plot(np.arange(1,20,1), pca.components_[i], label = str(i+1), linewidth=5-5*sumS[i])
+        mu.tofile(f,',')
+        f.write('\n')
+        for i in range(5):
+            plt.plot(np.arange(1,20,1), pca.components_[i], label = str(i+1), linewidth=5-5*sumS[i])
+            pca.components_[i].tofile(f,',')
+            f.write('\n')
     plt.legend()
     ticks = np.arange(0, len(pca.components_), 1)
     plt.xticks(ticks)

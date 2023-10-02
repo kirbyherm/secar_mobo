@@ -3,6 +3,7 @@
 import secar_utils as secar_utils
 import make_profiles, draw_cluster_inverse
 import draw_full, analyze_db, plot_tsne
+import make_db
 
 #import commands
 import pandas as pd
@@ -28,18 +29,21 @@ COSY_DIR = PYGMO_DIR + 'COSY10.0/'
 kclusters = configs['clusters']
 n_obj = configs['n_obj']
 objectives = configs['objectives']
+pca_bool = configs['pca_run']
 
-def main(start_i=0):
+def main(start_i=0, pca_bool=False):
 
-    results_h5 = analyze_db.main(start_i)
-    make_profiles.main(results_h5)
+    make_db.main(start_i)
+    results_h5 = analyze_db.main(start_i, pca_bool)
+    make_profiles.main(results_h5, pca_bool)
     draw_full.main(results_h5, start_i)
     draw_cluster_inverse.main(results_h5, results_h5) 
     plot_tsne.plot_tsne_linear(results_h5, results_h5) 
+#    plot_tsne.plot_tsne(results_h5, results_h5) 
 
     print("\npython analysis complete, now drawing the optics profiles with cosy\n")
     os.chdir('results_{}/profiles/'.format(start_i))
-    for i in range(kclusters+1):
+    for i in range(kclusters+2):
         cmd = '../../' + COSY_DIR + 'cosy'
         cosyFilename = "pygmoCosy{}".format(i)
         foxFilename = "{}.fox".format(cosyFilename)
@@ -69,5 +73,7 @@ if __name__=='__main__':
     print(inputs)
     if len(inputs) > 1:
         batch = int(inputs[1])
-    main(batch)
+    if len(inputs) > 2:
+        pca_bool = int(inputs[2])
+    main(batch, pca_bool)
 

@@ -2,7 +2,7 @@
 
 ### define resources needed:
 ### walltime - how long you expect the job to run
-#SBATCH --time=6-23:00:00
+#SBATCH --time=1-23:00:00
 #SBATCH --begin=now
 
 ### nodes:ppn - how many nodes & cores per node (ppn) that you require
@@ -15,7 +15,7 @@
 #SBATCH --mem-per-cpu=5G
 ### you can give your job a name for easier identification
 #SBATCH -J pygmo_optimize
-#SBATCH --array=13
+#SBATCH --array=19
 
 ### error/output file specifications
 #SBATCH -o /mnt/simulations/secarml/secar_mobo/sh/slurmfiles/moead_gen_4f_%a.txt

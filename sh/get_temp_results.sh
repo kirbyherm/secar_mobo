@@ -14,7 +14,7 @@
 #SBATCH --mem-per-cpu=5G
 ### you can give your job a name for easier identification
 #SBATCH -J cpu_test 
-#SBATCH --array=13
+#SBATCH --array=19
 
 ### error/output file specifications
 #SBATCH -o /mnt/simulations/secarml/secar_mobo/sh/slurmfiles/test_%a.txt
@@ -36,7 +36,7 @@ ls -lrt
 #rm -rf 10${SLURM_ARRAY_TASK_ID}
 cd 20${SLURM_ARRAY_TASK_ID}
 ls -lrt
-cat output20${SLURM_ARRAY_TASK_ID}.csv > /mnt/simulations/secarml/secar_mobo/output/output20${SLURM_ARRAY_TASK_ID}.csv
+cat output20${SLURM_ARRAY_TASK_ID}.csv > /mnt/simulations/secarml/secar_mobo/output/output_temp20${SLURM_ARRAY_TASK_ID}.csv
 scontrol show job ${SLURM_JOB_ID}
 #hostname
 #hostnamectl

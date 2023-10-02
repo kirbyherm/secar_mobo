@@ -1,4 +1,4 @@
-INCLUDE 'COSY' ;
+INCLUDE '../COSY10.0/COSY' ;
 PROCEDURE RUN ;
 {SEC_2WD_fields_clean, final optimized SECAR, 9/16/2014, GB}
 {Incorporating DF design results, latest update 6/14/2016 GB}
